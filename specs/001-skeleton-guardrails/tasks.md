@@ -68,10 +68,10 @@
 **Goal**: the ArchUnit rules of the constitution are active and proven to fail when violated.
 **Estimated size**: ~230 counted lines.
 
-- [ ] T016 Create `src/test/java/com/cocos/challenge/architecture/ArchitectureTest.java` **verbatim** from
+- [x] T016 Create `src/test/java/com/cocos/challenge/architecture/ArchitectureTest.java` **verbatim** from
   plan.md § ArchUnit rules. If it does not compile against ArchUnit 1.5.1, stop and report.
-- [ ] T017 Run `./mvnw test -Dgroups=unit`: every rule passes on the skeleton.
-- [ ] T018 **Prove each rule fails** (spec SC-003). For each rule, create a temporary violating class under
+- [x] T017 Run `./mvnw test -Dgroups=unit`: every rule passes on the skeleton.
+- [x] T018 **Prove each rule fails** (spec SC-003). For each rule, create a temporary violating class under
   `src/main/java/com/cocos/challenge/...`, run `./mvnw test -Dtest=ArchitectureTest`, confirm that rule fails
   with its `because(...)` message, then **delete the violating class**. Minimum set of violations:
   1. `domain/Bad.java` importing `org.springframework.stereotype.Component` (rule 1 fails).
