@@ -1,0 +1,48 @@
+# Tasks: Portfolio (spec 006)
+
+**Input**: `specs/006-portfolio/` (spec, plan, contract, feature)
+
+**Before starting**: specs 001–005 merged. `export SPECIFY_FEATURE_DIRECTORY=specs/006-portfolio`.
+
+**Slices**: three PRs. Each: tests → skeletons → confirm failure → implement → full suite → PR size check.
+
+---
+
+## Slice 006-a — Domain calculations (branch `006-portfolio-a`)
+
+**Estimated size**: ~380 lines.
+
+- [ ] T001 [P] Write `AverageCostCalculatorTest` (CU-01.12, 01.13, 01.14 and the restart rule for a buy with
+  quantity ≤ 0).
+- [ ] T002 [P] Write `PositionTest` (CU-01.02, 01.03, rounding from the unrounded average) and `PortfolioTest`
+  (CU-01.01, 01.06, 01.07, `NEGATIVE_CASH`), with the exact warning messages of plan.md.
+- [ ] T003 Skeletons of `Fill`, `PortfolioWarning`, `PortfolioWarningCode`, `Position`, `Portfolio`,
+  `AverageCostCalculator`. **Fail**. Record.
+- [ ] T004 Implement plan.md § Portfolio rules until green.
+
+## Slice 006-b — Readers and use case (branch `006-portfolio-b`)
+
+**Estimated size**: ~370 lines.
+
+- [ ] T005 [P] Write `JdbcPortfolioReaderIT` (CU-01.04, 01.05, 01.14) and a test for `latestQuotes`.
+- [ ] T006 [P] Write `GetPortfolioServiceTest` (CU-01.08) and `GetPortfolioServiceIT` (CU-01.01, 01.07, 01.11, FR-003).
+- [ ] T007 Skeletons of the ports, adapters, `GetPortfolioService`, `PortfolioConfiguration`. **Fail**. Record.
+- [ ] T008 Implement plan.md § Application and § Persistence until green; ArchUnit green.
+
+## Slice 006-c — Endpoints, BDD and contract (branch `006-portfolio-c`)
+
+**Estimated size**: ~360 lines (feature and contract copies excluded).
+
+- [ ] T009 Copy the feature and the contract; append `CU-01` to `scope.txt`; enable internal tools in
+  `CucumberSpringConfiguration`.
+- [ ] T010 [P] Write `PortfolioSteps` (plan.md § BDD).
+- [ ] T011 [P] Write `PortfolioControllerIT` (CU-01.09) and `InternalPortfolioControllerIT` (CU-01.10).
+- [ ] T012 Skeletons of the controllers and DTOs. Run `./mvnw verify`: **CU-01 scenarios fail**. Record.
+- [ ] T013 Implement plan.md § REST until green (14 scenarios; contract route test with the new routes).
+- [ ] T014 [P] `http/006-portfolio.http`.
+
+---
+
+## Definition of done (spec 006)
+
+- [ ] Slices merged; `./mvnw verify` green on `main`; 14 CU-01 scenarios passing; `CU-01` in scope.

@@ -51,10 +51,10 @@ Salvo que el escenario diga otra cosa, se parte de los **datos semilla** y del *
 | CU-01.06 | El usuario tiene una posición en PGR (sin market data) | Se consulta el portfolio | PGR aparece con su cantidad; precio, valor y rendimientos "sin dato"; no suma al total; la respuesta advierte que el total excluye activos sin precio. |
 | CU-01.07 | El usuario 2 no tiene órdenes | El usuario 2 consulta su portfolio | Todo en 0 y listado vacío. No es un error. |
 | CU-01.08 | — | Se consulta el portfolio de un usuario inexistente | Error "no encontrado". |
-| CU-01.09 | — | El usuario 2 pide el portfolio del usuario 1 | Error "no encontrado" (no revela que existe). |
+| CU-01.09 | — | El usuario 2 intenta ver el portfolio del usuario 1 | No hay forma de pedirlo: `GET /api/v1/portfolio` devuelve siempre el portfolio del usuario del header (el del usuario 2, vacío), y una ruta como `/api/v1/users/1/portfolio` no existe → `NOT_FOUND` (HTTP 404). *(Redefinido en la spec 006 por el estilo "mis datos", TEC-18.)* |
 | CU-01.10 | — | El administrador pide el portfolio del usuario 1 | Responde igual que CU-01.01. |
 | CU-01.11 | El usuario 1 acaba de ejecutar una compra `MARKET` de 10 PAMP | Se consulta el portfolio | PAMP muestra 50 acciones y el efectivo ya refleja el débito (R-12). |
-| CU-01.12 | El usuario 1 compró PAMP a $ 930 (50), vendió 10 y luego compra 10 más a $ 925,85 | Se consulta el portfolio | Costo promedio = (50 × 930 + 10 × 925,85) / 60 = $ 929,31; la venta no modificó el costo (DEC-02.1). |
+| CU-01.12 | El usuario 1 compró PAMP a $ 930 (50), vendió 10 y luego compra 10 más a $ 925,85 | Se consulta el portfolio | Costo promedio móvil = (40 × 930 + 10 × 925,85) / 50 = **$ 929,17**: la venta no modificó el costo y la compra nueva se promedia contra las 40 que quedaban (DEC-02.1). *(Corregido en la spec 006: antes decía $ 929,31.)* |
 | CU-01.13 | El usuario 1 vende sus 40 PAMP (`MARKET`, posición en 0); el administrador cambia el precio de PAMP a $ 1.000 (I-03); el usuario compra 10 PAMP (`MARKET`) | Consulta su portfolio | PAMP: 10 acciones, costo promedio **$ 1.000,00**. Las compras anteriores al cierre en 0 no se mezclan con la nueva posición (DEC-02.1). |
 | CU-01.14 | Órdenes `FILLED` cuyo orden por `id` no coincide con el orden por fecha y hora (solo reproducible manipulando datos: por la API la fecha la asigna el servidor) | Se consulta el portfolio | El costo promedio se calcula procesando las órdenes por fecha y hora ascendente; si dos órdenes tienen la misma fecha y hora, se desempata por `id` (DEC-02.1). |
 
