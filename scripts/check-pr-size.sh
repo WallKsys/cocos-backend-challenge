@@ -36,6 +36,7 @@ fi
 # Paths that are not reviewed line by line (TEC-30):
 #  - tool-generated or vendored files: Maven Wrapper, Spec Kit, OpenCode
 #  - V1 migration: verbatim copy of the database.sql provided by the challenge
+#  - published OpenAPI contract: verbatim copy of the latest specs/NNN-*/contracts/openapi.yaml
 #  - spec artifacts written before implementation: specs/, Gherkin features, docs, Markdown
 EXCLUDES=(
   ':(exclude)mvnw'
@@ -47,6 +48,7 @@ EXCLUDES=(
   ':(exclude)docs/**'
   ':(exclude)src/test/resources/features/**'
   ':(exclude)src/main/resources/db/migration/V1__*'
+  ':(exclude)src/main/resources/static/openapi/openapi.yaml'
   ':(exclude)*.md'
 )
 

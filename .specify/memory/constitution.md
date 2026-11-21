@@ -160,17 +160,20 @@ Every operation that changes a user's data follows this flow (TEC-16):
   profile) and are never part of the challenge scope.
 - Operations with effect require the `Idempotency-Key` header.
 - Errors use RFC 9457 Problem Details with a stable `code` and an English `detail` message containing the
-  concrete values. The error catalog in `docs/rfc.md` (TEC-19) is closed: do not add codes without a spec.
+  concrete values. The error catalog in `specs/003-api-conventions/plan.md` (TEC-19) is closed: do not add codes without a spec.
 - A `REJECTED` order is **not** an HTTP error: it returns `201` with `rejection.code` and `rejection.message`.
 - Timestamps are stored and returned in UTC, ISO 8601 with `Z` (DEC-18).
 - Pagination is cursor-based: `cursor`, `limit`, `nextCursor` (CM-08).
-- Every spec ships an OpenAPI contract in `specs/NNN-*/contracts/`. The implementation must match it.
+- Every spec with endpoints ships a **cumulative** OpenAPI contract in `specs/NNN-*/contracts/openapi.yaml`. The
+  latest one is copied byte-identical to `src/main/resources/static/openapi/openapi.yaml` and served by Swagger UI.
+  The implementation must match it; tests verify that routes and contract are identical (spec 003).
 
 ### X. Pull requests a human can review (max 400 lines)
 
 - A pull request contains **at most 400 counted lines** (added + deleted) (TEC-30). Counted: every changed
   file **except** Maven Wrapper files, `.specify/`, `.opencode/`, `specs/`, `docs/`, Gherkin features
-  (`src/test/resources/features/`), the V1 migration (verbatim copy of the provided `database.sql`) and
+  (`src/test/resources/features/`), the V1 migration (verbatim copy of the provided `database.sql`), the published
+  contract `src/main/resources/static/openapi/openapi.yaml` (verbatim copy of the latest spec contract) and
   Markdown files. **Tests count.**
 - Each spec's `tasks.md` is already divided into **PR slices** (`NNN-a`, `NNN-b`, ...), each one a logical,
   self-contained unit with its own tests and implementation. Implement one slice per PR.
@@ -247,4 +250,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.2.1 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application)
+**Version**: 1.3.0 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog)

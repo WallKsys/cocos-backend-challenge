@@ -266,6 +266,11 @@ Los mensajes nunca revelan datos de otros usuarios. Por ejemplo, el error por un
 | `NOT_FOUND` | 404 | Usuario, orden o instrumento inexistente, recurso de otro usuario, o endpoint interno sin rol de administrador | `Order 1234 was not found.` |
 | `IDEMPOTENCY_CONFLICT` | 422 | Misma clave con otro contenido o en otro tipo de operación (DEC-09, DEC-23) | `Idempotency key 'k1' was already used for a different request.` |
 | `ORDER_NOT_CANCELLABLE` | 409 | Cancelar una orden `FILLED` o `REJECTED` (DEC-15) | `Order 1234 cannot be cancelled because its status is FILLED. Only NEW orders can be cancelled.` |
+| `METHOD_NOT_ALLOWED` | 405 | Método HTTP no soportado por el recurso *(agregado en la spec 003)* | `Method DELETE is not supported for this resource.` |
+| `NOT_ACCEPTABLE` | 406 | El cliente pide un formato de respuesta no soportado *(spec 003)* | `The requested media type is not supported.` |
+| `UNSUPPORTED_MEDIA_TYPE` | 415 | El cuerpo no es JSON *(spec 003)* | `Content type 'text/plain' is not supported.` |
+| `REQUEST_ERROR` | otro 4xx | Cualquier otro error del cliente detectado por el framework *(spec 003)* | Mensaje estándar del framework |
+| `INTERNAL_ERROR` | 500 | Error inesperado; nunca expone detalles internos *(spec 003)* | `An unexpected error occurred.` |
 
 **Catálogo de motivos de rechazo** (dentro de la orden, no como error HTTP):
 
@@ -317,7 +322,7 @@ Los mensajes nunca revelan datos de otros usuarios. Por ejemplo, el error por un
 
 | ID | Decisión | Justificación |
 |---|---|---|
-| TEC-22 | **Contract-first con OpenAPI.** Cada spec incluye su contrato `openapi.yaml` en `specs/NNN-*/contracts/`, escrito antes de implementar. La API publica su documentación con Swagger UI. Tests de contrato verifican que la implementación respeta el contrato. | El agente implementa contra un contrato exacto en lugar de inventar nombres de campos, códigos o formatos. |
+| TEC-22 | **Contract-first con OpenAPI.** Cada spec con endpoints incluye su contrato **acumulativo** `openapi.yaml` en `specs/NNN-*/contracts/`, escrito antes de implementar. El último se copia literal a `src/main/resources/static/openapi/openapi.yaml` y Swagger UI muestra **ese** archivo (springdoc solo aporta la UI; el `/v3/api-docs` que genera no es el contrato). Tests verifican que el archivo publicado es idéntico al de la última spec y que las rutas de la aplicación coinciden exactamente con las del contrato; los tests de cada endpoint verifican sus cuerpos y códigos. | El agente implementa contra un contrato exacto en lugar de inventar nombres de campos, códigos o formatos. |
 | TEC-23 | **Stack de tests:** JUnit y AssertJ (versiones gestionadas por Spring Boot 4.1), Cucumber-JVM integrado con Spring, Testcontainers con PostgreSQL y ArchUnit. | Estándar del ecosistema Java; Testcontainers usa el mismo motor de base que producción, condición de TEC-06 para los tests de integración. |
 | TEC-24 | **Pruebas de volumen en un perfil de Maven separado (`-Pvolume`).** Los datos (10.000.000 de órdenes, un usuario con 10.000, 100.000 instrumentos) se generan con SQL (`generate_series`) dentro de Testcontainers, seguido de `ANALYZE`. Se hacen llamadas HTTP de calentamiento y luego se miden y calculan p95 y p99 contra las metas M-08 a M-11. | Todo queda dentro de JUnit, sin sumar una herramienta de carga (Gatling, k6) que el agente debería aprender. Queda fuera del build normal porque tarda. |
 | TEC-25 | **Arranque con un solo comando: `docker compose up`.** Levanta PostgreSQL y la aplicación (imagen construida con un Dockerfile multi-etapa), con los datos de ejemplo cargados por Flyway y el perfil de demo activo (herramientas internas habilitadas). | Cumple M-15 sin requerir Java ni PostgreSQL instalados. |
