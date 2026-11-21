@@ -118,7 +118,7 @@
 
 ### Tests first
 
-- [ ] T024 Create `src/test/resources/traceability/scope.txt` **verbatim** from plan.md § Traceability.
+- [x] T024 Create `src/test/resources/traceability/scope.txt` **verbatim** from plan.md § Traceability.
 - [ ] T025 Create `src/test/java/com/cocos/challenge/traceability/TraceabilityCheckerTest.java`
   (`@Tag("unit")`) with in-memory fixtures. One test per rule of plan.md § Violations to report (rules 1 to 10),
   plus:
