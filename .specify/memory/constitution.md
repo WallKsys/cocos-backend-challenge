@@ -241,7 +241,7 @@ If code does not compile, check this table before anything else.
 - **Commits**: one commit per completed task, after the full suite is green. Message format:
   `[NNN][T0xx] short description (CU-xx.yy, DEC-xx)`.
 - **Definition of done for a spec**: all its PR slices merged; all its tasks checked; `./mvnw verify` green (unit, integration, BDD,
-  ArchUnit, traceability, contract tests); its `CU` groups added to the traceability scope; its `.http`
+  ArchUnit, traceability, contract tests) locally **and in CI** (the `verify` check of every PR, TEC-33); its `CU` groups added to the traceability scope; its `.http`
   examples added; no `TODO`, `FIXME` or disabled tests left.
 - **Stop and report** (do not improvise) when: a test or scenario seems wrong; the spec is ambiguous; a
   dependency or API in this document does not exist or does not work as described; a task cannot be done
@@ -257,4 +257,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.3.3 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts)
+**Version**: 1.3.4 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33)

@@ -53,9 +53,13 @@
 - [ ] T014 [P] Create `http/000-health.http` from plan.md § HTTP examples.
 - [ ] T015 Run `docker compose up --build`, call the health endpoint, paste the result in the PR description,
   then `docker compose down`.
+- [ ] T015b Create `.github/workflows/ci.yml` **verbatim** from plan.md § Continuous integration. Open the PR and
+  confirm that the `verify` check runs and is green on GitHub (link it in the PR description).
 
-**Checkpoint 001-a**: `./mvnw verify` green; `./mvnw test -Dgroups=unit` runs only `SmokeUnitTest` without
-Docker; Compose works. Open PR `001-a`.
+**Checkpoint 001-a**: `./mvnw verify` green locally **and** the `verify` check green on the PR;
+`./mvnw test -Dgroups=unit` runs only `SmokeUnitTest` without Docker; Compose works. Open PR `001-a`.
+
+**After merging 001-a (repository owner, not the agent)**: add `verify` to the required status checks of `main`.
 
 ---
 
@@ -143,6 +147,7 @@ Docker; Compose works. Open PR `001-a`.
 ## Definition of done (spec 001)
 
 - [ ] Slices 001-a, 001-b, 001-c and 001-d merged into `main`.
+- [ ] `verify` (CI) is a required status check of `main`, together with `pr-size`.
 - [ ] `./mvnw verify` green on `main`; `docker compose up --build` healthy (quickstart.md).
 - [ ] Every ArchUnit rule was seen failing (evidence in PR 001-b).
 - [ ] The traceability check was seen failing on real files (evidence in PR 001-d).
