@@ -47,7 +47,8 @@ src/main/java/com/cocos/challenge/
 │   ├── LedgerReader.java         CashBalance cashBalance(UserId); ShareBalance shareBalance(UserId, InstrumentId)
 │   ├── InstrumentRepository.java Optional<Instrument> findById(InstrumentId)
 │   ├── MarketDataRepository.java Optional<MarketQuote> latestQuote(InstrumentId)
-│   └── OrderRepository.java      Optional<Order> findByIdempotencyKey(UserId, String); Order save(NewOrder)
+│   ├── IdempotencyRecord.java    record IdempotencyRecord(long orderId, OrderSide side, RequestFingerprint fingerprint)
+│   └── OrderRepository.java      Optional<IdempotencyRecord> findIdempotencyRecord(UserId, String key); Order findById(long id); Order save(NewOrder)
 ├── application/service/PlaceOrderService.java
 └── infrastructure/
     ├── adapter/out/persistence/
@@ -164,9 +165,13 @@ public record PlaceOrderResult(Order order, boolean replayed) {}
 
 1. `start = System.nanoTime()`; `account = accountLock.lock(userId)` or throw `NotFoundException`;
    `businessMetrics.accountLockWaited(Duration.ofNanos(System.nanoTime() - start))`.
-2. `orderRepository.findByIdempotencyKey(userId, key)`: present with the same fingerprint →
-   `businessMetrics.idempotentReplay(side)` and return `PlaceOrderResult(existing, true)`; present with a different
-   fingerprint → `businessMetrics.idempotencyConflict()` and throw `IdempotencyConflictException(key)`.
+2. `orderRepository.findIdempotencyRecord(userId, key)`: present with the same fingerprint →
+   `businessMetrics.idempotentReplay(side)` and return `PlaceOrderResult(orderRepository.findById(record.orderId()), true)`;
+   present with a different fingerprint → `businessMetrics.idempotencyConflict()` and throw
+   `IdempotencyConflictException(key)`. **Why a lightweight record first**: the key is unique per user across all
+   operations (DEC-23), so the row found may be a deposit or withdrawal whose `size` has cents; mapping it to an
+   `Order` (whole shares) would fail with an arithmetic error instead of answering the conflict. The full order is
+   loaded only after the fingerprint proves it is the same order request.
 3. Instrument lookup and tradability checks (§ Validation).
 4. `quote` (MARKET only needs it; read it anyway), `cash`, `shares` from `LedgerReader`.
 5. `OrderEvaluator.evaluate(...)`.
@@ -208,8 +213,9 @@ Convert the `NUMERIC` results with `Money.of(BigDecimal)` (scale 4 → 2) and sh
 `JdbcMarketDataRepository.latestQuote`: the "latest market data" query of `specs/002-database/data-model.md`.
 
 `JdbcOrderRepository`:
-- `findByIdempotencyKey`: select the order joined with `instruments` (for the ticker) by `userid` and
-  `idempotency_key`.
+- `findIdempotencyRecord`: `SELECT id, side, request_fingerprint FROM orders WHERE userid = :userId AND
+  idempotency_key = :key` (served by the unique index `orders_user_idempotency_key`).
+- `findById`: select the order joined with `instruments` (for the ticker) by `id`.
 - `save`: `INSERT ... RETURNING id`, writing `instrumentid, userid, size, price, type, side, status, datetime,
   rejection_code, rejection_message, idempotency_key, request_fingerprint, requested_amount`. Bind `createdAt` as
   `OffsetDateTime` in UTC (`createdAt.atOffset(ZoneOffset.UTC)`), never as a string.
@@ -256,7 +262,7 @@ Every CU test carries `@Tag("<CU id>")` plus `unit` or `integration`.
 | 03.22, 03.24, 03.25, 03.26, 03.27 | `OrderRequestTest` | — |
 | 03.23, 03.29, 03.30 | — | `OrderControllerIT` (JSON strictness, missing key, unknown field) |
 | 03.31, 03.32, 03.34, 03.41 | `PlaceOrderServiceTest` (fake order repository) | — |
-| 03.33, 03.35, 03.42 | `PlaceOrderServiceTest` | `JdbcOrderRepositoryIT` (key scoped by user; key shared with a CASH_IN row) |
+| 03.33, 03.35, 03.42 | `PlaceOrderServiceTest` | `JdbcOrderRepositoryIT` (key scoped by user; key shared with a CASH_IN row **with cents**, for example 1234.56, answers the conflict without errors) |
 | 03.36 | — | `ConcurrentOrdersIT` (two threads, one FILLED and one REJECTED, cash never negative) |
 | 03.37 | — | `JdbcOrderRepositoryIT` (stored and read back as the same `Instant`, session time zone `America/Argentina/Buenos_Aires`) |
 
