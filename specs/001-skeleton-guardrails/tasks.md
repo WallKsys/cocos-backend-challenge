@@ -19,41 +19,41 @@
 
 ### Setup
 
-- [ ] T001 Delete `src/Main.java`.
-- [ ] T002 Add the Maven Wrapper exactly as described in plan.md § Maven Wrapper (`mvnw`, `mvnw.cmd`,
+- [x] T001 Delete `src/Main.java`.
+- [x] T002 Add the Maven Wrapper exactly as described in plan.md § Maven Wrapper (`mvnw`, `mvnw.cmd`,
   `.mvn/wrapper/maven-wrapper.properties`).
-- [ ] T003 Create `pom.xml` **verbatim** from plan.md § pom.xml. Run `./mvnw -q dependency:resolve`; if anything
+- [x] T003 Create `pom.xml` **verbatim** from plan.md § pom.xml. Run `./mvnw -q dependency:resolve`; if anything
   fails to resolve, stop and report.
-- [ ] T004 Create the empty folder `src/main/resources/db/migration/` with a `.gitkeep` file.
+- [x] T004 Create the empty folder `src/main/resources/db/migration/` with a `.gitkeep` file.
 
 ### Tests first
 
-- [ ] T005 [P] Create `src/test/java/com/cocos/challenge/SmokeUnitTest.java` (`@Tag("unit")`): one trivial
+- [x] T005 [P] Create `src/test/java/com/cocos/challenge/SmokeUnitTest.java` (`@Tag("unit")`): one trivial
   assertion proving unit tests run without Spring (for example `assertThat(1 + 1).isEqualTo(2)`). It is the
   canary for `./mvnw test -Dgroups=unit`.
-- [ ] T006 Create `src/test/java/com/cocos/challenge/support/PostgresTestcontainersConfiguration.java` and
+- [x] T006 Create `src/test/java/com/cocos/challenge/support/PostgresTestcontainersConfiguration.java` and
   `support/IntegrationTest.java` as described in plan.md § Testcontainers.
-- [ ] T007 Create `src/test/java/com/cocos/challenge/HealthEndpointIT.java` (annotated with `@IntegrationTest`):
+- [x] T007 Create `src/test/java/com/cocos/challenge/HealthEndpointIT.java` (annotated with `@IntegrationTest`):
   `GET /actuator/health` returns 200 and a JSON body whose `status` is `UP` (spec US1 scenario 2).
-- [ ] T008 Create `src/test/java/com/cocos/challenge/HealthDownWhenDatabaseUnavailableIT.java`
+- [x] T008 Create `src/test/java/com/cocos/challenge/HealthDownWhenDatabaseUnavailableIT.java`
   (`@Tag("integration")`, **not** `@IntegrationTest`): starts its **own** PostgreSQL container (not the shared
   one), starts the application against it with `@SpringBootTest(webEnvironment = RANDOM_PORT)` and
   `@DynamicPropertySource`, stops that container, then asserts `GET /actuator/health` returns 503 with
   `status` `DOWN` (spec US1 scenario 3). Use `@DirtiesContext` so the broken context is not reused.
-- [ ] T009 Run `./mvnw verify`. **Expected: compilation fails or the ITs fail** because the application class
+- [x] T009 Run `./mvnw verify`. **Expected: compilation fails or the ITs fail** because the application class
   does not exist. Record the failure in the task log (Constitution III step 3).
 
 ### Implementation
 
-- [ ] T010 Create `src/main/java/com/cocos/challenge/CocosBrokerApiApplication.java` (plan.md § Application
+- [x] T010 Create `src/main/java/com/cocos/challenge/CocosBrokerApiApplication.java` (plan.md § Application
   entry point).
-- [ ] T011 Create `src/main/resources/application.yml` **verbatim** from plan.md § Configuration.
-- [ ] T012 Run `./mvnw verify` until green.
-- [ ] T013 [P] Create `Dockerfile`, `.dockerignore` and `compose.yaml` **verbatim** from plan.md § Docker.
-- [ ] T014 [P] Create `http/000-health.http` from plan.md § HTTP examples.
-- [ ] T015 Run `docker compose up --build`, call the health endpoint, paste the result in the PR description,
+- [x] T011 Create `src/main/resources/application.yml` **verbatim** from plan.md § Configuration.
+- [x] T012 Run `./mvnw verify` until green.
+- [x] T013 [P] Create `Dockerfile`, `.dockerignore` and `compose.yaml` **verbatim** from plan.md § Docker.
+- [x] T014 [P] Create `http/000-health.http` from plan.md § HTTP examples.
+- [x] T015 Run `docker compose up --build`, call the health endpoint, paste the result in the PR description,
   then `docker compose down`.
-- [ ] T015b Create `.github/workflows/ci.yml` **verbatim** from plan.md § Continuous integration. Open the PR and
+- [x] T015b Create `.github/workflows/ci.yml` **verbatim** from plan.md § Continuous integration. Open the PR and
   confirm that the `verify` check runs and is green on GitHub (link it in the PR description).
 
 **Checkpoint 001-a**: `./mvnw verify` green locally **and** the `verify` check green on the PR;
