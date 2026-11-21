@@ -5,7 +5,7 @@ compra y venta (MARKET y LIMIT), más depósitos, retiros, cancelación e histor
 [challenge de backend de Cocos](docs/referencia/backend-challenge.md).
 
 > **Estado del proyecto:** análisis funcional, PRD y decisiones técnicas **cerrados**; constitución del proyecto
-> aprobada; specs de implementación **en elaboración** (specs 001 a 004 aprobadas). **Todavía no hay código de
+> aprobada; specs de implementación **en elaboración** (specs 001 a 005 aprobadas). **Todavía no hay código de
 > producción.** Ver [Hoja de ruta](#hoja-de-ruta).
 
 ---
@@ -114,7 +114,7 @@ La colección de ejemplos está en `http/` (cliente HTTP de IntelliJ).
 | 002 | Base de datos (esquema original + cambios justificados) | ✅ Spec aprobada · implementación pendiente |
 | 003 | Convenciones de la API (errores, identidad, montos, idempotencia) | ✅ Spec aprobada · implementación pendiente |
 | 004 | Búsqueda de activos | ✅ Spec aprobada · implementación pendiente |
-| 005 | Envío de órdenes | ⏳ Pendiente |
+| 005 | Envío de órdenes | ✅ Spec aprobada · implementación pendiente |
 | 006 | Portfolio | ⏳ Pendiente |
 | 007 | Depósitos y retiros | ⏳ Pendiente |
 | 008 | Cancelación e historial | ⏳ Pendiente |
