@@ -20,6 +20,8 @@ enforced by ArchUnit.
 
 - Use the Spec Kit commands in `.opencode/commands/`. Specs, plans and tasks are **already written**:
   your job is `/speckit.implement` on the current spec, task by task.
+- Select the spec you are implementing before running Spec Kit commands, for example
+  `export SPECIFY_FEATURE_DIRECTORY=specs/001-skeleton-guardrails`. Implement specs strictly in numeric order.
 - Follow the test-first cycle of Constitution Principle III **for every task**:
   write tests → minimal skeletons → confirm the tests fail → implement → run the full suite → next task.
 - One task at a time. Check it off in `tasks.md` only when the full suite is green.

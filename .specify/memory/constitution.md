@@ -87,7 +87,7 @@ Base package: `com.cocos.challenge` (TEC-10, TEC-13).
 | `domain.exception` | Business exceptions | `domain.*`, JDK |
 | `application.port.in` | Use case interfaces, commands and results (`record`) | `domain.*`, JDK |
 | `application.port.out` | Outbound interfaces (repositories, account lock, clock) | `domain.*`, JDK |
-| `application.service` | Use case implementations | `domain.*`, `application.port.*`, JDK, and **only** `org.springframework.transaction.annotation.Transactional` |
+| `application.service` | Use case implementations | `domain.*`, `application.port.*`, JDK, and **only** `org.springframework.transaction.annotation.Transactional` (plus its member enums `Propagation` and `Isolation`) |
 | `infrastructure.adapter.in.rest` | Controllers, request/response DTOs, error handling | `application.port.in`, `domain.model`, Spring, Jackson |
 | `infrastructure.adapter.in.rest.internal` | Internal (admin/demo) endpoints | same as above |
 | `infrastructure.adapter.out.persistence` | `Jdbc*` implementations of outbound ports. **All SQL lives here.** | `application.port.out`, `domain.*`, Spring JDBC |
@@ -247,4 +247,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.2.0 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31)
+**Version**: 1.2.1 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application)
