@@ -157,6 +157,35 @@ Si el usuario no existe, la operación termina con "no encontrado" (DEC-05, DEC-
 | **Aislamiento `SERIALIZABLE` con reintentos** | Optimista (lo resuelve la base) | Exige una lógica de reintentos que es fácil de implementar mal y, en el escenario de 50 reintentos simultáneos, produciría abortos en cadena. |
 | **Tabla de saldos con número de versión** | Optimista | No existe un registro de saldo que versionar: el saldo se calcula desde `orders`. Crearlo agregaría una segunda fuente de verdad que puede desincronizarse (riesgo para M-01), además de la lógica de reintentos. |
 
+### TEC-32 · Dónde se guarda la clave de idempotencia: columna en `orders`
+
+**Por qué la clave tiene que guardarse.** El contenido de un pedido no alcanza para saber si es *el mismo pedido* o *otro pedido igual*. Un reintento por corte de red ("comprar 10 PAMP" reenviado) y dos órdenes legítimas idénticas (CU-03.41) son byte a byte iguales; lo único que transporta la intención del cliente es la clave: la reusa al reintentar y genera una nueva para otra orden. Sin la clave guardada no se puede responder ninguna de las preguntas que exige la idempotencia:
+
+| Pregunta | Sin la clave guardada |
+|---|---|
+| ¿Ya procesé este pedido? | Buscar por contenido bloquea órdenes legítimas idénticas; agregar una ventana de tiempo solo cambia qué caso falla |
+| ¿El pedido es idéntico al anterior? | No hay "pedido anterior con esta clave" contra el cual comparar la huella |
+| ¿Cuál es la respuesta original? | Depende de encontrar el pedido anterior |
+| ¿Cómo evito duplicados simultáneos? | El bloqueo del usuario (TEC-16) **ordena** los pedidos pero no los **deduplica**: cada reintento, al no encontrar nada, ejecutaría una orden nueva. Tampoco existiría la restricción única en la base |
+
+Ejemplo: el usuario quiere 10 PAMP, se corta la red, la app reintenta → termina con 20 acciones y $ 18.517 debitados en lugar de $ 9.258,50.
+
+**Decisión.** La clave y la huella del pedido se guardan **en la misma fila de `orders`** que la operación (CM-02), con restricción única `(userid, idempotency_key)`.
+
+**Justificación.** En este dominio toda operación con clave (compra, venta, depósito, retiro) produce **exactamente una fila** de `orders`, y esa fila **es** el resultado del pedido. Guardar la clave ahí da atomicidad sin esfuerzo (un solo `INSERT`: no puede existir la orden sin su clave ni la clave sin su orden), la restricción única como red de seguridad en la base, y la respuesta del reintento se reconstruye desde la propia orden (para eso existe `requested_amount`, CM-12).
+
+**Alternativas evaluadas:**
+
+| Alternativa | Evaluación |
+|---|---|
+| **Tabla separada `idempotency_keys`** (clave, huella, respuesta guardada, vencimiento), escrita en la misma transacción | **Válida; descartada por ahora.** Separa un dato de la capa HTTP del libro contable, permite purgar claves vencidas y cubre operaciones que no crean una orden. A cambio, cada operación hace dos escrituras y la respuesta guardada puede divergir del estado real de la orden (por ejemplo, tras una cancelación). |
+| **Caché en memoria o Redis** | **Descartada.** No es atómica con la base: si la app se cae después de confirmar la orden y antes de guardar la clave, el reintento ejecuta un duplicado; si guarda la clave y la transacción se revierte, el reintento recibe "ya procesado" de una orden inexistente. En memoria, además, se pierde al reiniciar y no se comparte entre instancias. |
+| **Deduplicar por contenido** (con o sin ventana de tiempo) | **Descartada.** No distingue un reintento de dos órdenes legítimas idénticas (CU-03.41). |
+
+**Criterio para pasar a la tabla separada:** si aparece una operación con clave que **no** crea una fila en `orders`, si se necesita que las claves venzan (por ejemplo, por volumen), o si la respuesta a repetir deja de poder reconstruirse desde la orden.
+
+---
+
 ## 7. Cálculo de saldo, reservas y posiciones
 
 ### TEC-17 · Cálculo en tiempo real desde `orders`, detrás de un puerto, con rendimiento verificado
