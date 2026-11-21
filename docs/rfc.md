@@ -227,6 +227,7 @@ GET  /api/internal/users/{userId}/orders/{orderId}
 | Fechas | ISO 8601 en UTC con zona explícita: `2026-11-21T14:36:00Z` (DEC-18) |
 | Paginado | Por cursor opaco (`cursor`, `limit`); la respuesta incluye `nextCursor` (CM-08) |
 | Nombres JSON | `camelCase` en inglés |
+| Campos desconocidos | Se rechazan con `VALIDATION_ERROR` nombrando el campo (DEC-24) |
 
 **Errores: formato RFC 9457 (Problem Details) con código y mensaje.** Toda respuesta de error incluye un **código estable** (para que el cliente decida qué hacer) y un **mensaje legible en inglés con los valores concretos** (para que una persona entienda qué pasó):
 

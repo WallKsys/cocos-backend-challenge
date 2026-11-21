@@ -159,7 +159,8 @@ exception is **never** copied into the response unless the table says so.
 | `IdempotencyConflictException` | `IDEMPOTENCY_CONFLICT` | exception message |
 | `OrderNotCancellableException` | `ORDER_NOT_CANCELLABLE` | exception message |
 | `MethodArgumentNotValidException`, `HandlerMethodValidationException` | `VALIDATION_ERROR` | `Request validation failed: '<field>' <message>[; '<field>' <message>...].` plus `errors` (§ Validation) |
-| `HttpMessageNotReadableException` caused by `tools.jackson.databind.exc.MismatchedInputException` with a field path | `VALIDATION_ERROR` | `Request validation failed: '<path>' has an invalid type or format.` plus `errors` with that field |
+| `HttpMessageNotReadableException` caused by `tools.jackson.databind.exc.UnrecognizedPropertyException` (DEC-24) | `VALIDATION_ERROR` | `Request validation failed: '<property>' is not a recognized field.` plus `errors` with that field and message `is not a recognized field` |
+| `HttpMessageNotReadableException` caused by any other `tools.jackson.databind.exc.MismatchedInputException` with a field path | `VALIDATION_ERROR` | `Request validation failed: '<path>' has an invalid type or format.` plus `errors` with that field |
 | other `HttpMessageNotReadableException` | `VALIDATION_ERROR` | `Malformed JSON request body.` |
 | `MethodArgumentTypeMismatchException`, `MissingServletRequestParameterException` | `VALIDATION_ERROR` | `Request validation failed: '<name>' <reason>.` |
 | `NoResourceFoundException` | `NOT_FOUND` | `Resource not found.` |
@@ -216,18 +217,26 @@ exception is **never** copied into the response unless the table says so.
 ### Jackson
 
 `JacksonConfiguration` defines a `JsonMapperBuilderCustomizer` bean
-(`org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer`) that rejects JSON numbers and
-booleans for `String` fields:
+(`org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer`) that disables scalar coercions:
+JSON numbers and booleans are rejected for `String` fields, and decimals or strings are rejected for integer fields.
 
 ```java
 @Bean
-JsonMapperBuilderCustomizer rejectScalarCoercionToText() {
-    return builder -> builder.withCoercionConfig(LogicalType.Textual, config -> config
-            .setCoercion(CoercionInputShape.Integer, CoercionAction.Fail)
-            .setCoercion(CoercionInputShape.Float, CoercionAction.Fail)
-            .setCoercion(CoercionInputShape.Boolean, CoercionAction.Fail));
+JsonMapperBuilderCustomizer rejectScalarCoercions() {
+    return builder -> builder
+            .withCoercionConfig(LogicalType.Textual, config -> config
+                    .setCoercion(CoercionInputShape.Integer, CoercionAction.Fail)
+                    .setCoercion(CoercionInputShape.Float, CoercionAction.Fail)
+                    .setCoercion(CoercionInputShape.Boolean, CoercionAction.Fail))
+            .withCoercionConfig(LogicalType.Integer, config -> config
+                    .setCoercion(CoercionInputShape.Float, CoercionAction.Fail)
+                    .setCoercion(CoercionInputShape.String, CoercionAction.Fail));
 }
 ```
+
+**Why the integer rule is critical** (verified on Jackson 3.1.8): without it, `{"quantity": 1.5}` is silently
+truncated to `1`, and `"10"` and `10.0` are accepted. An order for a different quantity than the user sent would be
+executed. With the configuration above, all three fail with `MismatchedInputException` → `VALIDATION_ERROR`.
 
 Imports: `tools.jackson.databind.cfg.CoercionAction`, `tools.jackson.databind.cfg.CoercionInputShape`,
 `tools.jackson.databind.type.LogicalType`. (Verified: with this configuration `{"amount":925.85}` fails with
@@ -287,6 +296,9 @@ spring:
   web:
     locale: en
     locale-resolver: fixed
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true      # DEC-24 (verified on Boot 4.1.3)
 
 springdoc:
   swagger-ui:
@@ -331,11 +343,11 @@ not working as described.
 
 | Test | Covers |
 |---|---|
-| `ErrorHandlingIT` | US1 scenarios 1–10 |
+| `ErrorHandlingIT` | US1 scenarios 1–11 |
 | `IdentityAndAdminIT` (`cocos.internal-tools.enabled=true`) | US2 1–3, US3 2–3 |
 | `InternalToolsDisabledIT` (default properties) | US3 1 |
 | `IdempotencyKeyIT` | US4 1–4 |
-| `FormatsIT` | US5 1–4 |
+| `FormatsIT` | US5 1–4, plus: `{"quantity": 1.5}`, `{"quantity": "10"}` and `{"quantity": 10.0}` on the `/validate` probe → 400 `VALIDATION_ERROR` naming `quantity` |
 | `ApiDecimalsTest`, `DecimalStringValidatorTest`, `MoneyTest`, `UserIdTest`, `RequestFingerprintTest` | US5, domain building blocks |
 | `RequestIdIT` | US6 1–4 (use a log capture such as Spring Boot's `OutputCaptureExtension`) |
 | `MicrometerBusinessMetricsTest` | US7 1–3 |

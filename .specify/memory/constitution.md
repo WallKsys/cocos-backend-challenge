@@ -163,6 +163,8 @@ Every operation that changes a user's data follows this flow (TEC-16):
 - Operations with effect require the `Idempotency-Key` header.
 - Errors use RFC 9457 Problem Details with a stable `code` and an English `detail` message containing the
   concrete values. The error catalog in `specs/003-api-conventions/plan.md` (TEC-19) is closed: do not add codes without a spec.
+- Unknown JSON fields in a request body are rejected with `VALIDATION_ERROR` (DEC-24); integers never accept
+  decimals or strings, and strings never accept numbers (spec 003).
 - A `REJECTED` order is **not** an HTTP error: it returns `201` with `rejection.code` and `rejection.message`.
 - Timestamps are stored and returned in UTC, ISO 8601 with `Z` (DEC-18).
 - Pagination is cursor-based: `cursor`, `limit`, `nextCursor` (CM-08).
@@ -252,4 +254,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.3.1 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs)
+**Version**: 1.3.2 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24)

@@ -47,6 +47,8 @@ with `type`, `title`, `status`, `code`, `detail` and `instance`, and the `X-Requ
    detail `An unexpected error occurred.` and **none** of the internal message in the body.
 10. **Given** a request with header `Accept-Language: es`, **When** validation fails, **Then** all messages are
     still in English.
+11. **Given** a request body with an unknown field (`{"amount": "1.00", "quantity": 1, "userId": 1}`), **Then**
+    400 `VALIDATION_ERROR`, detail `Request validation failed: 'userId' is not a recognized field.` (DEC-24).
 
 ---
 
@@ -104,6 +106,8 @@ with `type`, `title`, `status`, `code`, `detail` and `instance`, and the `X-Requ
 3. **Given** a request amount `"925.8"` or `"925"`, **Then** it is accepted as 925.80 / 925.00.
 4. **Given** a response with a timestamp, **Then** it is an ISO 8601 UTC string ending in `Z`
    (`2026-11-21T14:36:00Z`), never a number.
+5. **Given** an integer field (for example a share quantity) sent as `1.5`, `10.0` or `"10"`, **Then** 400
+   `VALIDATION_ERROR` naming the field — never a silent truncation to `1` or `10`.
 
 ---
 

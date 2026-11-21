@@ -136,7 +136,7 @@ Salvo que el escenario diga otra cosa, se parte de los **datos semilla** y del *
 | CU-03.27 | Side o tipo inválidos (o `CASH_IN`/`CASH_OUT` en este caso de uso) | Error; no se guarda. |
 | CU-03.28 | `BUY` o `SELL` de ARS | Error; no se guarda. |
 | CU-03.29 | Falta el identificador de idempotencia | Error; no se guarda. |
-| CU-03.30 | El usuario 2 envía una orden a nombre del usuario 1 | Error "no encontrado"; no se guarda (DEC-17). |
+| CU-03.30 | El usuario 2 envía una orden con `"userId": 1` en el cuerpo, intentando operar a nombre del usuario 1 | `VALIDATION_ERROR` (HTTP 400): *"Request validation failed: 'userId' is not a recognized field."*; no se guarda nada. La orden solo puede pertenecer al usuario del header `X-User-Id` (DEC-17, DEC-24, TEC-18). |
 
 ### Idempotencia y concurrencia
 
@@ -182,7 +182,7 @@ Salvo que el escenario diga otra cosa, se parte de los **datos semilla** y del *
 | CU-05.03 | — | Deposita $ 10,555 (3 decimales) | Error; no se guarda. |
 | CU-05.04 | — | Deposita $ 0 o un monto negativo | Error; no se guarda. |
 | CU-05.05 | Depósito ya procesado con identificador `d1` | Se reenvía idéntico | Responde el depósito original; el saldo **no** se acredita dos veces. |
-| CU-05.06 | — | El usuario 2 intenta depositar en la cuenta del usuario 1 | Error "no encontrado"; no se guarda nada (DEC-17). |
+| CU-05.06 | — | El usuario 2 envía un depósito con `"userId": 1` en el cuerpo | `VALIDATION_ERROR` (HTTP 400) nombrando `userId`; no se acredita ni se guarda nada (DEC-17, DEC-24). |
 | CU-05.07 | Depósito procesado con `d1` por $ 100.000 | Se reenvía `d1` con $ 200.000, o se usa `d1` para un retiro | Error de conflicto; no se procesa (DEC-09, DEC-23). |
 | CU-05.08 | — | Depósito sin identificador de idempotencia | Error; no se guarda (DEC-05, DEC-07). |
 
@@ -198,7 +198,7 @@ Salvo que el escenario diga otra cosa, se parte de los **datos semilla** y del *
 | CU-06.02 | Efectivo $ 753.000, disponible $ 627.500 | Retira $ 700.000 | `REJECTED` (`INSUFFICIENT_FUNDS`): lo reservado no se puede retirar. |
 | CU-06.03 | Disponible con centavos (por ejemplo, $ 618.241,50 tras CU-03.01) | Retira $ 618.241,50 | `FILLED`; disponible $ 0. |
 | CU-06.04 | Retiro ya procesado con identificador `r1` | Se reenvía idéntico | Responde el retiro original; **no** se debita dos veces. |
-| CU-06.05 | — | El usuario 2 intenta retirar de la cuenta del usuario 1 | Error "no encontrado"; no se guarda nada (DEC-17). |
+| CU-06.05 | — | El usuario 2 envía un retiro con `"userId": 1` en el cuerpo | `VALIDATION_ERROR` (HTTP 400) nombrando `userId`; no se debita ni se guarda nada (DEC-17, DEC-24). |
 | CU-06.06 | Retiro procesado con `r1` por $ 100.000 | Se reenvía `r1` con $ 50.000 | Error de conflicto; no se procesa (DEC-09). |
 | CU-06.07 | — | Retiro de $ 0 o monto negativo | Error; **no** se guarda (a diferencia del retiro sin fondos, que se guarda `REJECTED`; DEC-05). |
 | CU-06.08 | — | Retiro de $ 10,555 (más de 2 decimales) | Error; no se guarda (DEC-13). |

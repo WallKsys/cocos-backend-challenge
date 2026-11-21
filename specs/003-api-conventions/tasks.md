@@ -32,7 +32,7 @@ they verify.
 
 - [ ] T004 Create `src/test/java/com/cocos/challenge/conventions/ProbeControllers.java` with the endpoints needed
   by this slice (`/validate`, `/throw/{kind}`) — plan.md § Probe endpoints.
-- [ ] T005 Write `ErrorHandlingIT` covering spec US1 scenarios 1–10 (status, `application/problem+json`, every
+- [ ] T005 Write `ErrorHandlingIT` covering spec US1 scenarios 1–11 (status, `application/problem+json`, every
   field of the Problem, exact `detail` texts, `errors` list, no internal message on 500, English with
   `Accept-Language: es`).
 - [ ] T006 Create skeletons of `ApiErrorCode`, `ApiException`, `ApiExceptionHandler`, `JacksonConfiguration`.
