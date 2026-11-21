@@ -177,8 +177,8 @@ Every operation that changes a user's data follows this flow (TEC-16):
 - A pull request contains **at most 400 counted lines** (added + deleted) (TEC-30). Counted: every changed
   file **except** Maven Wrapper files, `.specify/`, `.opencode/`, `specs/`, `docs/`, Gherkin features
   (`src/test/resources/features/`), the V1 migration (verbatim copy of the provided `database.sql`), the published
-  contract `src/main/resources/static/openapi/openapi.yaml` (verbatim copy of the latest spec contract) and
-  Markdown files. **Tests count.**
+  contract `src/main/resources/static/openapi/openapi.yaml` (verbatim copy of the latest spec contract),
+  `observability/` (verbatim copy of the spec 010 artifacts) and Markdown files. **Tests count.**
 - Each spec's `tasks.md` is already divided into **PR slices** (`NNN-a`, `NNN-b`, ...), each one a logical,
   self-contained unit with its own tests and implementation. Implement one slice per PR.
 - **Every PR leaves the full suite green.** The test-first cycle (Principle III) applies to each slice: a PR
@@ -223,6 +223,9 @@ Exact versions are pinned in the plan of spec 001. Do not upgrade or add depende
 | `@SpringBootTest` gives you `TestRestTemplate` | Prefer `RestTestClient` with `@AutoConfigureRestTestClient` |
 | `org.springframework.lang.Nullable` | `org.jspecify.annotations.Nullable` |
 | `spring-boot-starter-aop` | `spring-boot-starter-aspectj` (not needed in this project) |
+| `management.otlp.tracing.endpoint`, `management.otlp.logging.endpoint` | `management.opentelemetry.tracing.export.otlp.endpoint`, `management.opentelemetry.logging.export.otlp.endpoint` (metrics: `management.otlp.metrics.export.url`) |
+| Latest `opentelemetry-logback-appender-1.0` | The version built against the OpenTelemetry API managed by Spring Boot (1.62.0 → `2.28.0-alpha`); a newer one fails at runtime |
+| `console-appender.xml` in a custom `logback-spring.xml` | `structured-console-appender.xml` to keep structured (JSON) console logs |
 | JPA / Hibernate | Forbidden in this project (Principle VI) |
 
 If code does not compile, check this table before anything else.
@@ -254,4 +257,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.3.2 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24)
+**Version**: 1.3.3 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts)

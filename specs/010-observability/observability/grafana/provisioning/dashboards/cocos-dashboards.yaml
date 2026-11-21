@@ -1,0 +1,12 @@
+# Mounted into grafana/otel-lgtm at /otel-lgtm/grafana/conf/provisioning/dashboards/cocos-dashboards.yaml.
+apiVersion: 1
+
+providers:
+  - name: "Cocos"
+    folder: "Cocos"
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    options:
+      path: /otel-lgtm/cocos-dashboards
+      foldersFromFilesStructure: false
