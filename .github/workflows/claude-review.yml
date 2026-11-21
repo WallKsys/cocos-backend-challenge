@@ -1,0 +1,41 @@
+name: Claude review
+
+# Automatic review of every pull request by Claude (TEC-34), against the constitution, the spec of the slice and
+# its Gherkin scenarios. The review is advisory: merging is still decided by the repository owner.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# A new push to the same PR cancels the review still in progress (saves subscription usage).
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+  actions: read
+
+jobs:
+  review:
+    # Skip drafts, and PRs from forks (secrets are not available to them on a public repository).
+    if: github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are the reviewer of pull request #${{ github.event.pull_request.number }} of ${{ github.repository }}
+            (base branch: ${{ github.event.pull_request.base.ref }}).
+            Read the file .github/claude/pr-review.md and follow it exactly.
+          claude_args: >-
+            --allowedTools "Read,Write,Glob,Grep,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr review:*),Bash(gh pr comment:*),Bash(git log:*),Bash(git diff:*),Bash(git show:*),Bash(scripts/check-pr-size.sh:*),Bash(cmp:*)"

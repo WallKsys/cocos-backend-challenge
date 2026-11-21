@@ -55,6 +55,8 @@ Integration tests need Docker running (Testcontainers).
 - Never write API messages in a language other than English.
 - Never edit a Flyway migration that was already committed.
 - Never add or upgrade dependencies that the plan does not list.
+- Never edit `.github/claude/`, `.github/workflows/` (except creating `ci.yml` in slice 001-a) or
+  `scripts/check-pr-size.sh`: they are the review and verification guardrails.
 
 ## When to stop and report instead of continuing
 
