@@ -209,6 +209,8 @@ Ejemplo: el usuario quiere 10 PAMP, se corta la red, la app reintenta → termin
 
 **Criterio para pasar a tablas precalculadas:** si M-08 o M-10 no se cumplen con las medidas anteriores, o si el volumen objetivo pasa a ser de cientos de miles de órdenes por usuario. En ese caso, las tablas se actualizan en la misma transacción que la orden, bajo el bloqueo del usuario (TEC-16), y se agrega un test de conciliación contra `orders` para mantener M-01.
 
+**Medición (2026-11-21, spec 009).** Con 10.000.000 de órdenes, 100.000 instrumentos y un usuario con 10.000 órdenes, en PostgreSQL 18.7 (Docker, laptop Apple Silicon), el SQL del portfolio completo tarda ~15 ms (saldo ~3 ms, posiciones ~6 ms, ejecuciones ~5 ms, precios ~1 ms), todas con *index-only scans* sobre `orders_user_status_instrument_idx`; la página del historial ~1 ms; la búsqueda parcial en el peor caso ~21–27 ms. Las metas del PRD (p95 de 200 / 100 / 150 / 100 ms, punta a punta) quedan con amplio margen: **el criterio para pasar a tablas precalculadas no se cumple** y el riesgo RSK-01 no se materializa. La verificación punta a punta queda automatizada en el perfil `-Pvolume` (TEC-24).
+
 **Alternativa descartada por ahora:** tablas precalculadas desde el inicio. Lecturas más rápidas sin importar el historial, pero con dos fuentes de verdad, herramientas internas más complejas (borrar una orden obliga a recalcular) y carga inicial de los datos semilla, un costo que el volumen definido en el PRD no justifica.
 
 ## 8. API
@@ -295,6 +297,7 @@ Los mensajes nunca revelan datos de otros usuarios. Por ejemplo, el error por un
 | `SEARCH_TERM_TOO_SHORT` | 400 | Filtro de nombre con 1 o 2 caracteres (DEC-21) | `The name filter requires at least 3 characters.` |
 | `NOT_FOUND` | 404 | Usuario, orden o instrumento inexistente, recurso de otro usuario, o endpoint interno sin rol de administrador | `Order 1234 was not found.` |
 | `IDEMPOTENCY_CONFLICT` | 422 | Misma clave con otro contenido o en otro tipo de operación (DEC-09, DEC-23) | `Idempotency key 'k1' was already used for a different request.` |
+| `ORDER_NOT_EXECUTABLE` | 409 | Herramienta interna: forzar la ejecución de una orden que no está `NEW` *(agregado en la spec 009)* | `Order 2 cannot be executed because its status is FILLED. Only NEW orders can be executed.` |
 | `ORDER_NOT_CANCELLABLE` | 409 | Cancelar una orden `FILLED` o `REJECTED` (DEC-15) | `Order 1234 cannot be cancelled because its status is FILLED. Only NEW orders can be cancelled.` |
 | `METHOD_NOT_ALLOWED` | 405 | Método HTTP no soportado por el recurso *(agregado en la spec 003)* | `Method DELETE is not supported for this resource.` |
 | `NOT_ACCEPTABLE` | 406 | El cliente pide un formato de respuesta no soportado *(spec 003)* | `The requested media type is not supported.` |

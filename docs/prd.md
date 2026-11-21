@@ -172,7 +172,7 @@ centavos (CM-03) y cambios para escala (CM-04 a CM-08). Su forma técnica se def
 
 | ID | Riesgo | Mitigación |
 |---|---|---|
-| RSK-01 | Calcular portfolio y reservas desde `orders` no alcanza M-08 con 10.000 órdenes por usuario. | El RFC evalúa índices y, si hace falta, posiciones precalculadas; M-08 lo valida. |
+| RSK-01 | Calcular portfolio y reservas desde `orders` no alcanza M-08 con 10.000 órdenes por usuario. | El RFC evalúa índices y, si hace falta, posiciones precalculadas; M-08 lo valida. **Medido el 2026-11-21: el SQL del portfolio tarda ~15 ms con 10 M de órdenes; el riesgo no se materializa (RFC TEC-17).** |
 | RSK-02 | Reintentos simultáneos ejecutan una orden dos veces. | M-05 lo prueba explícitamente; el RFC define el mecanismo de exclusión. |
 | RSK-03 | Ausencia de autenticación interpretada como agujero de seguridad. | Aislamiento implementado y probado (RF-10), limitación documentada (SUP-01). |
 | RSK-04 | La inconsistencia de los datos semilla (BMA −10) confunde al evaluador. | Se marca en el portfolio y está documentada (DEC-11, revisable). |
@@ -196,5 +196,5 @@ centavos (CM-03) y cambios para escala (CM-04 a CM-08). Su forma técnica se def
 | ID | Pregunta | Dónde se resuelve |
 |---|---|---|
 | PA-01 | DEC-11 (tratamiento de la posición negativa de BMA) quedó revisable. | A pedido del usuario |
-| PA-02 | ¿Posiciones calculadas en cada consulta o precalculadas? | RFC (depende de RSK-01) |
-| PA-03 | Entorno local de referencia para medir M-08 a M-11. | RFC |
+| PA-02 | ¿Posiciones calculadas en cada consulta o precalculadas? | **Resuelta:** calculadas en cada consulta (RFC TEC-17, medición en la spec 009) |
+| PA-03 | Entorno local de referencia para medir M-08 a M-11. | **Resuelta:** laptop Apple Silicon + Docker Desktop + PostgreSQL 18.7 (spec 009 § Reference environment) |

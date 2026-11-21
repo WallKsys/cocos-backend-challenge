@@ -1,0 +1,1104 @@
+openapi: 3.1.0
+info:
+  title: Cocos Broker API
+  version: 0.9.0
+  description: |
+    Broker API: portfolio, instrument search and orders (Cocos backend challenge).
+
+    Conventions (RFC TEC-18 to TEC-20):
+    - The requesting user is identified by the `X-User-Id` header (no authentication in the challenge scope).
+    - Operations with effect require the `Idempotency-Key` header.
+    - Amounts, prices and percentages are strings with exactly 2 decimals; share quantities are integers.
+    - Timestamps are ISO 8601 in UTC (`2026-11-21T14:36:00Z`).
+    - Errors use RFC 9457 Problem Details with a stable `code`. All texts are in English.
+    - `/api/internal/**` endpoints are demo-only, disabled by default, and require `X-Role: ADMIN`.
+
+    This file is cumulative: each spec publishes the full contract as of that spec.
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /api/v1/cash/deposits:
+    post:
+      operationId: depositCash
+      summary: Deposit pesos into the requesting user's account
+      description: |
+        A deposit is always executed (`FILLED`).
+        Stored as a `CASH_IN` order on the ARS instrument with `price` 1 and `size` = amount (DEC-04).
+        Resending the same request with the same `Idempotency-Key` returns the original movement with **200** and
+        `Idempotent-Replayed: true`; the key is shared with orders and the other cash operation (DEC-23).
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashMovementRequest'
+      responses:
+        '201':
+          description: Movement processed.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashMovement'
+        '200':
+          description: Replay of an already processed request.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            Idempotent-Replayed:
+              $ref: '#/components/headers/IdempotentReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashMovement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/cash/withdrawals:
+    post:
+      operationId: withdrawCash
+      summary: Withdraw pesos from the requesting user's available cash
+      description: |
+        Validated against the **available** cash (reserved cash cannot be withdrawn). Above it, the withdrawal is stored as `REJECTED` with `INSUFFICIENT_FUNDS` and returned with 201.
+        Stored as a `CASH_OUT` order on the ARS instrument with `price` 1 and `size` = amount (DEC-04).
+        Resending the same request with the same `Idempotency-Key` returns the original movement with **200** and
+        `Idempotent-Replayed: true`; the key is shared with orders and the other cash operation (DEC-23).
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashMovementRequest'
+      responses:
+        '201':
+          description: Movement processed.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashMovement'
+        '200':
+          description: Replay of an already processed request.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            Idempotent-Replayed:
+              $ref: '#/components/headers/IdempotentReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashMovement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/portfolio:
+    get:
+      operationId: getPortfolio
+      summary: Portfolio of the requesting user
+      description: |
+        Always the portfolio of the `X-User-Id` user (no endpoint accepts another user's id, TEC-18).
+        - `totalValue` = total cash (reserved included) + market value of every priced position (DEC-01.1, DEC-10).
+        - Positions: instruments with quantity ≠ 0, ordered by ticker. Pending orders are not positions; their effect is in `cash.reserved` and `reservedQuantity`.
+        - `averageCost`: moving average of FILLED buys in execution order; a sale does not change it; it restarts when the quantity reaches 0 (DEC-02.1).
+        - `totalReturnPct` = (lastPrice − averageCost) / averageCost × 100; `dailyChangePct` = (close − previousClose) / previousClose × 100 (DEC-02).
+        - Positions without market data: price, value and returns are null and the total excludes them (warning). Negative quantities are shown and flagged (DEC-11).
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: The portfolio.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+              example:
+                totalValue: '889756.00'
+                cash: { total: '753000.00', reserved: '125500.00', available: '627500.00' }
+                positions:
+                  - { instrumentId: 31, ticker: BMA, name: Banco Macro S.A., quantity: -10, reservedQuantity: 0, lastPrice: '1502.80', marketValue: '-15028.00', averageCost: '1540.00', totalReturnPct: '-2.42', dailyChangePct: '-1.15', warnings: [ { code: NEGATIVE_POSITION, message: 'Inconsistent position: the quantity of BMA is negative (-10); the recorded orders sell more shares than were bought.' } ] }
+                  - { instrumentId: 54, ticker: METR, name: MetroGAS S.A., quantity: 500, reservedQuantity: 0, lastPrice: '229.50', marketValue: '114750.00', averageCost: '250.00', totalReturnPct: '-8.20', dailyChangePct: '-1.08', warnings: [] }
+                  - { instrumentId: 47, ticker: PAMP, name: Pampa Holding S.A., quantity: 40, reservedQuantity: 0, lastPrice: '925.85', marketValue: '37034.00', averageCost: '930.00', totalReturnPct: '-0.45', dailyChangePct: '0.44', warnings: [] }
+                warnings: []
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/users/{userId}/portfolio:
+    get:
+      operationId: getPortfolioAsAdministrator
+      summary: "[INTERNAL · demo only] Portfolio of any user"
+      description: |
+        Internal tool (not part of the challenge). Exists only when internal tools are enabled and requires `X-Role: ADMIN`;
+        otherwise it answers 404 exactly like a missing route. Same response as `GET /api/v1/portfolio`.
+      tags: [internal]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: integer, format: int32, minimum: 1 }
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: The portfolio of the user.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/orders:
+    get:
+      operationId: listOrders
+      summary: Order history of the requesting user (orders and cash movements), newest first
+      description: |
+        Ordered by execution time descending, then id descending. Cursor pagination (CM-08). Includes CASH_IN and
+        CASH_OUT movements, which are rows of the same ledger. Timestamps in UTC.
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: status
+          in: query
+          required: false
+          description: Only orders in this status.
+          schema:
+            $ref: '#/components/schemas/OrderStatus'
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque cursor from `nextCursor` of the previous page.
+          schema: { type: string }
+      responses:
+        '200':
+          description: A page of the history.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderHistoryPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      operationId: placeOrder
+      summary: Place a BUY or SELL order (MARKET or LIMIT, by quantity or by amount)
+      description: |
+        The order always belongs to the user of `X-User-Id`; the body cannot name a user (unknown fields are rejected, DEC-24).
+        - MARKET: executes immediately at the last close → `FILLED`. Must not carry `price`.
+        - LIMIT: requires `price` → `NEW`, reserving cash (BUY) or shares (SELL). Never executed immediately.
+        - Exactly one of `quantity` (whole shares) or `amount` (ARS). By amount, quantity = floor(amount / price),
+          where price is the last close (MARKET) or the limit price (LIMIT); only `quantity × price` is used.
+        - Valid requests the business cannot fulfil are stored as `REJECTED` and returned with **201** and a `rejection`.
+        - Invalid requests return 400/404 and store nothing.
+        - Resending the same request with the same `Idempotency-Key` returns the original order with **200** and
+          `Idempotent-Replayed: true`; the same key with a different request returns 422 `IDEMPOTENCY_CONFLICT`.
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceOrderRequest'
+            examples:
+              marketByQuantity:
+                value: { instrumentId: 47, side: BUY, type: MARKET, quantity: 10 }
+              marketByAmount:
+                value: { instrumentId: 47, side: BUY, type: MARKET, amount: '50000.00' }
+              limitByQuantity:
+                value: { instrumentId: 47, side: SELL, type: LIMIT, quantity: 30, price: '950.00' }
+      responses:
+        '201':
+          description: Order processed (FILLED, NEW or REJECTED).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+              examples:
+                filledByAmount:
+                  value:
+                    orderId: 12
+                    instrumentId: 47
+                    ticker: PAMP
+                    side: BUY
+                    type: MARKET
+                    status: FILLED
+                    quantity: 54
+                    price: '925.85'
+                    totalAmount: '49995.90'
+                    requestedAmount: '50000.00'
+                    remainingAmount: '4.10'
+                    createdAt: '2026-11-21T14:36:00Z'
+                    rejection: null
+                rejected:
+                  value:
+                    orderId: 13
+                    instrumentId: 47
+                    ticker: PAMP
+                    side: BUY
+                    type: MARKET
+                    status: REJECTED
+                    quantity: 1000
+                    price: '925.85'
+                    totalAmount: '925850.00'
+                    requestedAmount: null
+                    remainingAmount: null
+                    createdAt: '2026-11-21T14:37:00Z'
+                    rejection:
+                      code: INSUFFICIENT_FUNDS
+                      message: 'Insufficient available cash in account 10001: required ARS 925850.00, available ARS 627500.00.'
+        '200':
+          description: Replay of an already processed request (same key, same content).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            Idempotent-Replayed:
+              $ref: '#/components/headers/IdempotentReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/orders/{orderId}:
+    get:
+      operationId: getOrder
+      summary: One order (or cash movement) of the requesting user
+      description: An order of another user is answered exactly like a missing one (404, DEC-17).
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: The order.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderRecord'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/orders/{orderId}/cancel:
+    post:
+      operationId: cancelOrder
+      summary: Cancel a NEW order of the requesting user
+      description: |
+        A NEW order becomes CANCELLED and releases its reservation (DEC-01). Cancelling an already CANCELLED order
+        succeeds with `alreadyCancelled: true` and changes nothing (DEC-15). FILLED or REJECTED orders (including cash
+        movements) answer 409 `ORDER_NOT_CANCELLABLE`. Naturally idempotent: no `Idempotency-Key` is required.
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: The order is cancelled (now or before).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancellationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/users/{userId}/orders:
+    get:
+      operationId: listOrdersAsAdministrator
+      summary: "[INTERNAL · demo only] Order history of any user"
+      description: |
+        Internal tool (not part of the challenge). Exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise 404 like a missing route. Same response as `GET /api/v1/orders`.
+      tags: [internal]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: integer, format: int32, minimum: 1 }
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: status
+          in: query
+          required: false
+          description: Only orders in this status.
+          schema:
+            $ref: '#/components/schemas/OrderStatus'
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque cursor from `nextCursor` of the previous page.
+          schema: { type: string }
+      responses:
+        '200':
+          description: A page of the history.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderHistoryPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/orders/{orderId}:
+    delete:
+      operationId: deleteOrderAsAdministrator
+      summary: "[INTERNAL · demo only] Delete an order (I-01)"
+      description: |
+        Physically deletes the order of any user, including its idempotency key (DEC-16). The portfolio is recalculated from `orders`.
+        Internal tool (not part of the challenge): exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise it answers 404 exactly like a missing route. May break invariants on purpose (DEC-03).
+      tags: [internal]
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '204':
+          description: Deleted.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/orders/{orderId}/execute:
+    post:
+      operationId: executeOrderAsAdministrator
+      summary: "[INTERNAL · demo only] Force the execution of a NEW limit order (I-02)"
+      description: |
+        Simulates that the market took a pending LIMIT order: it becomes FILLED at its limit price and its reservation becomes a debit (BUY) or a credit (SELL). Locks the user row first and only changes an order that is still NEW (the same protocol that makes it safe against a concurrent cancellation, CU-04.08). No market data is needed.
+        Internal tool (not part of the challenge): exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise it answers 404 exactly like a missing route. May break invariants on purpose (DEC-03).
+      tags: [internal]
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: The executed order.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderRecord'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/instruments/{instrumentId}/market-data:
+    put:
+      operationId: setMarketDataAsAdministrator
+      summary: "[INTERNAL · demo only] Set the latest market data of an instrument (I-03)"
+      description: |
+        Updates the latest market data row of the instrument (or creates one dated today in UTC when it has none). `previousClose` is optional: when absent the stored value is kept.
+        Internal tool (not part of the challenge): exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise it answers 404 exactly like a missing route. May break invariants on purpose (DEC-03).
+      tags: [internal]
+      parameters:
+        - name: instrumentId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarketDataUpdate'
+      responses:
+        '200':
+          description: The stored market data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketDataView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/reset:
+    post:
+      operationId: restoreSeedDataAsAdministrator
+      summary: "[INTERNAL · demo only] Restore the seed data (I-04)"
+      description: |
+        Deletes every user, instrument, market data row and order, and loads again the data of the provided database.sql. Idempotency keys disappear with their orders.
+        Internal tool (not part of the challenge): exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise it answers 404 exactly like a missing route. May break invariants on purpose (DEC-03).
+      tags: [internal]
+      parameters:
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '204':
+          description: Restored.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/users:
+    post:
+      operationId: createUserAsAdministrator
+      summary: "[INTERNAL · demo only] Create a test user (I-05)"
+      description: |
+        Creates a user with the next free numeric account number.
+        Internal tool (not part of the challenge): exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise it answers 404 exactly like a missing route. May break invariants on purpose (DEC-03).
+      tags: [internal]
+      parameters:
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: The created user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/instruments:
+    get:
+      operationId: searchInstruments
+      summary: Search tradable instruments by ticker and/or name
+      description: |
+        Public market data: no `X-User-Id` required. Cash (ARS) is never returned (DEC-08).
+        - `q` matches ticker **or** name; `ticker` matches the ticker; `name` matches the name. All given criteria must match.
+        - Matching ignores case and accents. With 3 or more characters it is partial ("contains").
+          With 1 or 2 characters, `q` and `ticker` only match an exact ticker (DEC-21); `name` is rejected
+          with `SEARCH_TERM_TOO_SHORT`.
+        - Order: exact ticker match of `q`, then tickers starting with `q`, then other matches; alphabetical by
+          ticker within each group. Without `q`: alphabetical by ticker.
+        - No criteria: the whole market, paginated (DEC-19). No matches: empty list, not an error.
+      parameters:
+        - name: q
+          in: query
+          required: false
+          description: General term (ticker or name). Trimmed; blank means absent. Max 100 characters.
+          schema: { type: string, maxLength: 100 }
+          example: banco
+        - name: ticker
+          in: query
+          required: false
+          description: Ticker filter. Trimmed; blank means absent. Max 100 characters.
+          schema: { type: string, maxLength: 100 }
+        - name: name
+          in: query
+          required: false
+          description: Name filter. Trimmed; blank means absent. At least 3 characters, max 100.
+          schema: { type: string, maxLength: 100 }
+        - name: limit
+          in: query
+          required: false
+          description: Page size.
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque cursor from `nextCursor` of the previous page. Only valid with the same criteria.
+          schema: { type: string }
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: A page of instruments.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstrumentPage'
+              example:
+                items:
+                  - id: 47
+                    ticker: PAMP
+                    name: Pampa Holding S.A.
+                    type: ACCIONES
+                    lastPrice: '925.85'
+                    dailyChangePct: '0.44'
+                nextCursor: null
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  parameters:
+    UserIdHeader:
+      name: X-User-Id
+      in: header
+      required: true
+      description: Id of the requesting user. Positive integer.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+      example: 1
+    RoleHeader:
+      name: X-Role
+      in: header
+      required: true
+      description: Must be `ADMIN` for internal endpoints.
+      schema:
+        type: string
+        enum: [ADMIN]
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: |
+        Client-generated key, unique per user across all operations (DEC-23). 1 to 255 visible ASCII characters.
+        Resending the same request with the same key returns the original result.
+      schema:
+        type: string
+        pattern: '^[\x21-\x7E]{1,255}$'
+      example: 3f2b8c1e-9a4d-4f7e-b6a2-1c0d5e8f9a7b
+    RequestIdHeader:
+      name: X-Request-Id
+      in: header
+      required: false
+      description: Correlation id. Generated by the server when absent or invalid; always echoed in the response.
+      schema:
+        type: string
+        pattern: '^[A-Za-z0-9._-]{1,64}$'
+
+  headers:
+    RequestId:
+      description: Correlation id of the request.
+      schema:
+        type: string
+    IdempotentReplayed:
+      description: Present with value `true` when the response is the original result of an already processed request.
+      schema:
+        type: string
+        enum: ['true']
+
+  schemas:
+    Money:
+      type: string
+      description: Decimal amount in ARS with exactly 2 decimals.
+      pattern: '^-?\d{1,16}\.\d{2}$'
+      example: '925.85'
+    Percentage:
+      type: string
+      description: Percentage with exactly 2 decimals.
+      pattern: '^-?\d{1,16}\.\d{2}$'
+      example: '-0.45'
+    Timestamp:
+      type: string
+      format: date-time
+      description: UTC instant, ISO 8601 with `Z`.
+      example: '2026-11-21T14:36:00Z'
+    OrderSide:
+      type: string
+      enum: [BUY, SELL, CASH_IN, CASH_OUT]
+    OrderType:
+      type: string
+      enum: [MARKET, LIMIT]
+    OrderStatus:
+      type: string
+      enum: [NEW, FILLED, REJECTED, CANCELLED]
+    RejectionReason:
+      type: string
+      enum: [INSUFFICIENT_FUNDS, INSUFFICIENT_SHARES, AMOUNT_BELOW_PRICE, NO_MARKET_PRICE]
+    ErrorCode:
+      type: string
+      enum:
+        - VALIDATION_ERROR
+        - MISSING_IDEMPOTENCY_KEY
+        - SEARCH_TERM_TOO_SHORT
+        - NOT_FOUND
+        - METHOD_NOT_ALLOWED
+        - NOT_ACCEPTABLE
+        - ORDER_NOT_CANCELLABLE
+        - ORDER_NOT_EXECUTABLE
+        - UNSUPPORTED_MEDIA_TYPE
+        - IDEMPOTENCY_CONFLICT
+        - REQUEST_ERROR
+        - INTERNAL_ERROR
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          example: price
+        message:
+          type: string
+          example: is required for LIMIT orders
+    Problem:
+      type: object
+      description: RFC 9457 Problem Details. Media type `application/problem+json`.
+      required: [type, title, status, code, detail]
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.cocos.example/errors/validation-error
+        title:
+          type: string
+          example: Validation error
+        status:
+          type: integer
+          example: 400
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        detail:
+          type: string
+          example: "Request validation failed: 'price' is required for LIMIT orders."
+        instance:
+          type: string
+          example: /api/v1/orders
+        errors:
+          type: array
+          description: Present only for VALIDATION_ERROR caused by request fields.
+          items:
+            $ref: '#/components/schemas/FieldError'
+    MarketDataUpdate:
+      type: object
+      additionalProperties: false
+      required: [close]
+      properties:
+        close:
+          allOf: [ { $ref: '#/components/schemas/Money' } ]
+          description: New last price, greater than 0.
+        previousClose:
+          allOf: [ { $ref: '#/components/schemas/Money' } ]
+          description: Optional new previous close, greater than 0.
+    MarketDataView:
+      type: object
+      required: [instrumentId, ticker, date, close, previousClose]
+      properties:
+        instrumentId: { type: integer, format: int64 }
+        ticker: { type: string }
+        date: { type: string, format: date }
+        close:
+          $ref: '#/components/schemas/Money'
+        previousClose:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+    CreateUserRequest:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email: { type: string, format: email, maxLength: 255 }
+    UserView:
+      type: object
+      required: [userId, email, accountNumber]
+      properties:
+        userId: { type: integer, format: int32 }
+        email: { type: string }
+        accountNumber: { type: string }
+    OrderRecord:
+      type: object
+      description: An order or cash movement as stored in the ledger.
+      required: [orderId, instrumentId, ticker, side, type, status, quantity, price, amount, requestedAmount, createdAt, rejection]
+      properties:
+        orderId: { type: integer, format: int64 }
+        instrumentId: { type: integer, format: int64 }
+        ticker: { type: string }
+        side:
+          $ref: '#/components/schemas/OrderSide'
+        type:
+          $ref: '#/components/schemas/OrderType'
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        quantity:
+          type: [integer, 'null']
+          description: Whole shares for BUY/SELL; null for CASH_IN/CASH_OUT.
+        price:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        amount:
+          description: quantity × price for BUY/SELL (null without price); the moved amount for CASH_IN/CASH_OUT.
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        requestedAmount:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        rejection:
+          description: Null when not REJECTED, and for seed REJECTED orders (no reason recorded before CM-01).
+          oneOf: [ { $ref: '#/components/schemas/Rejection' }, { type: 'null' } ]
+    OrderHistoryPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderRecord' }
+        nextCursor:
+          type: [string, 'null']
+    CancellationResult:
+      allOf:
+        - $ref: '#/components/schemas/OrderRecord'
+        - type: object
+          required: [alreadyCancelled]
+          properties:
+            alreadyCancelled:
+              type: boolean
+              description: True when the order was already CANCELLED before this request (DEC-15).
+    CashMovementRequest:
+      type: object
+      additionalProperties: false
+      required: [amount]
+      properties:
+        amount:
+          allOf:
+            - $ref: '#/components/schemas/Money'
+          description: Amount in ARS, greater than 0, at most 2 decimals.
+          example: '100000.00'
+    CashMovement:
+      type: object
+      required: [movementId, type, status, amount, createdAt, rejection]
+      properties:
+        movementId:
+          type: integer
+          format: int64
+          description: Id of the stored order row.
+        type:
+          type: string
+          enum: [CASH_IN, CASH_OUT]
+        status:
+          type: string
+          enum: [FILLED, REJECTED]
+        amount:
+          $ref: '#/components/schemas/Money'
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        rejection:
+          oneOf:
+            - $ref: '#/components/schemas/Rejection'
+            - type: 'null'
+    Warning:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [NEGATIVE_POSITION, MISSING_MARKET_DATA, TOTAL_EXCLUDES_UNPRICED, NEGATIVE_CASH]
+        message:
+          type: string
+    CashSummary:
+      type: object
+      required: [total, reserved, available]
+      properties:
+        total:
+          $ref: '#/components/schemas/Money'
+        reserved:
+          $ref: '#/components/schemas/Money'
+        available:
+          $ref: '#/components/schemas/Money'
+    Position:
+      type: object
+      required: [instrumentId, ticker, name, quantity, reservedQuantity, lastPrice, marketValue, averageCost, totalReturnPct, dailyChangePct, warnings]
+      properties:
+        instrumentId: { type: integer, format: int64 }
+        ticker: { type: string }
+        name: { type: string }
+        quantity: { type: integer, description: 'Whole shares; negative only with inconsistent data (DEC-11).' }
+        reservedQuantity: { type: integer, description: 'Shares reserved by NEW SELL orders.' }
+        lastPrice:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        marketValue:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        averageCost:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        totalReturnPct:
+          oneOf: [ { $ref: '#/components/schemas/Percentage' }, { type: 'null' } ]
+        dailyChangePct:
+          oneOf: [ { $ref: '#/components/schemas/Percentage' }, { type: 'null' } ]
+        warnings:
+          type: array
+          items: { $ref: '#/components/schemas/Warning' }
+    Portfolio:
+      type: object
+      required: [totalValue, cash, positions, warnings]
+      properties:
+        totalValue:
+          $ref: '#/components/schemas/Money'
+        cash:
+          $ref: '#/components/schemas/CashSummary'
+        positions:
+          type: array
+          items: { $ref: '#/components/schemas/Position' }
+        warnings:
+          type: array
+          items: { $ref: '#/components/schemas/Warning' }
+    PlaceOrderRequest:
+      type: object
+      additionalProperties: false
+      required: [instrumentId, side, type]
+      properties:
+        instrumentId:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 47
+        side:
+          type: string
+          enum: [BUY, SELL]
+        type:
+          $ref: '#/components/schemas/OrderType'
+        quantity:
+          type: integer
+          minimum: 1
+          description: Whole shares. Exactly one of `quantity` or `amount`.
+        amount:
+          allOf:
+            - $ref: '#/components/schemas/Money'
+          description: Amount in ARS (> 0). Exactly one of `quantity` or `amount`.
+        price:
+          allOf:
+            - $ref: '#/components/schemas/Money'
+          description: Limit price (> 0). Required for LIMIT, forbidden for MARKET.
+    Rejection:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          $ref: '#/components/schemas/RejectionReason'
+        message:
+          type: string
+    Order:
+      type: object
+      required: [orderId, instrumentId, ticker, side, type, status, quantity, price, totalAmount, requestedAmount, remainingAmount, createdAt, rejection]
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        instrumentId:
+          type: integer
+          format: int64
+        ticker:
+          type: string
+        side:
+          $ref: '#/components/schemas/OrderSide'
+        type:
+          $ref: '#/components/schemas/OrderType'
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        quantity:
+          type: integer
+          description: Whole shares (0 when an amount was not enough for one share).
+        price:
+          description: Execution price (MARKET) or limit price (LIMIT). Null only for NO_MARKET_PRICE rejections.
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+        totalAmount:
+          description: quantity × price. Null when price is null.
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+        requestedAmount:
+          description: Amount sent by the client (orders by amount only).
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+        remainingAmount:
+          description: requestedAmount − totalAmount; never debited, reserved or credited. Null for orders by quantity or without price.
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        rejection:
+          oneOf:
+            - $ref: '#/components/schemas/Rejection'
+            - type: 'null'
+    InstrumentType:
+      type: string
+      enum: [ACCIONES, MONEDA]
+    InstrumentSummary:
+      type: object
+      required: [id, ticker, name, type, lastPrice, dailyChangePct]
+      properties:
+        id:
+          type: integer
+          example: 47
+        ticker:
+          type: string
+          example: PAMP
+        name:
+          type: string
+          example: Pampa Holding S.A.
+        type:
+          $ref: '#/components/schemas/InstrumentType'
+        lastPrice:
+          description: Latest close. Null when the instrument has no market data.
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+        dailyChangePct:
+          description: (close - previousClose) / previousClose x 100, 2 decimals HALF_UP. Null without market data or previous close.
+          oneOf:
+            - $ref: '#/components/schemas/Percentage'
+            - type: 'null'
+    InstrumentPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstrumentSummary'
+        nextCursor:
+          type: [string, 'null']
+          description: Cursor of the next page; null on the last page.
+    CursorPage:
+      type: object
+      description: Base shape of cursor-paginated responses (items are defined by each endpoint).
+      required: [items]
+      properties:
+        nextCursor:
+          type: [string, 'null']
+          description: Opaque cursor for the next page; null on the last page.
+
+  responses:
+    BadRequest:
+      description: Invalid request (VALIDATION_ERROR, MISSING_IDEMPOTENCY_KEY, SEARCH_TERM_TOO_SHORT). Nothing was stored.
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Resource not found, or it belongs to another user (indistinguishable on purpose).
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Conflict:
+      description: The resource state does not allow the operation (ORDER_NOT_CANCELLABLE, ORDER_NOT_EXECUTABLE).
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    UnprocessableEntity:
+      description: The idempotency key was already used for a different request (IDEMPOTENCY_CONFLICT).
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    InternalError:
+      description: Unexpected error (INTERNAL_ERROR). No internal detail is exposed.
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
