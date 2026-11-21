@@ -53,7 +53,7 @@
 - [x] T014 [P] Create `http/000-health.http` from plan.md § HTTP examples.
 - [x] T015 Run `docker compose up --build`, call the health endpoint, paste the result in the PR description,
   then `docker compose down`.
-- [ ] T015b Create `.github/workflows/ci.yml` **verbatim** from plan.md § Continuous integration. Open the PR and
+- [x] T015b Create `.github/workflows/ci.yml` **verbatim** from plan.md § Continuous integration. Open the PR and
   confirm that the `verify` check runs and is green on GitHub (link it in the PR description).
 
 **Checkpoint 001-a**: `./mvnw verify` green locally **and** the `verify` check green on the PR;
