@@ -70,7 +70,7 @@ Salvo que el escenario diga otra cosa, se parte de los **datos semilla** y del *
 | CU-02.02 | — | Se busca "rio" | Devuelve, entre otros, MOLI ("Molinos **Río** de la Plata"): no distingue acentos. También BHIP, RICH y OEST, cuyos nombres contienen "rio". |
 | CU-02.03 | — | Se busca "BANCO" o "banco" | Mismo resultado (no distingue mayúsculas): BPAT, BBAR, BHIP, BMA. |
 | CU-02.04 | — | Se busca "pamp" | PAMP primero (ticker exacto). |
-| CU-02.05 | — | Se busca "ban" | Primero los tickers que empiezan con "BAN" (ninguno), luego el resto de coincidencias (BBAR, BHIP, BMA, BPAT por nombre), alfabético dentro de cada grupo. |
+| CU-02.05 | — | Se busca "ban" | Primero los tickers que empiezan con "BAN" (ninguno), luego el resto de coincidencias, alfabético: BBAR, BHIP, BMA, BPAT (por nombre) y GBAN (ticker y nombre "Gas Natural **Ban** S.A."). *(Corregido al escribir la spec 004: la versión anterior omitía GBAN.)* |
 | CU-02.05b | — | Se busca "b" o "ba" (1 o 2 caracteres) | Lista vacía: ningún ticker es exactamente "B" o "BA". **No** devuelve todo lo que contenga esas letras (DEC-21). |
 | CU-02.05c | Existe un instrumento con ticker TS | Se busca "ts" | Devuelve TS (ticker exacto); no devuelve otros que contengan "ts". |
 | CU-02.06 | — | Se busca con filtro de ticker "bma" y filtro de nombre "banco" | Solo los que cumplen ambos: BMA. |

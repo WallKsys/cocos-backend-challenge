@@ -63,7 +63,9 @@ catching and swallowing exceptions in tests, editing `.feature` files.
 ### IV. Every scenario is verified, and traceability is enforced by the build
 
 - Every scenario `CU-xx.yy` in `docs/casos-de-uso.md` has **exactly one** Gherkin scenario tagged with its ID
-  (`@CU-03.04`) in `src/test/resources/features/` (TEC-06).
+  (`@CU-03.04`) in `src/test/resources/features/` (TEC-06). Feature files are written in `specs/NNN-*/features/`
+  and copied byte-identical into `src/test/resources/features/` when their spec is implemented;
+  `FeaturesMatchSpecsTest` fails the build if a copy differs (spec 004).
 - Every Gherkin scenario has **at least one** JUnit test tagged with the same ID
   (`@Tag("CU-03.04")`) that verifies the underlying rule:
   - a **unit test** (`@Tag("unit")`, no Spring context, no database) when the rule is domain logic;
@@ -250,4 +252,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.3.0 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog)
+**Version**: 1.3.1 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs)
