@@ -144,6 +144,8 @@ test, so no scenario can be forgotten (TEC-06, TEC-07).
 - **FR-007**: The traceability check MUST implement every rule in `plan.md` § Traceability and report all
   violations in a single failure message.
 - **FR-008**: `src/Main.java` (IntelliJ sample) MUST be deleted.
+- **FR-009**: A GitHub Actions workflow MUST run `./mvnw verify` on every pull request and push to `main`
+  (plan.md § Continuous integration); its `verify` check becomes required for merging into `main`.
 
 ### Key Entities
 

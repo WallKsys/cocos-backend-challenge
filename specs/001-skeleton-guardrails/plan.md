@@ -67,6 +67,7 @@ specs/001-skeleton-guardrails/
 ├── Dockerfile                                  # VERBATIM, § Docker
 ├── .dockerignore                               # VERBATIM, § Docker
 ├── compose.yaml                                # VERBATIM, § Docker
+├── .github/workflows/ci.yml                    # VERBATIM, § Continuous integration
 ├── http/000-health.http                        # § HTTP examples
 ├── src/main/java/com/cocos/challenge/
 │   └── CocosBrokerApiApplication.java
@@ -743,6 +744,45 @@ class ArchitectureTest {
 
 Each violation message names the ID (or file and scenario) and the rule, for example
 `CU-02.01: in scope but no JUnit test is tagged "CU-02.01" (rule 8)`.
+
+## Continuous integration
+
+`.github/workflows/ci.yml` — write exactly. It runs the full build (`./mvnw verify`: unit, integration with
+Testcontainers, BDD, ArchUnit, traceability) on every pull request and on every push to `main`. GitHub-hosted Ubuntu
+runners include Docker, so Testcontainers works without extra setup. The volume profile never runs here.
+
+```yaml
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Build and test (unit, integration, BDD, ArchUnit, traceability)
+        run: ./mvnw -B verify
+```
+
+The job is named `verify`; that is the name of the status check. After slice 001-a is merged, the repository owner
+adds `verify` to the required status checks of `main` (next to `pr-size`), so that no PR with failing tests can be
+merged. It cannot be required earlier: until the workflow exists, the check would never report and every PR would be
+blocked.
 
 ## HTTP examples
 
