@@ -19,6 +19,7 @@ final class ProblemResponses {
         EntityExchangeResult<Problem> result = response.returnResult(Problem.class);
         assertThat(result.getStatus().value()).isEqualTo(status);
         assertThat(result.getResponseHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(result.getResponseHeaders().getFirst("X-Request-Id")).isNotBlank();
         Problem problem = result.getResponseBody();
         assertThat(problem).isNotNull();
         assertThat(problem.status()).isEqualTo(status);

@@ -83,14 +83,14 @@ is merged; it is the source for both halves.
 
 **Before starting**: 003-c1 is merged.
 
-- [ ] T013a Extend `ProbeControllers` with `/idempotent`, `/replayed` and `/log`.
-- [ ] T013b [P] Write `IdempotencyKeyIT` (US4) and `RequestIdIT` (US6), reusing `ProblemResponses` from 003-c1
+- [x] T013a Extend `ProbeControllers` with `/idempotent`, `/replayed` and `/log`.
+- [x] T013b [P] Write `IdempotencyKeyIT` (US4) and `RequestIdIT` (US6), reusing `ProblemResponses` from 003-c1
   and restoring its `X-Request-Id` header assertion (US6 coverage: the assertion was intentionally left out
   of the helper in 003-c1, where `RequestIdFilter` does not exist yet).
-- [ ] T013c Create skeletons of `IdempotencyKeyHeader`, `IdempotencyKeyArgumentResolver`, `IdempotentResponses`,
+- [x] T013c Create skeletons of `IdempotencyKeyHeader`, `IdempotencyKeyArgumentResolver`, `IdempotentResponses`,
   `RequestIdFilter` and `ClockConfiguration`, and register the idempotency key resolver in `WebConfiguration`.
   Run `./mvnw verify`: **the new tests fail**. Record it.
-- [ ] T013d Implement until green.
+- [x] T013d Implement until green.
 
 **Checkpoint**: open PR `003-c2`.
 
