@@ -7,6 +7,12 @@ spring:
     password: ${DB_PASSWORD:cocos}
   flyway:
     locations: classpath:db/migration
+  web:
+    locale: en
+    locale-resolver: fixed
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true      # DEC-24 (verified on Boot 4.1.3)
 
 server:
   port: 8080

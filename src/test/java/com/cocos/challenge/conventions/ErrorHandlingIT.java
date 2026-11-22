@@ -4,6 +4,7 @@ import com.cocos.challenge.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.EntityExchangeResult;
 import org.springframework.test.web.servlet.client.RestTestClient;
@@ -96,11 +97,67 @@ class ErrorHandlingIT {
         assertThat(body).doesNotContain("secret internal detail");
     }
 
+    @Test
+    void invalidBodyListsEachFieldErrorInEnglish() {
+        assertProblemWithErrors(post("{\"amount\":null,\"quantity\":0}"), 400, "VALIDATION_ERROR",
+                "Validation error", "validation-error",
+                "Request validation failed: 'amount' must not be null; 'quantity' must be greater than 0.",
+                "/test/conventions/validate",
+                List.of(new FieldError("amount", "must not be null"),
+                        new FieldError("quantity", "must be greater than 0")));
+    }
+
+    @Test
+    void malformedJsonBodyHasAStableProblem() {
+        assertProblem(post("{\"amount\": \"1.00\","), 400, "VALIDATION_ERROR", "Validation error",
+                "validation-error", "Malformed JSON request body.", "/test/conventions/validate");
+    }
+
+    @Test
+    void validationMessagesStayEnglishWithSpanishAcceptLanguage() {
+        assertProblemWithErrors(restTestClient.post().uri("/test/conventions/validate")
+                        .contentType(MediaType.APPLICATION_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "es")
+                        .body("{\"amount\":null,\"quantity\":0}").exchange(), 400, "VALIDATION_ERROR",
+                "Validation error", "validation-error",
+                "Request validation failed: 'amount' must not be null; 'quantity' must be greater than 0.",
+                "/test/conventions/validate",
+                List.of(new FieldError("amount", "must not be null"),
+                        new FieldError("quantity", "must be greater than 0")));
+    }
+
+    @Test
+    void unknownBodyFieldIsRejected() {
+        assertProblemWithErrors(post("{\"amount\":\"1.00\",\"quantity\":1,\"userId\":1}"), 400,
+                "VALIDATION_ERROR", "Validation error", "validation-error",
+                "Request validation failed: 'userId' is not a recognized field.",
+                "/test/conventions/validate",
+                List.of(new FieldError("userId", "is not a recognized field")));
+    }
+
     private RestTestClient.ResponseSpec get(String path) {
         return restTestClient.get().uri(path).exchange();
     }
 
-    private void assertProblem(RestTestClient.ResponseSpec response, int status, String code, String title,
+    private RestTestClient.ResponseSpec post(String body) {
+        return restTestClient.post().uri("/test/conventions/validate")
+                .contentType(MediaType.APPLICATION_JSON).body(body).exchange();
+    }
+
+    private Problem assertProblemWithErrors(RestTestClient.ResponseSpec response, int status, String code,
+            String title, String slug, String detail, String instance, List<FieldError> errors) {
+        Problem problem = assertProblemFields(response, status, code, title, slug, detail, instance);
+        assertThat(problem.errors()).containsExactlyElementsOf(errors);
+        return problem;
+    }
+
+    private Problem assertProblem(RestTestClient.ResponseSpec response, int status, String code, String title,
+            String slug, String detail, String instance) {
+        Problem problem = assertProblemFields(response, status, code, title, slug, detail, instance);
+        assertThat(problem.errors()).isNull();
+        return problem;
+    }
+
+    private Problem assertProblemFields(RestTestClient.ResponseSpec response, int status, String code, String title,
             String slug, String detail, String instance) {
         EntityExchangeResult<Problem> result = response.returnResult(Problem.class);
         assertThat(result.getStatus().value()).isEqualTo(status);
@@ -113,7 +170,7 @@ class ErrorHandlingIT {
         assertThat(problem.code()).isEqualTo(code);
         assertThat(problem.detail()).isEqualTo(detail);
         assertThat(problem.instance()).isEqualTo(instance);
-        assertThat(problem.errors()).isNull();
+        return problem;
     }
 
     private record Problem(String type, String title, int status, String code, String detail, String instance,

@@ -30,16 +30,16 @@
 exceptions) and 003-b2 (validation errors, Jackson coercion, locale). Tests always ship in the same PR as the code
 they verify.
 
-- [ ] T004 Create `src/test/java/com/cocos/challenge/conventions/ProbeControllers.java` with the endpoints needed
+- [x] T004 Create `src/test/java/com/cocos/challenge/conventions/ProbeControllers.java` with the endpoints needed
   by this slice (`/validate`, `/throw/{kind}`) — plan.md § Probe endpoints.
-- [ ] T005 Write `ErrorHandlingIT` covering spec US1 scenarios 1–11 (status, `application/problem+json`, every
+- [x] T005 Write `ErrorHandlingIT` covering spec US1 scenarios 1–11 (status, `application/problem+json`, every
   field of the Problem, exact `detail` texts, `errors` list, no internal message on 500, English with
   `Accept-Language: es`).
-- [ ] T006 Create skeletons of `ApiErrorCode`, `ApiException`, `ApiExceptionHandler`, `JacksonConfiguration`.
+- [x] T006 Create skeletons of `ApiErrorCode`, `ApiException`, `ApiExceptionHandler`, `JacksonConfiguration`.
   Run `./mvnw verify`: **ErrorHandlingIT fails**. Record it.
-- [ ] T007 Implement plan.md § Error catalog, § Exception mapping, § Validation and § Jackson. Add the locale
+- [x] T007 Implement plan.md § Error catalog, § Exception mapping, § Validation and § Jackson. Add the locale
   configuration of plan.md § Configuration.
-- [ ] T008 Run `./mvnw verify` until green.
+- [x] T008 Run `./mvnw verify` until green.
 
 **Checkpoint**: open PR `003-b`.
 
