@@ -29,8 +29,8 @@ public class ProbeControllers {
     static class ConventionsProbeController {
 
         @PostMapping("/validate")
-        void validate(@Valid @RequestBody ValidationRequest request) {
-            // The error tests only need the validation and content-negotiation behavior of this endpoint.
+        ValidationRequest validate(@Valid @RequestBody ValidationRequest request) {
+            return request;
         }
 
         @GetMapping("/throw/{kind}")

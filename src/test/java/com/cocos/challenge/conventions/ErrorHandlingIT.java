@@ -66,16 +66,19 @@ class ErrorHandlingIT {
     @Test
     void unsupportedContentTypeHasAStableProblem() {
         assertProblem(restTestClient.post().uri("/test/conventions/validate")
-                        .contentType(MediaType.TEXT_PLAIN).body("not JSON").exchange(), 415,
+                        .contentType(MediaType.parseMediaType("application/octet-stream;charset=UTF-8"))
+                        .body("not JSON").exchange(), 415,
                 "UNSUPPORTED_MEDIA_TYPE", "Unsupported media type", "unsupported-media-type",
-                "Content type 'text/plain' is not supported.", "/test/conventions/validate");
+                "Content type 'application/octet-stream;charset=UTF-8' is not supported.", "/test/conventions/validate");
     }
 
     @Test
     void unacceptableAcceptHeaderHasAStableProblem() {
-        assertProblem(restTestClient.get().uri("/test/conventions/throw/not-found")
-                        .accept(MediaType.APPLICATION_XML).exchange(), 406, "NOT_ACCEPTABLE", "Not acceptable",
-                "not-acceptable", "The requested media type is not supported.", "/test/conventions/throw/not-found");
+        assertProblem(restTestClient.post().uri("/test/conventions/validate")
+                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_XML)
+                        .body("{\"amount\":\"1.00\",\"quantity\":1}").exchange(), 406,
+                "NOT_ACCEPTABLE", "Not acceptable", "not-acceptable",
+                "The requested media type is not supported.", "/test/conventions/validate");
     }
 
     @Test
