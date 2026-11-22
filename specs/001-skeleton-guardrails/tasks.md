@@ -96,14 +96,14 @@
 **Goal**: Cucumber scenarios run against the application on a random port with a real PostgreSQL.
 **Estimated size**: ~90 counted lines (the feature file is excluded).
 
-- [ ] T019 Create `src/test/resources/junit-platform.properties` **verbatim** from plan.md § Cucumber.
-- [ ] T020 Create `src/test/java/com/cocos/challenge/bdd/CucumberIT.java` and
+- [x] T019 Create `src/test/resources/junit-platform.properties` **verbatim** from plan.md § Cucumber.
+- [x] T020 Create `src/test/java/com/cocos/challenge/bdd/CucumberIT.java` and
   `bdd/CucumberSpringConfiguration.java` (plan.md § Cucumber).
-- [ ] T021 Run `./mvnw verify`. **Expected: the smoke scenario fails as undefined** (no step definitions).
+- [x] T021 Run `./mvnw verify`. **Expected: the smoke scenario fails as undefined** (no step definitions).
   Record it (Constitution III step 3).
-- [ ] T022 Create `src/test/java/com/cocos/challenge/bdd/steps/HealthSteps.java` with the three steps of
+- [x] T022 Create `src/test/java/com/cocos/challenge/bdd/steps/HealthSteps.java` with the three steps of
   `src/test/resources/features/000-smoke.feature` (already written; do not edit it), using `RestTestClient`.
-- [ ] T023 Run `./mvnw verify` until green. Confirm the Cucumber summary shows `1 Scenarios (1 passed)` and
+- [x] T023 Run `./mvnw verify` until green. Confirm the Cucumber summary shows `1 Scenarios (1 passed)` and
   that the scenario ran **once** (not twice).
 
 **Checkpoint 001-c**: open PR `001-c`.
