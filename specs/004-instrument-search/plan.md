@@ -152,7 +152,9 @@ In a Java text block, the `ESCAPE '\'` must be written as `ESCAPE '\\'`.
 `SearchInstrumentsQuery`, and maps to `InstrumentPageResponse(List<InstrumentResponse> items, String nextCursor)`
 with `InstrumentResponse(long id, String ticker, String name, String type, String lastPrice, String dailyChangePct)`
 (money and percentage via `ApiDecimals.format`; `null` when absent). A non-integer `limit` produces Spring's
-`MethodArgumentTypeMismatchException` → `VALIDATION_ERROR` (spec 003). No `@RequesterId`.
+`MethodArgumentTypeMismatchException` → `VALIDATION_ERROR` (spec 003) with detail
+`Request validation failed: 'limit' has an invalid type or format.` (DEC-25); `InstrumentSearchControllerIT` asserts
+this exact detail for `limit=abc`. No `@RequesterId`.
 
 ## Errors
 
