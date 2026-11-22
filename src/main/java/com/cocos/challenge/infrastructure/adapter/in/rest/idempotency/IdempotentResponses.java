@@ -9,10 +9,10 @@ public final class IdempotentResponses {
     }
 
     public static <T> ResponseEntity<T> created(T body) {
-        throw new UnsupportedOperationException();
+        return ResponseEntity.status(201).body(body);
     }
 
     public static <T> ResponseEntity<T> replayed(T body) {
-        throw new UnsupportedOperationException();
+        return ResponseEntity.ok().header("Idempotent-Replayed", "true").body(body);
     }
 }
