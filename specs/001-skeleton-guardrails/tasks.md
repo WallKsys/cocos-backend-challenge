@@ -133,7 +133,7 @@
 ### Implementation
 
 - [x] T027 Implement `TraceabilityChecker` following plan.md § Parsing rules and § Violations to report.
-- [ ] T028 Create `traceability/TraceabilityTest.java` (`@Tag("unit")`) reading the real files and test classes
+- [x] T028 Create `traceability/TraceabilityTest.java` (`@Tag("unit")`) reading the real files and test classes
   as described in plan.md § Traceability → Files. It must report **all** violations in one assertion message.
 - [ ] T029 Run `./mvnw verify` until green.
 - [ ] T030 Prove it works on the real files: temporarily add `CU-02` to `scope.txt`, run
