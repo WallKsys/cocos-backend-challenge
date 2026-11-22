@@ -44,13 +44,19 @@ instructions are this file and the workflow prompt.
 | 12 | PR size ≤ 400 counted lines, or a convincing `## Size justification` | `scripts/check-pr-size.sh origin/<base>` |
 | 13 | CI: the `verify` check is green (once the CI workflow exists in the repository) | `gh pr checks <n>` |
 | 14 | PR template fully filled with real outputs, not summaries | PR description |
+| 15 | Commit order follows test-first: the commit that adds or changes a test comes **before** the commit that adds the implementation it verifies (skeleton-only commits may come between) | `gh pr view <n> --json commits`, then `git show --stat <sha>` for each commit |
+| 16 | Claims in the description match the evidence: every statement such as "CI green", "`verify` passed", "N scenarios passed" or "PR size N" agrees with the real check results, and a claim about CI was not written before that check had finished | `gh pr checks <n> --json name,state,startedAt,completedAt` compared with the commit dates (`gh pr view <n> --json commits`) and with `scripts/check-pr-size.sh` |
 
 ## 4. Publish exactly one review
 
 Decide the verdict:
 
 - **REQUEST CHANGES** if any blocking finding exists: a failed check from the table above that breaks the
-  constitution, the plan or a test rule, a failing or missing `verify` check (when CI exists), or missing tasks.
+  constitution, the plan or a test rule, a failing or missing `verify` check (when CI exists), missing tasks, an
+  implementation committed before the tests that verify it (check 15), or a claim in the description that the
+  evidence contradicts (check 16).
+- A check that is still **pending** when you review is not a contradiction by itself: say so under
+  "Observaciones no bloqueantes" and do not count it as green.
 - **APPROVE** only if there is no blocking finding.
 
 Write the review body in **Spanish** (the owner reads it), with this structure:
