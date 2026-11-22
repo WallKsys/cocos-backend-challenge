@@ -68,7 +68,7 @@ is merged; it is the source for both halves.
 - [x] T010 [P] Write `IdentityAndAdminIT` (US2, US3 scenarios 2–3) and `InternalToolsDisabledIT` (US3 scenario 1),
   with the shared helper `ProblemResponses`.
 - [x] T011 [P] Write `InternalToolsArchitectureTest` (plan.md § Identity and admin).
-- [x] T012 Create skeletons of `RequesterId`, `RequesterIdArgumentResolver`, `AdminRoleInterceptor` and
+- [x] T012 Create skeletons of `RequesterId`, `RequesterIdArgumentResolver`, `AdminRoleFilter` and
   `WebConfiguration` (registering only what this slice needs). Run `./mvnw verify`: **the new tests fail**.
   Record it.
 - [x] T013 Implement until green.

@@ -28,7 +28,7 @@ public class RequesterIdArgumentResolver implements HandlerMethodArgumentResolve
         if (value.isBlank()) {
             throw new ApiException(ApiErrorCode.VALIDATION_ERROR, "The 'X-User-Id' header is required.");
         }
-        if (!value.matches("\\d+")) {
+        if (!value.matches("\\d+") || value.length() > 10) {
             throw new ApiException(ApiErrorCode.VALIDATION_ERROR,
                     "The 'X-User-Id' header must be a positive integer.");
         }
