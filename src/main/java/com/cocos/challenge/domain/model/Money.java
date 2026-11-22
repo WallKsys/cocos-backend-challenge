@@ -1,45 +1,47 @@
 package com.cocos.challenge.domain.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Objects;
 
 public record Money(BigDecimal amount) implements Comparable<Money> {
 
-    public static final Money ZERO = null;
+    public static final Money ZERO = new Money(BigDecimal.ZERO);
 
     public Money {
-        throw new UnsupportedOperationException();
+        amount = Objects.requireNonNull(amount, "amount").setScale(2, RoundingMode.HALF_UP);
     }
 
     public static Money of(String amount) {
-        throw new UnsupportedOperationException();
+        return new Money(new BigDecimal(amount));
     }
 
     public static Money of(BigDecimal amount) {
-        throw new UnsupportedOperationException();
+        return new Money(amount);
     }
 
     public Money plus(Money other) {
-        throw new UnsupportedOperationException();
+        return new Money(amount.add(other.amount));
     }
 
     public Money minus(Money other) {
-        throw new UnsupportedOperationException();
+        return new Money(amount.subtract(other.amount));
     }
 
     public Money times(BigDecimal factor) {
-        throw new UnsupportedOperationException();
+        return new Money(amount.multiply(factor));
     }
 
     public boolean isNegative() {
-        throw new UnsupportedOperationException();
+        return amount.signum() < 0;
     }
 
     public boolean isGreaterThan(Money other) {
-        throw new UnsupportedOperationException();
+        return compareTo(other) > 0;
     }
 
     @Override
     public int compareTo(Money other) {
-        throw new UnsupportedOperationException();
+        return amount.compareTo(other.amount);
     }
 }

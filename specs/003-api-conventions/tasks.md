@@ -13,12 +13,12 @@
 
 **Estimated size**: ~300 lines.
 
-- [ ] T001 [P] Write unit tests `UserIdTest`, `MoneyTest`, `RequestFingerprintTest` (plan.md § Domain building
+- [x] T001 [P] Write unit tests `UserIdTest`, `MoneyTest`, `RequestFingerprintTest` (plan.md § Domain building
   blocks), including the SHA-256 test vector and the `Money` normalization/rounding cases (`"925.855"` → `925.86`,
   `"925.8"` equals `"925.80"`, `times` rounding HALF_UP).
-- [ ] T002 Create skeletons of `UserId`, `Money`, `RequestFingerprint`, the four enums and the five domain
+- [x] T002 Create skeletons of `UserId`, `Money`, `RequestFingerprint`, the four enums and the five domain
   exceptions (plan.md § Domain exceptions). Run `./mvnw test -Dgroups=unit`: **tests fail**. Record it.
-- [ ] T003 Implement until green. Run `./mvnw verify` (ArchUnit must still pass: domain is pure Java).
+- [x] T003 Implement until green. Run `./mvnw verify` (ArchUnit must still pass: domain is pure Java).
 
 **Checkpoint**: open PR `003-a`.
 
