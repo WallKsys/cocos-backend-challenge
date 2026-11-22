@@ -118,8 +118,8 @@
 
 ### Tests first
 
-- [ ] T024 Create `src/test/resources/traceability/scope.txt` **verbatim** from plan.md § Traceability.
-- [ ] T025 Create `src/test/java/com/cocos/challenge/traceability/TraceabilityCheckerTest.java`
+- [x] T024 Create `src/test/resources/traceability/scope.txt` **verbatim** from plan.md § Traceability.
+- [x] T025 Create `src/test/java/com/cocos/challenge/traceability/TraceabilityCheckerTest.java`
   (`@Tag("unit")`) with in-memory fixtures. One test per rule of plan.md § Violations to report (rules 1 to 10),
   plus:
   - a passing case: one ID in scope with exactly one scenario and one test tagged with the ID and `unit`;
@@ -127,16 +127,16 @@
   - ID formats: `CU-02.05b` and `CU-I.01` are recognized;
   - repeatable tags: a test element with tags `{"CU-02.01", "integration"}` satisfies rules 8 and 9.
   These cover spec User Story 4, scenarios 1 to 6.
-- [ ] T026 Create `traceability/TraceabilityChecker.java` with only the method signatures, throwing
+- [x] T026 Create `traceability/TraceabilityChecker.java` with only the method signatures, throwing
   `UnsupportedOperationException`. Run `./mvnw test -Dgroups=unit`: **the checker tests fail**. Record it.
 
 ### Implementation
 
-- [ ] T027 Implement `TraceabilityChecker` following plan.md § Parsing rules and § Violations to report.
-- [ ] T028 Create `traceability/TraceabilityTest.java` (`@Tag("unit")`) reading the real files and test classes
+- [x] T027 Implement `TraceabilityChecker` following plan.md § Parsing rules and § Violations to report.
+- [x] T028 Create `traceability/TraceabilityTest.java` (`@Tag("unit")`) reading the real files and test classes
   as described in plan.md § Traceability → Files. It must report **all** violations in one assertion message.
-- [ ] T029 Run `./mvnw verify` until green.
-- [ ] T030 Prove it works on the real files: temporarily add `CU-02` to `scope.txt`, run
+- [x] T029 Run `./mvnw verify` until green.
+- [x] T030 Prove it works on the real files: temporarily add `CU-02` to `scope.txt`, run
   `./mvnw test -Dtest=TraceabilityTest` and confirm it fails listing every `CU-02.xx` ID as missing; revert
   `scope.txt`. Paste the first lines of the failure in the PR description.
 
