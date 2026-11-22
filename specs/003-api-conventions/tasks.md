@@ -4,7 +4,8 @@
 
 **Before starting**: specs 001 and 002 are merged. `export SPECIFY_FEATURE_DIRECTORY=specs/003-api-conventions`.
 
-**Slices**: five PRs, in order. Each starts from an up-to-date `main`, follows tests → skeletons → confirm failure
+**Slices**: five planned slices, in order; 003-b and 003-c were each split in two after measuring their size, so
+seven PRs. Each starts from an up-to-date `main`, follows tests → skeletons → confirm failure
 → implement → full suite, and ends with `scripts/check-pr-size.sh` within 400 lines.
 
 ---
@@ -45,20 +46,51 @@ they verify.
 
 ---
 
-## Slice 003-c — Identity, admin guard, idempotency key, correlation id (branch `003-api-conventions-c`)
+## Slice 003-c — split into 003-c1 and 003-c2
 
-**Estimated size**: ~380 lines.
+The first attempt at 003-c measured **496 counted lines with tests and skeletons alone**, before any
+implementation (the estimate was ~380). It is split along the user stories, which share no test and no probe:
 
-- [ ] T009 Extend `ProbeControllers` with `/user`, `/idempotent`, `/replayed`, `/log` and `InternalProbeController`.
-- [ ] T010 [P] Write `IdentityAndAdminIT` (US2, US3 scenarios 2–3), `InternalToolsDisabledIT` (US3 scenario 1),
-  `IdempotencyKeyIT` (US4), `RequestIdIT` (US6).
+- **003-c1:** identity (US2) and the admin guard (US3).
+- **003-c2:** the idempotency key (US4) and the correlation id (US6).
+
+The tests and skeletons of the first attempt are on the local branch `003-api-conventions-c` (commits `0c0e5b6`
+tests, `3d0fb84` skeletons; never pushed). **Reuse them**: bring each file into the new branch with
+`git checkout <commit> -- <path>` instead of retyping it. For the two files shared by both halves
+(`ProbeControllers`, `WebConfiguration`), keep only what the slice needs. Keep `003-api-conventions-c` until 003-c2
+is merged; it is the source for both halves.
+
+## Slice 003-c1 — Identity and admin guard (branch `003-api-conventions-c1`)
+
+**Estimated size**: ~340 counted lines (tests and skeletons measured at ~270, plus the implementation).
+
+- [ ] T009 Extend `ProbeControllers` with `/user` and `InternalProbeController` only.
+- [ ] T010 [P] Write `IdentityAndAdminIT` (US2, US3 scenarios 2–3) and `InternalToolsDisabledIT` (US3 scenario 1),
+  with the shared helper `ProblemResponses`.
 - [ ] T011 [P] Write `InternalToolsArchitectureTest` (plan.md § Identity and admin).
-- [ ] T012 Create skeletons of `RequesterId`, `RequesterIdArgumentResolver`, `IdempotencyKeyHeader`,
-  `IdempotencyKeyArgumentResolver`, `IdempotentResponses`, `RequestIdFilter`, `AdminRoleInterceptor`,
-  `WebConfiguration`, `ClockConfiguration`. Run `./mvnw verify`: **the new tests fail**. Record it.
+- [ ] T012 Create skeletons of `RequesterId`, `RequesterIdArgumentResolver`, `AdminRoleInterceptor` and
+  `WebConfiguration` (registering only what this slice needs). Run `./mvnw verify`: **the new tests fail**.
+  Record it.
 - [ ] T013 Implement until green.
 
-**Checkpoint**: open PR `003-c`.
+**Checkpoint**: open PR `003-c1`.
+
+---
+
+## Slice 003-c2 — Idempotency key and correlation id (branch `003-api-conventions-c2`)
+
+**Estimated size**: ~310 counted lines (tests and skeletons measured at ~230, plus the implementation).
+
+**Before starting**: 003-c1 is merged.
+
+- [ ] T013a Extend `ProbeControllers` with `/idempotent`, `/replayed` and `/log`.
+- [ ] T013b [P] Write `IdempotencyKeyIT` (US4) and `RequestIdIT` (US6), reusing `ProblemResponses` from 003-c1.
+- [ ] T013c Create skeletons of `IdempotencyKeyHeader`, `IdempotencyKeyArgumentResolver`, `IdempotentResponses`,
+  `RequestIdFilter` and `ClockConfiguration`, and register the idempotency key resolver in `WebConfiguration`.
+  Run `./mvnw verify`: **the new tests fail**. Record it.
+- [ ] T013d Implement until green.
+
+**Checkpoint**: open PR `003-c2`.
 
 ---
 
