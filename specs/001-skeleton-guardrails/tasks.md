@@ -127,12 +127,12 @@
   - ID formats: `CU-02.05b` and `CU-I.01` are recognized;
   - repeatable tags: a test element with tags `{"CU-02.01", "integration"}` satisfies rules 8 and 9.
   These cover spec User Story 4, scenarios 1 to 6.
-- [ ] T026 Create `traceability/TraceabilityChecker.java` with only the method signatures, throwing
+- [x] T026 Create `traceability/TraceabilityChecker.java` with only the method signatures, throwing
   `UnsupportedOperationException`. Run `./mvnw test -Dgroups=unit`: **the checker tests fail**. Record it.
 
 ### Implementation
 
-- [ ] T027 Implement `TraceabilityChecker` following plan.md § Parsing rules and § Violations to report.
+- [x] T027 Implement `TraceabilityChecker` following plan.md § Parsing rules and § Violations to report.
 - [ ] T028 Create `traceability/TraceabilityTest.java` (`@Tag("unit")`) reading the real files and test classes
   as described in plan.md § Traceability → Files. It must report **all** violations in one assertion message.
 - [ ] T029 Run `./mvnw verify` until green.
