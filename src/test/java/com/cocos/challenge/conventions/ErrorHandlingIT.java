@@ -145,12 +145,19 @@ class ErrorHandlingIT {
 
     private Problem assertProblemWithErrors(RestTestClient.ResponseSpec response, int status, String code,
             String title, String slug, String detail, String instance, List<FieldError> errors) {
-        Problem problem = assertProblem(response, status, code, title, slug, detail, instance);
+        Problem problem = assertProblemFields(response, status, code, title, slug, detail, instance);
         assertThat(problem.errors()).containsExactlyElementsOf(errors);
         return problem;
     }
 
     private Problem assertProblem(RestTestClient.ResponseSpec response, int status, String code, String title,
+            String slug, String detail, String instance) {
+        Problem problem = assertProblemFields(response, status, code, title, slug, detail, instance);
+        assertThat(problem.errors()).isNull();
+        return problem;
+    }
+
+    private Problem assertProblemFields(RestTestClient.ResponseSpec response, int status, String code, String title,
             String slug, String detail, String instance) {
         EntityExchangeResult<Problem> result = response.returnResult(Problem.class);
         assertThat(result.getStatus().value()).isEqualTo(status);
@@ -163,7 +170,6 @@ class ErrorHandlingIT {
         assertThat(problem.code()).isEqualTo(code);
         assertThat(problem.detail()).isEqualTo(detail);
         assertThat(problem.instance()).isEqualTo(instance);
-        assertThat(problem.errors()).isNull();
         return problem;
     }
 
