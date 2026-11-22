@@ -39,8 +39,16 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
             IdempotencyConflictException.class, OrderNotCancellableException.class})
     ResponseEntity<Object> handleExpectedException(Exception exception, WebRequest request) {
         ApiErrorCode code = exception instanceof ApiException apiException
-                ? apiException.code() : DOMAIN_CODES.get(exception.getClass());
+                ? apiException.code() : domainCode((DomainException) exception);
         return problem(code, code.status(), exception.getMessage(), new HttpHeaders(), request);
+    }
+
+    private static ApiErrorCode domainCode(DomainException exception) {
+        return DOMAIN_CODES.entrySet().stream()
+                .filter(entry -> entry.getKey().isInstance(exception))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElseThrow();
     }
 
     @Override
