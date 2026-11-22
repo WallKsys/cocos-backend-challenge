@@ -65,7 +65,8 @@ with `type`, `title`, `status`, `code`, `detail` and `instance`, and the `X-Requ
 1. **Given** a request to an endpoint that needs the user, **When** `X-User-Id: 1` is sent, **Then** the endpoint
    receives user id 1.
 2. **When** `X-User-Id` is missing, **Then** 400 `VALIDATION_ERROR`, detail `The 'X-User-Id' header is required.`
-3. **When** `X-User-Id` is `abc`, `0`, `-5` or greater than 2147483647, **Then** 400 `VALIDATION_ERROR`, detail
+3. **When** `X-User-Id` is `abc`, `0`, `-5` or greater than 2147483647 (including values that do not fit in 64 bits,
+   such as `99999999999999999999`), **Then** 400 `VALIDATION_ERROR`, detail
    `The 'X-User-Id' header must be a positive integer.`
 
 ---
@@ -81,6 +82,10 @@ with `type`, `title`, `status`, `code`, `detail` and `instance`, and the `X-Requ
 3. **Given** internal tools are enabled, **When** an internal endpoint is called without `X-Role` or with any value
    other than `ADMIN` (including `admin`), **Then** 404 `NOT_FOUND`, detail `Resource not found.` — the same
    response as a missing route.
+4. **Given** internal tools are enabled, **When** an existing internal endpoint is called without the admin role
+   using a method it does not support (for example `POST` or `DELETE` on a `GET` endpoint), **Then** 404
+   `NOT_FOUND`, detail `Resource not found.`, with no `Allow` header: the role is checked before the route is
+   matched, so nothing reveals that the route exists.
 
 ---
 
@@ -167,7 +172,7 @@ with `type`, `title`, `status`, `code`, `detail` and `instance`, and the `X-Requ
 - **FR-002**: The user MUST be resolved only from `X-User-Id` through the `@RequesterId` argument resolver.
 - **FR-003**: Internal controllers MUST live in `infrastructure.adapter.in.rest.internal`, be annotated with
   `@ConditionalOnProperty(name = "cocos.internal-tools.enabled", havingValue = "true")`, and be guarded by the
-  admin interceptor.
+  admin filter.
 - **FR-004**: `Idempotency-Key` MUST be read only through the `@IdempotencyKeyHeader` argument resolver.
 - **FR-005**: Money and percentages MUST cross the API only as strings, using `ApiDecimals` (format) and the
   `@DecimalString` constraint (parse/validate).

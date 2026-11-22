@@ -51,7 +51,7 @@ market value, average cost, total return and daily change. Everything is derived
 - **FR-002**: Values, rounding and warnings MUST follow plan.md § Portfolio rules.
 - **FR-003**: The portfolio MUST be computed with a fixed number of queries per request, independent of the number
   of positions (no query per position).
-- **FR-004**: The internal endpoint MUST follow spec 003 (`@ConditionalOnProperty`, admin interceptor).
+- **FR-004**: The internal endpoint MUST follow spec 003 (`@ConditionalOnProperty`, admin filter).
 
 ### Key Entities
 
