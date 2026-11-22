@@ -162,7 +162,8 @@ exception is **never** copied into the response unless the table says so.
 | `HttpMessageNotReadableException` caused by `tools.jackson.databind.exc.UnrecognizedPropertyException` (DEC-24) | `VALIDATION_ERROR` | `Request validation failed: '<property>' is not a recognized field.` plus `errors` with that field and message `is not a recognized field` |
 | `HttpMessageNotReadableException` caused by any other `tools.jackson.databind.exc.MismatchedInputException` with a field path | `VALIDATION_ERROR` | `Request validation failed: '<path>' has an invalid type or format.` plus `errors` with that field |
 | other `HttpMessageNotReadableException` | `VALIDATION_ERROR` | `Malformed JSON request body.` |
-| `MethodArgumentTypeMismatchException`, `MissingServletRequestParameterException` | `VALIDATION_ERROR` | `Request validation failed: '<name>' <reason>.` |
+| `MethodArgumentTypeMismatchException` | `VALIDATION_ERROR` | `Request validation failed: '<name>' has an invalid type or format.` (DEC-25) |
+| `MissingServletRequestParameterException` | `VALIDATION_ERROR` | `Request validation failed: '<name>' is required.` (DEC-25) |
 | `NoResourceFoundException` | `NOT_FOUND` | `Resource not found.` |
 | `HttpRequestMethodNotSupportedException` | `METHOD_NOT_ALLOWED` | `Method <METHOD> is not supported for this resource.` |
 | `HttpMediaTypeNotAcceptableException` | `NOT_ACCEPTABLE` | `The requested media type is not supported.` |
