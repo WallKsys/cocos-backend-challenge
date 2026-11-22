@@ -135,8 +135,8 @@
 - [x] T027 Implement `TraceabilityChecker` following plan.md § Parsing rules and § Violations to report.
 - [x] T028 Create `traceability/TraceabilityTest.java` (`@Tag("unit")`) reading the real files and test classes
   as described in plan.md § Traceability → Files. It must report **all** violations in one assertion message.
-- [ ] T029 Run `./mvnw verify` until green.
-- [ ] T030 Prove it works on the real files: temporarily add `CU-02` to `scope.txt`, run
+- [x] T029 Run `./mvnw verify` until green.
+- [x] T030 Prove it works on the real files: temporarily add `CU-02` to `scope.txt`, run
   `./mvnw test -Dtest=TraceabilityTest` and confirm it fails listing every `CU-02.xx` ID as missing; revert
   `scope.txt`. Paste the first lines of the failure in the PR description.
 
