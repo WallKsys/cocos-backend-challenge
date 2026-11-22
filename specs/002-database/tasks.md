@@ -15,21 +15,21 @@
 
 ### Tests first
 
-- [ ] T001 [P] Create `src/test/java/com/cocos/challenge/database/OriginalScriptIsUnchangedTest.java`
+- [x] T001 [P] Create `src/test/java/com/cocos/challenge/database/OriginalScriptIsUnchangedTest.java`
   (plan.md § Tests).
-- [ ] T002 [P] Create `database/SeedDataIT.java`, asserting migration versions **1 and 2** for this slice
+- [x] T002 [P] Create `database/SeedDataIT.java`, asserting migration versions **1 and 2** for this slice
   (slice 002-b extends the assertion to 1–5).
-- [ ] T003 [P] Create `database/LedgerReferenceQueriesIT.java` with the five reference queries of
+- [x] T003 [P] Create `database/LedgerReferenceQueriesIT.java` with the five reference queries of
   data-model.md § Ledger formulas and the expected seed values.
-- [ ] T004 [P] Create `database/SchemaConstraintsIT.java` with rows 1, 2, 3, 4 and 14 of plan.md § Constraint
+- [x] T004 [P] Create `database/SchemaConstraintsIT.java` with rows 1, 2, 3, 4 and 14 of plan.md § Constraint
   checks (the rows that depend on V2 only).
-- [ ] T005 Run `./mvnw verify`. **Expected: these tests fail** (no migrations, tables do not exist). Record it.
+- [x] T005 Run `./mvnw verify`. **Expected: these tests fail** (no migrations, tables do not exist). Record it.
 
 ### Implementation
 
-- [ ] T006 Copy V1 and V2 exactly as described in plan.md § How to copy the migrations (only V1 and V2 in this
+- [x] T006 Copy V1 and V2 exactly as described in plan.md § How to copy the migrations (only V1 and V2 in this
   slice). Delete `src/main/resources/db/migration/.gitkeep`.
-- [ ] T007 Run `./mvnw verify` until green. If a migration fails, **stop and report**: do not edit it.
+- [x] T007 Run `./mvnw verify` until green. If a migration fails, **stop and report**: do not edit it.
 - [ ] T008 Run `docker compose up --build` and paste the `flyway_schema_history` query output in the PR.
 
 **Checkpoint 002-a**: open PR `002-a`.
