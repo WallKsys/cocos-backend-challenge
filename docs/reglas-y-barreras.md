@@ -1,0 +1,245 @@
+# Reglas y barreras del proyecto
+
+| | |
+|---|---|
+| **Estado** | Vigente. Se actualiza en el mismo PR que cambia una regla (chequeo 17 de la revisión automática). |
+| **Fecha** | 2026-11-22 |
+| **Documentos relacionados** | [Constitución](../.specify/memory/constitution.md) · [AGENTS.md](../AGENTS.md) · [RFC](rfc.md) · [Análisis funcional](analisis-funcional.md) · [README](../README.md) |
+
+> Índice de las reglas de arquitectura y de desarrollo que guían al agente implementador. Para cada una indica
+> **dónde se decidió, por qué existe y qué la hace cumplir**. Es un índice, no la fuente: el texto que manda está en
+> la constitución, en `AGENTS.md`, en los tests y en los scripts enlazados. Si este documento y la constitución
+> dicen cosas distintas, manda la constitución y la diferencia es un error de este documento.
+
+---
+
+## 1. Cómo leer este documento
+
+Cada regla tiene un **nivel**: qué tan automático es su cumplimiento.
+
+| Nivel | Significa |
+|---|---|
+| 🔴 **Build** | Si se viola, `./mvnw verify` falla. Lo detecta una máquina en cada build, local y en CI. |
+| 🟠 **Merge** | GitHub no deja mergear: checks obligatorios y protección de `main`. |
+| 🟡 **Revisión** | Lo controla la revisión automática (chequeo N de [`pr-review.md`](../.github/claude/pr-review.md)) o la revisión manual. |
+| ⚪ **Instrucción** | Está escrito para el agente. Depende de que lo respete y de que una revisión lo note. |
+| ⏳ | La barrera automática llega con la spec indicada. Hasta entonces rige el nivel que figura al lado. |
+
+Los IDs (`ARQ-01`, `PRO-05`, ...) son estables: no se renumeran ni se reutilizan. "Const. V.4" es la regla 4 del
+principio V de la [constitución](../.specify/memory/constitution.md).
+
+---
+
+## 2. Mapa de barreras
+
+Un cambio pasa por estas barreras, en orden, antes de llegar a `main`:
+
+```text
+Specs aprobadas: constitución, spec, plan, tareas, .feature, contrato (las escribe Claude)
+  │
+  ▼
+Agente implementador (OpenCode)        ⚪ AGENTS.md: prohibiciones y "detenerse y reportar"
+  │  tests → esqueletos → rojo → implementación → suite completa
+  ▼
+./mvnw verify                          🔴 ArchUnit, trazabilidad, tests de base, convenciones y BDD
+  │
+  ▼
+Pull request                           🟠 checks obligatorios: verify (CI) y pr-size (≤ 400 líneas)
+  │
+  ▼
+Revisión automática (claude[bot])      🟡 16 chequeos; espera a que termine verify
+  │
+  ▼
+Revisión manual (porciones críticas)   🟡 pruebas temporales contra la aplicación real
+  │
+  ▼
+Merge a main protegida                 🟠 PR obligatorio, rama al día, conversaciones resueltas
+```
+
+---
+
+## 3. Catálogo de reglas
+
+### 3.1 Arquitectura (ARQ)
+
+Base: arquitectura hexagonal en tres capas, `domain`, `application` e `infrastructure` (TEC-10, TEC-13). Antes de
+mergearse, cada regla de `ArchitectureTest` se vio fallar contra una clase que la violaba a propósito (spec 001,
+SC-003; evidencia en el PR #4).
+
+| ID | Regla | Por qué | Decidido en | Se hace cumplir en | Nivel |
+|---|---|---|---|---|---|
+| ARQ-01 | `domain` depende solo de `domain` y del JDK. | Las reglas de negocio se prueban sin Spring y no dependen del framework. | TEC-10, Const. V.1 | [`ArchitectureTest`](../src/test/java/com/cocos/challenge/architecture/ArchitectureTest.java) `domain_depends_only_on_domain_and_the_jdk` | 🔴 |
+| ARQ-02 | `application` depende solo de `domain`, `application`, el JDK y `@Transactional` (más sus enums `Propagation` e `Isolation`). | Los casos de uso no conocen la infraestructura; el límite transaccional es la única concesión. | TEC-14, Const. V.2 | `application_depends_only_on_domain_application_jdk_and_transactional` | 🔴 |
+| ARQ-03 | Las clases de `application` no son componentes de Spring: se registran en `infrastructure.config`. | El cableado queda visible en un solo lugar. | Const. V.2 | `application_classes_are_not_spring_components` | 🔴 |
+| ARQ-04 | Todo caso de uso que modifica datos es `@Transactional`; toda consulta es `@Transactional(readOnly = true)`. | Una operación es una transacción; una consulta lee una foto consistente. | TEC-14, Const. V.3 | `command_use_case_methods_are_transactional`, `query_use_case_methods_are_read_only_transactional` | 🔴 |
+| ARQ-05 | Solo los adaptadores de persistencia (y `config`) usan Spring JDBC o `java.sql`. | Todo el SQL vive en un lugar y se puede revisar. | TEC-12, Const. V.4 y VI | `only_persistence_adapters_access_the_database` | 🔴 |
+| ARQ-06 | Sin ORM: ni JPA, ni Hibernate, ni Spring Data, ni jOOQ. | Control total del SQL: bloqueos, idempotencia y agregaciones explícitos. | TEC-12, Const. VI | `no_orm_anywhere` | 🔴 |
+| ARQ-07 | Los controladores usan solo puertos de entrada. | El adaptador REST no puede saltear los casos de uso. | Const. V.5 | `rest_adapters_use_only_inbound_ports` | 🔴 |
+| ARQ-08 | Los DTOs REST no salen del adaptador REST, y ningún controlador devuelve objetos de dominio. | El contrato de la API no queda atado al modelo interno. | Const. V.6 | `rest_dtos_do_not_leave_the_rest_adapter`, `controllers_never_return_domain_objects` | 🔴 |
+| ARQ-09 | Sin ciclos entre paquetes. | Dependencias en una sola dirección. | Const. V.7 | `no_cycles_between_layers` | 🔴 |
+| ARQ-10 | Ningún campo ni retorno `double`/`float` (ni sus envoltorios) en `domain`, `application` ni REST. | El dinero es exacto (ver DAT-05). | Const. V.8 y VIII | `no_floating_point_fields`, `no_floating_point_return_types` | 🔴 |
+| ARQ-11 | Solo `infrastructure` usa Micrometer u OpenTelemetry; `application` registra hechos de negocio a través del puerto `BusinessMetrics`. | Las métricas no contaminan los casos de uso. | TEC-31, Const. V.9 | `only_infrastructure_uses_metrics_libraries` | 🔴 |
+| ARQ-12 | Solo Jackson 3 (`tools.jackson.*`); nunca `com.fasterxml.jackson.databind`. | Trampa típica de Spring Boot 3 → 4. | TEC-11, Const. "Spring Boot 4 pitfalls" | `no_jackson_2_databind` | 🔴 |
+| ARQ-13 | Los controladores internos viven en `rest.internal` y llevan `@ConditionalOnProperty`; ningún otro controlador mapea `/api/internal`. | Las herramientas internas quedan fuera del alcance del challenge y apagadas por defecto. | TEC-18, spec 003 FR-003 | [`InternalToolsArchitectureTest`](../src/test/java/com/cocos/challenge/architecture/InternalToolsArchitectureTest.java) (2 reglas) | 🔴 |
+| ARQ-14 | Las reglas de ArchUnit no se modifican ni se debilitan. | Son la ley de la arquitectura; un agente tendería a ajustarlas a su código. | TEC-05, TEC-09, Const. V | Chequeo 6 ("`ArchitectureTest` untouched") | 🟡 |
+
+### 3.2 Datos y dinero (DAT)
+
+| ID | Regla | Por qué | Decidido en | Se hace cumplir en | Nivel |
+|---|---|---|---|---|---|
+| DAT-01 | La tabla `orders` es el libro contable: efectivo, reservas, posiciones y costo promedio se derivan siempre de ella. | Una sola fuente de verdad; nada que se desincronice. | TEC-17, Const. I | [`LedgerReferenceQueriesIT`](../src/test/java/com/cocos/challenge/database/LedgerReferenceQueriesIT.java) (fórmulas de referencia sobre los datos provistos); tests de las specs 005 a 007 ⏳ | 🔴 |
+| DAT-02 | Las órdenes `NEW` reservan lo que comprometen y toda validación usa el saldo **disponible**. Ninguna operación aceptada deja un disponible negativo. | Un broker no puede vender dos veces la misma plata ni las mismas acciones. | DEC-01, D-07, Const. I | Escenarios BDD y tests de la spec 005 ⏳; chequeo 10 | 🟡 → 🔴 ⏳ |
+| DAT-03 | Las acciones son siempre enteras. | Regla del mercado (R-08). | DEC-14, Const. I | [`SchemaConstraintsIT`](../src/test/java/com/cocos/challenge/database/SchemaConstraintsIT.java) (`orders_whole_shares_check`); tipos enteros en el JSON (API-04) | 🔴 |
+| DAT-04 | Un pedido inválido se responde con error y **no se guarda nada**. | Separar "orden rechazada" (se guarda) de "pedido inválido" (no existe). | DEC-05, Const. I | Tests de la spec 005 ⏳; chequeo 10 | 🟡 → 🔴 ⏳ |
+| DAT-05 | El dinero es `BigDecimal` con escala 2 y `HALF_UP`, envuelto en `Money`. | Exactitud: nunca errores de punto flotante. | Const. VIII | [`MoneyTest`](../src/test/java/com/cocos/challenge/domain/model/MoneyTest.java) y ARQ-10 | 🔴 |
+| DAT-06 | Las columnas de dinero son `NUMERIC(18,2)`. | Rango y precisión fijos en la base. | CM-09 | Migraciones de la spec 002; `SchemaConstraintsIT` (monto `99999999999.99`) | 🔴 |
+| DAT-07 | SQL escrito a mano en text blocks con parámetros con nombre; nunca concatenar valores. | Evitar inyección SQL y mantener las consultas legibles. | TEC-12, Const. VI | Chequeo 7 | 🟡 |
+| DAT-08 | Las agregaciones se calculan en SQL; nunca se cargan las órdenes en memoria para sumarlas. | Rendimiento con 10 M de órdenes (RSK-01, M-08 a M-11). | TEC-17, TEC-24, Const. VI | `PlanGuardIT` (spec 009, `EXPLAIN` con `enable_seqscan = off`) ⏳; perfil `-Pvolume` (manual) | 🟡 → 🔴 ⏳ |
+| DAT-09 | `V1` es copia byte a byte del `database.sql` provisto, y una migración ya commiteada nunca se edita. | Partir de los datos originales y mantener la historia de Flyway reproducible. | CM-xx, Const. VI | [`OriginalScriptIsUnchangedTest`](../src/test/java/com/cocos/challenge/database/OriginalScriptIsUnchangedTest.java) (V1); V2 en adelante: chequeo 2 (`cmp` contra `specs/002-database/migrations/`) | 🔴 V1 · 🟡 resto |
+| DAT-10 | Las fechas se guardan y se devuelven en UTC (ISO 8601 con `Z`); la conversión a hora local es del consumidor. | Sin ambigüedad de zona horaria. | DEC-18, Const. IX | [`TimestampsAndSearchColumnsIT`](../src/test/java/com/cocos/challenge/database/TimestampsAndSearchColumnsIT.java); formato JSON en `FormatsIT` (003-d) ⏳ | 🔴 |
+| DAT-11 | Restricciones de integridad en la base: lados, tipos, estados, códigos de rechazo, par clave/huella de idempotencia, tamaño no negativo. | La base es la última red de seguridad. | CM-04, CM-10, CM-11 | `SchemaConstraintsIT` (14 casos) | 🔴 |
+
+### 3.3 Concurrencia e idempotencia (CON)
+
+| ID | Regla | Por qué | Decidido en | Se hace cumplir en | Nivel |
+|---|---|---|---|---|---|
+| CON-01 | Toda operación que modifica datos bloquea primero la fila del usuario (`SELECT id FROM users WHERE id = :userId FOR UPDATE`): exactamente una fila, siempre como primer paso. | Serializa las operaciones de un usuario sin riesgo de deadlocks. | TEC-16, Const. VII | Tests de concurrencia de las porciones 005-f y 008-b ⏳; revisión manual de 005-c y 005-d | 🟡 → 🔴 ⏳ |
+| CON-02 | Flujo fijo: validar → bloquear → buscar la clave de idempotencia → calcular disponibles → aplicar reglas → guardar. Un pedido inválido no consume la clave. | Un reintento nunca ejecuta dos veces y un error de validación no "quema" la clave. | TEC-16, Const. VII | Tests de `PlaceOrderService` (spec 005) ⏳; chequeo 10 | 🟡 → 🔴 ⏳ |
+| CON-03 | Una sola clave de idempotencia por usuario para todas las operaciones, con restricción única en la base. | Una regla simple; la base garantiza la unicidad aunque falle el código. | DEC-23, TEC-32, CM-02 | `SchemaConstraintsIT` (casos 10 a 12) | 🔴 |
+| CON-04 | Misma clave y mismo pedido → `200` con `Idempotent-Replayed: true`; misma clave y otro pedido → `422 IDEMPOTENCY_CONFLICT`. | El cliente puede reintentar con seguridad y detectar el mal uso de una clave. | DEC-09, Const. VII | [`IdempotencyKeyIT`](../src/test/java/com/cocos/challenge/conventions/IdempotencyKeyIT.java) (header de reintento); BDD de la spec 005 ⏳ | 🔴 |
+| CON-05 | `Idempotency-Key` se lee solo a través de `@IdempotencyKeyHeader`: obligatoria, de 1 a 255 caracteres ASCII visibles. | Una única validación para todas las operaciones. | Spec 003 US4 y FR-004 | `IdempotencyKeyIT` (incluye un pedido HTTP crudo por socket para los caracteres no ASCII); lectura en un solo lugar: revisión manual | 🔴 · 🟡 |
+| CON-06 | Las consultas nunca bloquean. | Las lecturas no frenan a las operaciones. | Const. VII | Revisión manual | 🟡 |
+
+### 3.4 API (API)
+
+| ID | Regla | Por qué | Decidido en | Se hace cumplir en | Nivel |
+|---|---|---|---|---|---|
+| API-01 | Todo texto de la API está en inglés, aunque el pedido traiga `Accept-Language: es`. | Un solo idioma para clientes y logs. | TEC-19, Const. IX | [`ErrorHandlingIT`](../src/test/java/com/cocos/challenge/conventions/ErrorHandlingIT.java) (locale fijo y `Accept-Language: es`); textos exactos en cada test | 🔴 |
+| API-02 | Errores en formato RFC 9457 con un `code` estable, de un catálogo cerrado: no se agregan códigos sin una spec. | El cliente decide qué hacer por el `code`; la persona entiende por el `detail`. | TEC-19, RNF-06, Const. IX | `ErrorHandlingIT`; catálogo cerrado: chequeo 9 | 🔴 · 🟡 |
+| API-03 | Un error 500 nunca expone detalles internos. | Seguridad. | Spec 003 US1 | `ErrorHandlingIT.unexpectedExceptionNeverLeaksItsMessage` | 🔴 |
+| API-04 | JSON estricto: se rechazan los campos desconocidos y no se convierte `1.5`, `"10"` ni `10.0` a entero, ni un número a texto. | Jackson truncaba `1.5` a `1`: se habría ejecutado una orden por otra cantidad. | DEC-24, Const. IX, spec 003 § Jackson | `ErrorHandlingIT`, [`FormatsIT`](../src/test/java/com/cocos/challenge/conventions/FormatsIT.java) | 🔴 |
+| API-05 | Montos, precios y porcentajes viajan como texto con 2 decimales; las cantidades, como enteros. | Precisión al cruzar JSON. | TEC-20, Const. VIII | `FormatsIT` (porción 003-d) ⏳ | 🟡 → 🔴 ⏳ |
+| API-06 | El usuario sale solo de `X-User-Id`, leído por `@RequesterId`; las URLs nunca llevan el id del usuario y el recurso de otro usuario responde igual que uno inexistente. | Aislamiento por construcción. | TEC-18, DEC-17, Const. IX | [`IdentityAndAdminIT`](../src/test/java/com/cocos/challenge/conventions/IdentityAndAdminIT.java); lectura en un solo lugar: revisión manual | 🔴 · 🟡 |
+| API-07 | Las herramientas internas (`/api/internal/**`) exigen `X-Role: ADMIN` y se activan por configuración. Sin el rol, cualquier método responde el mismo 404 que una ruta inexistente, porque el rol se controla antes de buscar la ruta. | No revelar que existen. | TEC-18, spec 003 US3, PR #21 | `IdentityAndAdminIT`, [`InternalToolsDisabledIT`](../src/test/java/com/cocos/challenge/conventions/InternalToolsDisabledIT.java), ARQ-13 | 🔴 |
+| API-08 | Una orden `REJECTED` no es un error HTTP: responde `201` con `rejection.code` y `rejection.message`. | El rechazo es un resultado de negocio y queda guardado. | DEC-12, Const. IX | BDD de la spec 005 ⏳ | 🟡 → 🔴 ⏳ |
+| API-09 | Paginación por cursor (`cursor`, `limit`, `nextCursor`). | Páginas estables aunque lleguen órdenes nuevas. | CM-08, Const. IX | Tests de las specs 004 y 008 ⏳ | 🟡 → 🔴 ⏳ |
+| API-10 | Los parámetros de URL inválidos o faltantes tienen textos fijos (`has an invalid type or format`, `is required`). | Un solo estilo de error. | DEC-25 | `ErrorHandlingIT` (tarea T015a, 003-d), specs 004 y 008 ⏳ | 🟡 → 🔴 ⏳ |
+| API-11 | El contrato OpenAPI publicado es copia exacta del último contrato de spec, y sus rutas coinciden con las de la aplicación. | Contract-first: el contrato no miente. | TEC-22, Const. IX | `PublishedContractIsLatestSpecContractTest`, `PublishedContractMatchesRoutesIT` (porción 003-e) ⏳ | 🟡 → 🔴 ⏳ |
+| API-12 | Toda respuesta lleva `X-Request-Id`; un id entrante inválido se reemplaza y nunca se refleja. | Correlación de logs sin inyección. | TEC-27 | [`RequestIdIT`](../src/test/java/com/cocos/challenge/conventions/RequestIdIT.java), [`ProblemResponses`](../src/test/java/com/cocos/challenge/conventions/ProblemResponses.java) | 🔴 |
+| API-13 | Las métricas nunca se etiquetan con id de usuario, id de orden, clave de idempotencia ni ticker. | Cardinalidad acotada. | TEC-31, Const. "Technology Stack" | `MicrometerBusinessMetricsTest` (porción 003-d) ⏳; revisión | 🟡 → 🔴 ⏳ |
+
+### 3.5 Proceso de desarrollo (PRO)
+
+| ID | Regla | Por qué | Decidido en | Se hace cumplir en | Nivel |
+|---|---|---|---|---|---|
+| PRO-01 | La spec es la ley: no se inventan endpoints, campos, códigos ni mensajes, ni funcionalidades que ninguna spec pide. | Un agente tiende a "completar" lo que falta. | Const. II, AGENTS.md | Chequeos 1 y 9 | 🟡 |
+| PRO-02 | Ante una ambigüedad, una contradicción o un test que parece mal, el agente se detiene y reporta. | Adivinar es la fuente principal de alucinaciones. | Const. II, AGENTS.md | Instrucción. Funcionó: el agente se detuvo en las porciones 003-c (tamaño, PR #19) y 003-c2 (headers, PR #22) | ⚪ |
+| PRO-03 | Test-first en cada porción: tests → esqueletos → confirmar que fallan por el motivo esperado → implementar → suite completa. | Un test que nunca se vio fallar no prueba nada. | TEC-08, Const. III | Chequeos 4 y 15 (orden de commits); la revisión manual vuelve a correr el rojo | 🟡 |
+| PRO-04 | Los tests aprobados y los `.feature` no se modifican, desactivan ni debilitan. Un ajuste posterior al rojo se documenta en el PR con su motivo. | Evita "arreglar" un test para que pase. | TEC-09, Const. III | Chequeo 3 | 🟡 |
+| PRO-05 | Cada escenario `CU-xx.yy` tiene exactamente un escenario Gherkin y al menos un test etiquetado (`unit` o `integration`). | Ningún escenario queda sin verificar. | TEC-06, TEC-07, Const. IV | [`TraceabilityTest`](../src/test/java/com/cocos/challenge/traceability/TraceabilityTest.java): 10 tipos de violación, probados por `TraceabilityCheckerTest`; el alcance crece spec a spec en [`scope.txt`](../src/test/resources/traceability/scope.txt) | 🔴 |
+| PRO-06 | Los `.feature` se copian byte a byte desde `specs/NNN-*/features/`. | El escenario ejecutado es el aprobado. | Const. IV | `FeaturesMatchSpecsTest` (spec 004) ⏳; chequeo 2 | 🟡 → 🔴 ⏳ |
+| PRO-07 | Un PR tiene como máximo 400 líneas contadas, o una sección `## Size justification`. | Que una persona lo pueda revisar. | TEC-30, Const. X | [`check-pr-size.sh`](../scripts/check-pr-size.sh) en el check obligatorio `pr-size` | 🟠 |
+| PRO-08 | Todo PR deja la suite completa en verde. | `main` siempre funciona. | Const. X, TEC-33 | Check obligatorio `verify` | 🟠 |
+| PRO-09 | Una porción por PR, en una rama `NNN-nombre-<letra>` creada desde `main` actualizada; las specs se implementan en orden. | PRs chicos y trazables. | TEC-21, TEC-28 | Chequeo 1; protección de `main` (rama al día) | 🟡 |
+| PRO-10 | Formato de commit `[NNN][T0xx] descripción (CU-xx.yy, DEC-xx)`. | Trazabilidad de cada commit a su tarea. | Const. "Development Workflow" | No se verifica | ⚪ |
+| PRO-11 | No se agregan ni se actualizan dependencias fuera del plan; las versiones están fijadas. | Evita APIs inexistentes y cambios no revisados. | TEC-11, Const. "Technology Stack" | Chequeo 11 | 🟡 |
+| PRO-12 | Tabla de trampas de Spring Boot 4 (starters, Jackson 3, `@MockitoBean`, propiedades OTLP, versión del appender). | Los modelos tienden a escribir código de Spring Boot 3. | TEC-11, Const. "Spring Boot 4 pitfalls" | ARQ-12; el resto falla al compilar o al arrancar | 🔴 parcial · ⚪ |
+| PRO-13 | Los artefactos para el agente están en inglés; la documentación para personas, en español; los IDs son idénticos. | Los modelos siguen mejor las instrucciones en inglés. | TEC-29 | Instrucción | ⚪ |
+| PRO-14 | La plantilla del PR se completa con salidas reales (rojo, tamaño, CI), y lo que afirma coincide con la evidencia. | Lo declarado tiene que poder comprobarse. | TEC-34 | Chequeos 14 y 16 | 🟡 |
+| PRO-15 | Los esqueletos mantienen funcionando los pedidos que no prueban (un filtro esqueleto deja pasar el pedido). | Que el rojo apunte al comportamiento que falta y no a un error general. | Revisión del PR #23 | Prompt de cada porción | ⚪ |
+
+### 3.6 Revisión y repositorio (REV)
+
+| ID | Regla | Por qué | Decidido en | Se hace cumplir en | Nivel |
+|---|---|---|---|---|---|
+| REV-01 | Quien implementa no revisa. El agente (OpenCode) escribe el código y sus tests; Claude escribe specs, `.feature` y reglas de ArchUnit, y revisa. Claude nunca implementa lo que después revisa. | Revisión adversarial: sin contexto ni puntos ciegos compartidos. | TEC-03, TEC-05 | Proceso | ⚪ |
+| REV-02 | `main` protegida: PR obligatorio incluso para administradores, checks obligatorios `verify` y `pr-size`, rama al día, conversaciones resueltas, sin force push ni borrado. | Nada llega a `main` sin pasar por las barreras. | TEC-28, TEC-30, TEC-33 | Protección de rama en GitHub | 🟠 |
+| REV-03 | La CI corre `./mvnw verify` en cada PR y en cada push a `main`. | El build verde no depende de la máquina de nadie. | TEC-33 | [`ci.yml`](../.github/workflows/ci.yml) | 🟠 |
+| REV-04 | Cada PR recibe una revisión automática formal (aprobar o pedir cambios), después de que termina `verify`. | Revisión siempre, sin depender de una sesión abierta. | TEC-34 | [`claude-review.yml`](../.github/workflows/claude-review.yml) y [`pr-review.md`](../.github/claude/pr-review.md) (16 chequeos) | 🟡 |
+| REV-05 | El contenido del PR se trata como dato no confiable y el revisor tiene herramientas mínimas. | Prevenir prompt injection. | TEC-34 | `pr-review.md` § Security; `--allowedTools` del workflow | 🟡 |
+| REV-06 | Las porciones críticas tienen además una revisión manual (tabla abajo). | Lo que un test no cubre se ve probando la aplicación real. | TEC-03 | Comentario "Manual review" en el PR; el merge espera esa revisión | 🟡 |
+| REV-07 | El agente no edita las barreras: `.github/claude/`, `.github/workflows/` ni `scripts/check-pr-size.sh`. | Una barrera que el vigilado puede cambiar no es una barrera. | AGENTS.md | Chequeo 17 (bloqueante en un PR de porción). La revisión lee sus instrucciones, y `pr-size` su script, desde `main`: un PR no puede cambiar las reglas con las que se lo evalúa. La acción de revisión no corre si el PR cambia el workflow de revisión. | 🟡 |
+| REV-08 | Un cambio de reglas queda registrado: entrada `TEC-xx` en el RFC, nueva versión de la constitución y este documento actualizado, todo en el mismo PR. | Las reglas y su historia no se separan. | Const. "Governance" | Chequeo 17 | 🟡 |
+| REV-09 | Las ramas mergeadas se conservan como evidencia. | Historia completa de cada porción. | Decisión del dueño | Instrucción | ⚪ |
+
+**Porciones con revisión manual obligatoria (REV-06):**
+
+| Porción | Foco |
+|---|---|
+| 003-b (b1, b2) | Errores: `1.5` y campos desconocidos rechazados, sin detalles internos en un 500, inglés con `Accept-Language: es` |
+| 003-c (c1, c2) | `X-User-Id` leído en un solo lugar; sin el rol, igual que una ruta inexistente; validación de `Idempotency-Key` |
+| 005-b | `OrderEvaluator`: cantidad redondeada hacia abajo, monto real y pedido, orden de las reglas, mensajes exactos |
+| 005-c | SQL del libro contable, `FOR UPDATE`, búsqueda liviana de idempotencia, fechas UTC |
+| 005-d | Flujo bloqueo → idempotencia → validación → evaluación → guardado; un pedido inválido no consume la clave |
+| 005-f | Tests de concurrencia y carga: simultaneidad real, estables en 3 corridas |
+| 006-a | Costo promedio móvil, reinicio exacto en 0 |
+| 007-a | Refactor de `IdempotencyLookup` sin cambios de comportamiento ni tests de la 005 modificados |
+| 008-b | Cancelación concurrente: `UPDATE ... WHERE status = 'NEW'` bajo bloqueo, CU-04.08 |
+| 009-b | Ejecución forzada: protocolo de bloqueo; CU-04.08 con la herramienta real |
+| 009-d | Volumen: datos reales, cálculo de percentiles, tabla de latencias en el PR |
+
+---
+
+## 4. Reglas que nacieron de un hallazgo
+
+Las barreras se corrigieron cada vez que una revisión encontró un hueco. Primero se cambia la spec o la barrera;
+después el agente aplica el cambio con un test nuevo que primero falla.
+
+| Cuándo | Hallazgo | Regla resultante |
+|---|---|---|
+| Verificación del plan, spec 003 | Jackson 3 truncaba `{"quantity": 1.5}` a `1` y aceptaba `"10"` y `10.0`. | API-04: coerciones desactivadas, con tests. |
+| Verificación del plan, spec 001 | Los valores por defecto de `@Transactional` referencian `Propagation` e `Isolation`: la regla 2 de ArchUnit fallaba con código válido. | ARQ-02 los permite explícitamente (constitución v1.2.1). |
+| Verificación del plan, spec 010 | El appender de OpenTelemetry más nuevo es incompatible en ejecución con la versión que gestiona Spring Boot. | PRO-12: versión fijada en la tabla de trampas. |
+| PR #2 frente a una revisión manual | La revisión automática no miraba el orden de los commits ni si lo declarado coincidía con la evidencia. | Chequeos 15 y 16 (PR #8). |
+| Revisión automática temprana | La revisión veía la CI como "pendiente". | La revisión espera a que termine `verify` (PR #11). |
+| Revisión manual del PR #13 | Una subclase de una excepción de dominio terminaba en un 500 genérico. | Búsqueda por `isInstance` y test de regresión. |
+| PRs #15 a #18 | Textos de error de parámetros de URL sin especificar; el texto `is required` no tenía ningún test. | API-10 (DEC-25), con un endpoint de prueba (tarea T015a). |
+| PR #19 | La porción 003-c medía 496 líneas antes de implementar nada. | El agente se detuvo (PRO-02) y la porción se dividió por historias de usuario. |
+| Revisión manual del PR #20 | El interceptor de admin dejaba ver las rutas internas con un 405; un `X-User-Id` enorme daba 500. | API-07: un filtro antes de buscar la ruta (PR #21); validación sin desbordamiento. |
+| PR #22 | HTTP quita los espacios alrededor de un header (RFC 9110 §5.5) y el cliente de tests no puede mandar caracteres no ASCII. | Spec corregida; los caracteres no ASCII se prueban con un pedido HTTP crudo (CON-05). |
+| Revisión manual del PR #23 | El esqueleto de un filtro rompía todos los pedidos y el rojo no apuntaba al comportamiento que faltaba. | PRO-15; la revisión manual agrega una mutación para confirmar que los tests detectan la falta. |
+
+---
+
+## 5. Qué no está automatizado
+
+Lo siguiente depende de la revisión o del proceso, no de una máquina:
+
+- **Lectura de headers en un solo lugar** (API-06, CON-05): ninguna regla de ArchUnit impide leer `X-User-Id` o
+  `Idempotency-Key` desde otro lugar. Lo controla la revisión manual.
+- **SQL sin concatenar valores** (DAT-07) y **consultas que no bloquean** (CON-06): chequeo 7 y revisión manual.
+- **Dependencias fuera del plan** (PRO-11): chequeo 11, sin un check que compare el `pom.xml`.
+- **Formato de los commits** (PRO-10): no se verifica.
+- **Separación entre quien implementa y quien revisa** (REV-01): es una regla de proceso.
+- **Los workflows mismos** (REV-07): en un `pull_request`, GitHub ejecuta los workflows en la versión del PR. Un PR
+  que edite `ci.yml` o `pr-size.yml` podría debilitar los checks obligatorios. Lo cubren el chequeo 17, que marca el
+  cambio, y la decisión de merge del dueño.
+- **Pruebas de volumen** (DAT-08): el perfil `-Pvolume` tarda demasiado para la CI y se corre a mano; la guardia de
+  planes (`PlanGuardIT`) sí entra en el build normal desde la spec 009.
+
+**Barreras automáticas que llegan con las próximas specs:**
+
+| Barrera | Spec | Reglas |
+|---|---|---|
+| `FormatsIT` (dinero como texto), `MicrometerBusinessMetricsTest`, tests de DEC-25 | 003-d | API-05, API-10, API-13 |
+| `PublishedContractIsLatestSpecContractTest`, `PublishedContractMatchesRoutesIT` | 003-e | API-11 |
+| `FeaturesMatchSpecsTest` y el alcance de trazabilidad creciendo spec a spec | 004 en adelante | PRO-05, PRO-06 |
+| Tests de concurrencia y carga | 005-f, 008-b | CON-01, CON-02, DAT-02 |
+| `PlanGuardIT` (índices obligatorios) y `VolumeIT` (`-Pvolume`) | 009 | DAT-08 |
+
+---
+
+## 6. Limitaciones del producto
+
+Las limitaciones del servicio (sin autenticación, precios estáticos, el dato inconsistente de BMA, el 400 propio de
+Tomcat para pedidos mal formados) están en el [README](../README.md#supuestos-y-limitaciones).
+
+---
+
+## 7. Mantenimiento
+
+- Un PR que cambie la constitución, `AGENTS.md`, las reglas de ArchUnit, los tests de trazabilidad, los workflows,
+  `pr-review.md` o `scripts/check-pr-size.sh` actualiza este documento en el mismo PR. Lo controla el chequeo 17
+  de la revisión automática.
+- Cuando una barrera planificada (⏳) se entrega, se actualiza su fila: se quita la marca y se enlaza el test.
+- Las reglas nuevas toman el siguiente ID libre de su área. Los IDs no se renumeran.
