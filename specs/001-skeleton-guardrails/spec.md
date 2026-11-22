@@ -55,7 +55,7 @@ reporting itself healthy.
 A developer (or agent) who puts a class in the wrong layer, uses a forbidden dependency or forgets
 `@Transactional` on a use case gets a failing build that names the rule.
 
-**Why this priority**: the implementing agent is a free model; the rules are the main safety net (TEC-04).
+**Why this priority**: the implementing agent is not the reviewer; the rules are the main safety net (TEC-04).
 
 **Independent Test**: run `ArchitectureTest`. It passes on the clean skeleton, and each rule fails when a
 deliberately violating class is compiled (verified during development, see `tasks.md`, then the violating
