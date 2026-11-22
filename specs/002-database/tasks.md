@@ -42,18 +42,18 @@
 
 ### Tests first
 
-- [ ] T009 Extend `SeedDataIT` to assert migration versions 1–5.
-- [ ] T010 [P] Add rows 5 to 13 of plan.md § Constraint checks to `SchemaConstraintsIT`.
-- [ ] T011 [P] Create `database/TimestampsAndSearchColumnsIT.java` (plan.md § Tests). Note: the UTC timestamp
+- [x] T009 Extend `SeedDataIT` to assert migration versions 1–5.
+- [x] T010 [P] Add rows 5 to 13 of plan.md § Constraint checks to `SchemaConstraintsIT`.
+- [x] T011 [P] Create `database/TimestampsAndSearchColumnsIT.java` (plan.md § Tests). Note: the UTC timestamp
   assertion depends on V2 (already merged) and passes immediately; the search-column assertions fail until V4.
-- [ ] T012 [P] Create `database/IndexesIT.java` with every index of data-model.md § Indexes.
-- [ ] T013 Run `./mvnw verify`. **Expected: the new tests fail** (columns, constraints and indexes from V3–V5 do
+- [x] T012 [P] Create `database/IndexesIT.java` with every index of data-model.md § Indexes.
+- [x] T013 Run `./mvnw verify`. **Expected: the new tests fail** (columns, constraints and indexes from V3–V5 do
   not exist). Record it.
 
 ### Implementation
 
-- [ ] T014 Copy V3, V4 and V5 byte-identical (plan.md § How to copy the migrations).
-- [ ] T015 Run `./mvnw verify` until green. If a migration fails, stop and report.
+- [x] T014 Copy V3, V4 and V5 byte-identical (plan.md § How to copy the migrations).
+- [x] T015 Run `./mvnw verify` until green. If a migration fails, stop and report.
 
 **Checkpoint 002-b**: open PR `002-b`.
 
