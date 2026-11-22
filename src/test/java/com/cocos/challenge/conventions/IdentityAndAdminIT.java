@@ -4,6 +4,7 @@ import com.cocos.challenge.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.client.EntityExchangeResult;
 import org.springframework.test.web.servlet.client.RestTestClient;
@@ -15,7 +16,7 @@ import java.util.Map;
 import static com.cocos.challenge.conventions.ProblemResponses.assertProblem;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Spec 003 US2 and US3 scenarios 2–3 (TEC-18, DEC-17). */
+/** Spec 003 US2 scenarios 1–3 and US3 scenarios 2–4 (TEC-18, DEC-17). */
 @IntegrationTest
 @Import(ProbeControllers.class)
 @TestPropertySource(properties = "cocos.internal-tools.enabled=true")
@@ -50,6 +51,14 @@ class IdentityAndAdminIT {
     }
 
     @Test
+    void userIdsBeyondTheSixtyFourBitRangeAreRejected() {
+        for (String header : List.of("9223372036854775808", "99999999999999999999")) {
+            assertProblem(user(header), 400, "VALIDATION_ERROR",
+                    "The 'X-User-Id' header must be a positive integer.", "/test/conventions/user");
+        }
+    }
+
+    @Test
     void adminCanCallAnEnabledInternalEndpoint() {
         assertThat(internal("ADMIN").returnResult(Void.class).getStatus().value()).isEqualTo(204);
     }
@@ -58,6 +67,20 @@ class IdentityAndAdminIT {
     void internalEndpointRequiresTheExactAdminRole() {
         for (String role : Arrays.asList(null, "admin", "USER")) {
             assertProblem(internal(role), 404, "NOT_FOUND", "Resource not found.", "/api/internal/probe");
+        }
+    }
+
+    @Test
+    void unsupportedMethodsDoNotRevealInternalRoutesWithoutTheAdminRole() {
+        for (HttpMethod method : List.of(HttpMethod.POST, HttpMethod.DELETE)) {
+            for (String role : Arrays.asList(null, "admin")) {
+                RestTestClient.RequestHeadersSpec<?> request = restTestClient.method(method)
+                        .uri("/api/internal/probe");
+                RestTestClient.ResponseSpec response = (role == null ? request : request.header("X-Role", role))
+                        .exchange();
+                assertProblem(response, 404, "NOT_FOUND", "Resource not found.", "/api/internal/probe");
+                response.expectHeader().doesNotExist("Allow");
+            }
         }
     }
 
