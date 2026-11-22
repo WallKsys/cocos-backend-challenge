@@ -6,10 +6,14 @@ import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.exception.OrderNotCancellableException;
 import com.cocos.challenge.domain.model.OrderStatus;
 import com.cocos.challenge.domain.model.UserId;
+import com.cocos.challenge.infrastructure.adapter.in.rest.idempotency.IdempotencyKeyHeader;
+import com.cocos.challenge.infrastructure.adapter.in.rest.idempotency.IdempotentResponses;
 import com.cocos.challenge.infrastructure.adapter.in.rest.identity.RequesterId;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Import;
@@ -34,9 +38,27 @@ public class ProbeControllers {
     @RequestMapping("/test/conventions")
     static class ConventionsProbeController {
 
+        private static final Logger log = LoggerFactory.getLogger(ConventionsProbeController.class);
+
         @GetMapping("/user")
         Map<String, Long> user(@RequesterId UserId userId) {
             return Map.of("userId", userId.value());
+        }
+
+        @PostMapping("/idempotent")
+        ResponseEntity<Map<String, String>> idempotent(@IdempotencyKeyHeader String key) {
+            return IdempotentResponses.created(Map.of("key", key));
+        }
+
+        @PostMapping("/replayed")
+        ResponseEntity<Map<String, String>> replayed() {
+            return IdempotentResponses.replayed(Map.of("key", "replayed"));
+        }
+
+        @GetMapping("/log")
+        ResponseEntity<Void> log() {
+            log.info("Conventions log probe");
+            return ResponseEntity.noContent().build();
         }
 
         @PostMapping("/validate")
