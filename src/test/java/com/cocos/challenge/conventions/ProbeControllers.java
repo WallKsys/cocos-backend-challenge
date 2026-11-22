@@ -5,11 +5,15 @@ import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.exception.OrderNotCancellableException;
 import com.cocos.challenge.domain.model.OrderStatus;
+import com.cocos.challenge.domain.model.UserId;
+import com.cocos.challenge.infrastructure.adapter.in.rest.identity.RequesterId;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,16 +21,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 /**
  * Test-only probes of spec 003. Imported only by the convention integration tests, never component-scanned.
  */
 @TestConfiguration
-@Import(ProbeControllers.ConventionsProbeController.class)
+@Import({ProbeControllers.ConventionsProbeController.class, ProbeControllers.InternalProbeController.class})
 public class ProbeControllers {
 
     @RestController
     @RequestMapping("/test/conventions")
     static class ConventionsProbeController {
+
+        @GetMapping("/user")
+        Map<String, Long> user(@RequesterId UserId userId) {
+            return Map.of("userId", userId.value());
+        }
 
         @PostMapping("/validate")
         ValidationRequest validate(@Valid @RequestBody ValidationRequest request) {
@@ -44,6 +55,17 @@ public class ProbeControllers {
                 case "invalid-request" -> throw new InvalidRequestException("The request is invalid.");
                 default -> throw new IllegalStateException("secret internal detail");
             }
+        }
+    }
+
+    @RestController
+    @RequestMapping("/api/internal/probe")
+    @ConditionalOnProperty(name = "cocos.internal-tools.enabled", havingValue = "true")
+    static class InternalProbeController {
+
+        @GetMapping
+        ResponseEntity<Void> probe() {
+            return ResponseEntity.noContent().build();
         }
     }
 
