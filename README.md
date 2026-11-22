@@ -37,9 +37,9 @@ La implementación avanza por funcionalidades (*specs*), cada una entregada en p
 
 | # | Funcionalidad | Estado |
 |---|---|---|
-| 001 | Esqueleto del servicio y barreras de calidad (build, CI, ArchUnit, BDD, trazabilidad) | 🚧 En curso: aplicación, CI y reglas de arquitectura entregadas |
-| 002 | Base de datos: esquema provisto + migraciones justificadas | ⏳ Pendiente |
-| 003 | Convenciones de la API (errores, identidad, montos, idempotencia) | ⏳ Pendiente |
+| 001 | Esqueleto del servicio y barreras de calidad (build, CI, ArchUnit, BDD, trazabilidad) | ✅ Completa |
+| 002 | Base de datos: esquema provisto + migraciones justificadas | ✅ Completa |
+| 003 | Convenciones de la API (errores, identidad, montos, idempotencia) | 🚧 En curso: bloques de dominio y catálogo de errores entregados |
 | 004 | Búsqueda de activos | ⏳ Pendiente |
 | 005 | Envío de órdenes | ⏳ Pendiente |
 | 006 | Portfolio | ⏳ Pendiente |
