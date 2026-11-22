@@ -38,6 +38,8 @@ of any user (internal, demo only). Domain extensions (level 2) except the admini
 - An invalid `status` filter → 400 `VALIDATION_ERROR`,
   `Request validation failed: 'status' must be one of NEW, FILLED, REJECTED, CANCELLED.`
 - An invalid history cursor → 400 `VALIDATION_ERROR`, `Request validation failed: 'cursor' is invalid.`
+- An `orderId` in the path that is not an integer (`GET /api/v1/orders/abc`, `POST /api/v1/orders/abc/cancel`) →
+  400 `VALIDATION_ERROR`, `Request validation failed: 'orderId' has an invalid type or format.` (DEC-25).
 - **CU-04.08** needs the forced-execution tool (I-02), which is delivered by spec 009. Here its step is implemented
   by a test helper that follows the same locking protocol the tool must follow (lock the user row, then update only
   if still `NEW`); spec 009 replaces the helper with a call to the real endpoint (plan.md § CU-04.08).
