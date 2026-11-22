@@ -162,7 +162,7 @@ exception is **never** copied into the response unless the table says so.
 | `HttpMessageNotReadableException` caused by `tools.jackson.databind.exc.UnrecognizedPropertyException` (DEC-24) | `VALIDATION_ERROR` | `Request validation failed: '<property>' is not a recognized field.` plus `errors` with that field and message `is not a recognized field` |
 | `HttpMessageNotReadableException` caused by any other `tools.jackson.databind.exc.MismatchedInputException` with a field path | `VALIDATION_ERROR` | `Request validation failed: '<path>' has an invalid type or format.` plus `errors` with that field |
 | other `HttpMessageNotReadableException` | `VALIDATION_ERROR` | `Malformed JSON request body.` |
-| `MethodArgumentTypeMismatchException` | `VALIDATION_ERROR` | `Request validation failed: '<name>' has an invalid type or format.` (DEC-25) |
+| `MethodArgumentTypeMismatchException` (query or path parameter) | `VALIDATION_ERROR` | `Request validation failed: '<name>' has an invalid type or format.` (DEC-25) |
 | `MissingServletRequestParameterException` | `VALIDATION_ERROR` | `Request validation failed: '<name>' is required.` (DEC-25) |
 | `NoResourceFoundException` | `NOT_FOUND` | `Resource not found.` |
 | `HttpRequestMethodNotSupportedException` | `METHOD_NOT_ALLOWED` | `Method <METHOD> is not supported for this resource.` |
@@ -333,7 +333,9 @@ never appear in other test contexts (in particular, not in `PublishedContractMat
   - `GET /throw/{kind}` throwing `NotFoundException`, `IdempotencyConflictException("k1")`,
     `OrderNotCancellableException(1234, FILLED)`, `InvalidRequestException("...")`, or
     `IllegalStateException("secret internal detail")`;
-  - `GET /log` → writes one INFO log line and returns 204 (for the MDC test).
+  - `GET /log` → writes one INFO log line and returns 204 (for the MDC test);
+  - `GET /required-param` with `@RequestParam("count") Integer count` (required) → `{"count": <count>}` (US1
+    scenario 12, DEC-25).
 - `InternalProbeController` at `/api/internal/probe`, annotated with `@ConditionalOnProperty` as in production
   → `GET` returns 204. The admin interceptor applies to it because it is registered by path (`/api/internal/**`).
 
@@ -344,7 +346,7 @@ not working as described.
 
 | Test | Covers |
 |---|---|
-| `ErrorHandlingIT` | US1 scenarios 1–11 |
+| `ErrorHandlingIT` | US1 scenarios 1–11 (slice 003-b) and 12 (slice 003-d) |
 | `IdentityAndAdminIT` (`cocos.internal-tools.enabled=true`) | US2 1–3, US3 2–3 |
 | `InternalToolsDisabledIT` (default properties) | US3 1 |
 | `IdempotencyKeyIT` | US4 1–4 |

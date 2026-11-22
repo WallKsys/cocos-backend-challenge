@@ -96,11 +96,16 @@ is merged; it is the source for both halves.
 
 ## Slice 003-d — Formats and business metrics (branch `003-api-conventions-d`)
 
-**Estimated size**: ~300 lines.
+**Estimated size**: ~330 lines.
 
 - [ ] T014 [P] Write `ApiDecimalsTest`, `DecimalStringValidatorTest` and `FormatsIT` (US5; add `/format` to the
   probes).
 - [ ] T015 [P] Write `MicrometerBusinessMetricsTest` with a `SimpleMeterRegistry` (US7).
+- [ ] T015a [P] Add the `/required-param` probe (plan.md § Probe endpoints) and two NEW methods to `ErrorHandlingIT`
+  for US1 scenario 12 (DEC-25): `count` missing and `count=abc`. Assert status, `application/problem+json`, code,
+  exact `detail` and that `errors` is null. Do not change existing methods. **These tests pass at once**: slice
+  003-b2 already implemented both mappings and this only adds their missing coverage. Say so in the PR instead of
+  showing a red run.
 - [ ] T016 Create skeletons of `ApiDecimals`, `DecimalString`, `DecimalStringValidator`, `BusinessMetrics`,
   `MicrometerBusinessMetrics`, `MetricsConfiguration`. Run tests: **they fail**. Record it.
 - [ ] T017 Implement plan.md § Formats and § Business metrics until green.

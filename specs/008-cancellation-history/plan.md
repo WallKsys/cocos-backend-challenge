@@ -105,7 +105,11 @@ UTC. `rejection` is built only when `rejection_code` is not null (seed `REJECTED
 
 - `OrderQueryController`: `GET /api/v1/orders` (`status`, `limit`, `cursor` query params), `GET
   /api/v1/orders/{orderId}`, `POST /api/v1/orders/{orderId}/cancel` — all with `@RequesterId UserId`. Cancel
-  answers 200 with `CancellationResponse` (all `OrderRecord` fields plus `alreadyCancelled`).
+  answers 200 with `CancellationResponse` (all `OrderRecord` fields plus `alreadyCancelled`). A non-integer
+  `orderId` produces Spring's `MethodArgumentTypeMismatchException` → `VALIDATION_ERROR` (spec 003) with detail
+  `Request validation failed: 'orderId' has an invalid type or format.` (DEC-25); `OrderQueryControllerIT` asserts
+  this exact detail for `GET /api/v1/orders/abc` and `POST /api/v1/orders/abc/cancel`. The path variable must be
+  named `orderId`.
 - `InternalOrderHistoryController` (`rest.internal`, `@ConditionalOnProperty`): `GET
   /api/internal/users/{userId}/orders`, same parameters and response as the user history.
 - `OrderRecordResponse` follows the contract schema `OrderRecord`: `quantity` null for cash movements; `amount` =

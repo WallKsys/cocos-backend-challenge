@@ -49,6 +49,10 @@ with `type`, `title`, `status`, `code`, `detail` and `instance`, and the `X-Requ
     still in English.
 11. **Given** a request body with an unknown field (`{"amount": "1.00", "quantity": 1, "userId": 1}`), **Then**
     400 `VALIDATION_ERROR`, detail `Request validation failed: 'userId' is not a recognized field.` (DEC-24).
+12. **Given** an endpoint with a required integer URL parameter `count`, **When** the parameter is missing, **Then**
+    400 `VALIDATION_ERROR`, detail `Request validation failed: 'count' is required.`; **when** it is `abc`, **then**
+    400 `VALIDATION_ERROR`, detail `Request validation failed: 'count' has an invalid type or format.` (DEC-25).
+    Neither response has an `errors` list.
 
 ---
 
