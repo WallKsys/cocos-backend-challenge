@@ -20,6 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import(ProbeControllers.class)
 class FormatsIT {
 
+    private static final String DECIMAL_MESSAGE =
+            "must be a decimal string with up to 16 integer digits and at most 2 decimal places";
+
     @Autowired
     RestTestClient restTestClient;
 
@@ -43,6 +46,49 @@ class FormatsIT {
         assertInvalidType("{\"amount\":925.85,\"quantity\":1}", "amount");
     }
 
+    @Test
+    void formatEndpointSerializesAmountsAndTimestamp() {
+        EntityExchangeResult<FormatResponse> result = restTestClient.get().uri("/test/conventions/format")
+                .exchange().returnResult(FormatResponse.class);
+        assertThat(result.getStatus().value()).isEqualTo(200);
+        assertThat(result.getResponseBody()).isEqualTo(new FormatResponse(
+                List.of("925.85", "50000.00", "-0.45"), "2026-11-21T14:36:00Z"));
+    }
+
+    @Test
+    void invalidDecimalStringsAreRejected() {
+        for (String amount : List.of("925.855", "1e3", "12,5", "")) {
+            assertInvalidDecimal(amount);
+        }
+    }
+
+    @Test
+    void shortDecimalStringsAreAccepted() {
+        for (String amount : List.of("925.8", "925")) {
+            EntityExchangeResult<ValidationResponse> result = validateAmount(amount)
+                    .returnResult(ValidationResponse.class);
+            assertThat(result.getStatus().value()).isEqualTo(200);
+            assertThat(result.getResponseBody()).isEqualTo(new ValidationResponse(amount, 1));
+        }
+    }
+
+    private void assertInvalidDecimal(String amount) {
+        EntityExchangeResult<Problem> result = validateAmount(amount).returnResult(Problem.class);
+        assertThat(result.getStatus().value()).isEqualTo(400);
+        assertThat(result.getResponseHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        Problem problem = result.getResponseBody();
+        assertThat(problem).isNotNull();
+        assertThat(problem.code()).isEqualTo("VALIDATION_ERROR");
+        assertThat(problem.detail()).isEqualTo("Request validation failed: 'amount' " + DECIMAL_MESSAGE);
+        assertThat(problem.instance()).isEqualTo("/test/conventions/validate");
+        assertThat(problem.errors()).containsExactly(new FieldError("amount", DECIMAL_MESSAGE));
+    }
+
+    private RestTestClient.ResponseSpec validateAmount(String amount) {
+        return restTestClient.post().uri("/test/conventions/validate").contentType(MediaType.APPLICATION_JSON)
+                .body("{\"amount\":\"" + amount + "\",\"quantity\":1}").exchange();
+    }
+
     private void assertInvalidType(String body, String field) {
         EntityExchangeResult<Problem> result = restTestClient.post().uri("/test/conventions/validate")
                 .contentType(MediaType.APPLICATION_JSON).body(body).exchange().returnResult(Problem.class);
@@ -62,6 +108,12 @@ class FormatsIT {
 
     private record Problem(String type, String title, int status, String code, String detail, String instance,
             List<FieldError> errors) {
+    }
+
+    private record FormatResponse(List<String> amounts, String at) {
+    }
+
+    private record ValidationResponse(String amount, Integer quantity) {
     }
 
     private record FieldError(String field, String message) {

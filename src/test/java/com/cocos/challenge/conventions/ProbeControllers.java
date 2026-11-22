@@ -6,6 +6,8 @@ import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.exception.OrderNotCancellableException;
 import com.cocos.challenge.domain.model.OrderStatus;
 import com.cocos.challenge.domain.model.UserId;
+import com.cocos.challenge.infrastructure.adapter.in.rest.format.ApiDecimals;
+import com.cocos.challenge.infrastructure.adapter.in.rest.format.DecimalString;
 import com.cocos.challenge.infrastructure.adapter.in.rest.idempotency.IdempotencyKeyHeader;
 import com.cocos.challenge.infrastructure.adapter.in.rest.idempotency.IdempotentResponses;
 import com.cocos.challenge.infrastructure.adapter.in.rest.identity.RequesterId;
@@ -23,8 +25,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -66,6 +72,18 @@ public class ProbeControllers {
             return request;
         }
 
+        @GetMapping("/format")
+        Map<String, Object> format() {
+            return Map.of("amounts", List.of(ApiDecimals.format(new BigDecimal("925.85")),
+                    ApiDecimals.format(new BigDecimal("50000")), ApiDecimals.format(new BigDecimal("-0.45"))),
+                    "at", Instant.parse("2026-11-21T14:36:00Z"));
+        }
+
+        @GetMapping("/required-param")
+        Map<String, Integer> requiredParam(@RequestParam("count") Integer count) {
+            return Map.of("count", count);
+        }
+
         @GetMapping("/throw/{kind}")
         void throwException(@PathVariable String kind) {
             switch (kind) {
@@ -91,6 +109,6 @@ public class ProbeControllers {
         }
     }
 
-    record ValidationRequest(@NotNull String amount, @NotNull @Positive Integer quantity) {
+    record ValidationRequest(@NotNull @DecimalString String amount, @NotNull @Positive Integer quantity) {
     }
 }
