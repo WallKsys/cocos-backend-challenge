@@ -55,8 +55,10 @@ Decide the verdict:
   constitution, the plan or a test rule, a failing or missing `verify` check (when CI exists), missing tasks, an
   implementation committed before the tests that verify it (check 15), or a claim in the description that the
   evidence contradicts (check 16).
-- A check that is still **pending** when you review is not a contradiction by itself: say so under
-  "Observaciones no bloqueantes" and do not count it as green.
+- The workflow waits for the CI `verify` check to finish before starting this review, so `verify` should already
+  be completed: a **failed** `verify` is a blocking finding. If it is still pending (the wait timed out), say so
+  under "Observaciones no bloqueantes" and do not count it as green. The `review` check is this review itself:
+  never report it as pending.
 - **APPROVE** only if there is no blocking finding.
 
 Write the review body in **Spanish** (the owner reads it), with this structure:
