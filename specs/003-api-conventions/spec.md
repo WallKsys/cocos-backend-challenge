@@ -97,10 +97,14 @@ with `type`, `title`, `status`, `code`, `detail` and `instance`, and the `X-Requ
    receives `k-1`.
 2. **When** the header is missing or blank, **Then** 400 `MISSING_IDEMPOTENCY_KEY`, detail
    `The 'Idempotency-Key' header is required for this operation.`
-3. **When** the key has more than 255 characters, or contains spaces or non-ASCII characters, **Then** 400
+3. **When** the key has more than 255 characters, contains a space inside it (`has space`) or contains non-ASCII
+   characters (`clé`), **Then** 400
    `VALIDATION_ERROR`, detail `The 'Idempotency-Key' header must be 1 to 255 visible ASCII characters.`
 4. **Given** an endpoint returns a replayed result, **Then** the response carries `Idempotent-Replayed: true`;
    otherwise the header is absent.
+5. **When** the key is sent with surrounding whitespace (` k-1 `), **Then** the endpoint receives `k-1`: leading and
+   trailing whitespace is not part of an HTTP header value (RFC 9110 §5.5) and the server removes it before the
+   application sees it.
 
 ---
 
@@ -158,8 +162,11 @@ with `type`, `title`, `status`, `code`, `detail` and `instance`, and the `X-Requ
 ### Edge Cases
 
 - `X-User-Id` with leading/trailing spaces (`" 1 "`) is accepted as 1; `"1.0"` is invalid.
-- `Idempotency-Key` is compared exactly (case-sensitive); it is not trimmed — a key with surrounding spaces is
-  invalid.
+- `Idempotency-Key` is compared exactly (case-sensitive). The application does not trim it: surrounding whitespace
+  never reaches it (US4 scenario 5), and whitespace inside the key is preserved and rejected.
+- A request that is malformed at the HTTP level (for example a control character in a header value) is rejected by
+  the servlet container with its own 400 before it reaches the application. That response is not a Problem; this is
+  a documented limitation.
 - Amount strings are not trimmed: `" 1.00"` is invalid.
 - Negative amounts are syntactically valid money; each endpoint decides whether it accepts them (orders and cash
   movements will require positive values in their own specs).

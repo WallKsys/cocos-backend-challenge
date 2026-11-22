@@ -326,6 +326,9 @@ Los logs de consola son JSON estructurado (formato ECS).
 - **Datos provistos con una inconsistencia:** el usuario 1 tiene una posición de **−10 BMA** (vendió más de lo que
   compró). Se respeta el dato original y el portfolio la muestra marcada como inconsistente.
 - **Sin comisiones**; los montos se redondean a 2 decimales con *half-up*.
+- **Pedidos mal formados a nivel HTTP** (por ejemplo, un carácter de control en un header): los rechaza el servidor
+  (Tomcat) con su propio 400 antes de llegar a la aplicación, así que esa respuesta no tiene el formato de error de
+  la API.
 - **Lenguaje:** el enunciado propone Node.js; esta entrega usa **Java 25 + Spring Boot 4.1**. Es una decisión
   deliberada y documentada ([PRD §1.1](docs/prd.md), [RFC TEC-01](docs/rfc.md)); el análisis funcional y el contrato
   de la API son independientes del lenguaje.
