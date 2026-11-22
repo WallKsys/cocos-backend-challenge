@@ -1,0 +1,15 @@
+package com.cocos.challenge.infrastructure.adapter.in.rest.error;
+
+public enum ApiErrorCode {
+    VALIDATION_ERROR,
+    MISSING_IDEMPOTENCY_KEY,
+    SEARCH_TERM_TOO_SHORT,
+    NOT_FOUND,
+    METHOD_NOT_ALLOWED,
+    NOT_ACCEPTABLE,
+    ORDER_NOT_CANCELLABLE,
+    UNSUPPORTED_MEDIA_TYPE,
+    IDEMPOTENCY_CONFLICT,
+    REQUEST_ERROR,
+    INTERNAL_ERROR
+}
