@@ -18,17 +18,35 @@ permissions:
   issues: write
   id-token: write
   actions: read
+  checks: read
 
 jobs:
   review:
     # Skip drafts, and PRs from forks (secrets are not available to them on a public repository).
     if: github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      # Review only after the CI "verify" check of this commit has finished, so the reviewer sees its real result.
+      # Waiting costs runner minutes only (no model usage). After 20 minutes it reviews anyway.
+      - name: Wait for the CI verify check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          for i in $(seq 1 60); do
+            status=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs?check_name=verify" --jq '.check_runs[0].status // "missing"' || echo "error")
+            conclusion=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs?check_name=verify" --jq '.check_runs[0].conclusion // ""' || echo "")
+            echo "verify: $status $conclusion"
+            if [ "$status" = "completed" ]; then exit 0; fi
+            sleep 20
+          done
+          echo "::warning::verify did not finish in 20 minutes; reviewing anyway"
 
       - uses: anthropics/claude-code-action@v1
         with:
