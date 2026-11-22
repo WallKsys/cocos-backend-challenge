@@ -64,14 +64,14 @@ is merged; it is the source for both halves.
 
 **Estimated size**: ~340 counted lines (tests and skeletons measured at ~270, plus the implementation).
 
-- [ ] T009 Extend `ProbeControllers` with `/user` and `InternalProbeController` only.
-- [ ] T010 [P] Write `IdentityAndAdminIT` (US2, US3 scenarios 2–3) and `InternalToolsDisabledIT` (US3 scenario 1),
+- [x] T009 Extend `ProbeControllers` with `/user` and `InternalProbeController` only.
+- [x] T010 [P] Write `IdentityAndAdminIT` (US2, US3 scenarios 2–3) and `InternalToolsDisabledIT` (US3 scenario 1),
   with the shared helper `ProblemResponses`.
-- [ ] T011 [P] Write `InternalToolsArchitectureTest` (plan.md § Identity and admin).
-- [ ] T012 Create skeletons of `RequesterId`, `RequesterIdArgumentResolver`, `AdminRoleInterceptor` and
+- [x] T011 [P] Write `InternalToolsArchitectureTest` (plan.md § Identity and admin).
+- [x] T012 Create skeletons of `RequesterId`, `RequesterIdArgumentResolver`, `AdminRoleInterceptor` and
   `WebConfiguration` (registering only what this slice needs). Run `./mvnw verify`: **the new tests fail**.
   Record it.
-- [ ] T013 Implement until green.
+- [x] T013 Implement until green.
 
 **Checkpoint**: open PR `003-c1`.
 
@@ -84,7 +84,9 @@ is merged; it is the source for both halves.
 **Before starting**: 003-c1 is merged.
 
 - [ ] T013a Extend `ProbeControllers` with `/idempotent`, `/replayed` and `/log`.
-- [ ] T013b [P] Write `IdempotencyKeyIT` (US4) and `RequestIdIT` (US6), reusing `ProblemResponses` from 003-c1.
+- [ ] T013b [P] Write `IdempotencyKeyIT` (US4) and `RequestIdIT` (US6), reusing `ProblemResponses` from 003-c1
+  and restoring its `X-Request-Id` header assertion (US6 coverage: the assertion was intentionally left out
+  of the helper in 003-c1, where `RequestIdFilter` does not exist yet).
 - [ ] T013c Create skeletons of `IdempotencyKeyHeader`, `IdempotencyKeyArgumentResolver`, `IdempotentResponses`,
   `RequestIdFilter` and `ClockConfiguration`, and register the idempotency key resolver in `WebConfiguration`.
   Run `./mvnw verify`: **the new tests fail**. Record it.
