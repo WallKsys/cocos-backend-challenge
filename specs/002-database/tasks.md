@@ -30,7 +30,7 @@
 - [x] T006 Copy V1 and V2 exactly as described in plan.md § How to copy the migrations (only V1 and V2 in this
   slice). Delete `src/main/resources/db/migration/.gitkeep`.
 - [x] T007 Run `./mvnw verify` until green. If a migration fails, **stop and report**: do not edit it.
-- [ ] T008 Run `docker compose up --build` and paste the `flyway_schema_history` query output in the PR.
+- [x] T008 Run `docker compose up --build` and paste the `flyway_schema_history` query output in the PR.
 
 **Checkpoint 002-a**: open PR `002-a`.
 
