@@ -20,13 +20,17 @@ Este proyecto construye la API que sostiene esa operatoria: **ver qué tengo, bu
 El problema de fondo no es exponer tres endpoints. Es hacerlo **sin perder nunca la consistencia del dinero**.
 Un broker no puede dejar a un usuario con saldo negativo, ejecutar dos veces una compra por un reintento de red ni mostrarle a un usuario datos de otro.
 
-El proyecto se desarrolla como práctica por cuenta propia, pero se diseña y evalúa **como si lo revisara un referente técnico de Cocos**.
+La entrega se diseña y se mide con el criterio de **un referente técnico de Cocos**: cada decisión queda documentada con su justificación, y cada requisito, verificado por tests.
 
 ### 1.1 Desvío consciente del enunciado: Java en lugar de Node.js
 
-El enunciado exige Node.js. Este proyecto se implementa en **Java** por decisión explícita del autor. Uno de los objetivos personales es practicar y dominar el **desarrollo asistido por agentes de IA** con *spec-driven development* (GitHub Spec Kit), BDD y reglas de arquitectura verificables (ArchUnit), y hacerlo en el stack que el autor elige. Un evaluador de Cocos lo consideraría un incumplimiento del requisito técnico; se documenta acá para que quede claro que es una decisión y no un descuido. Todo el análisis funcional, los casos de uso y este PRD son independientes del lenguaje.
+El enunciado exige Node.js. Esta entrega se implementa en **Java 25 con Spring Boot 4.1**. Es un desvío deliberado, no un descuido, y se declara acá para que quien evalúe lo vea desde el principio.
 
-**Forma de trabajo:** las definiciones, specs, escenarios BDD y reglas de arquitectura se dejan completas para que **otro agente de IA implemente** el código. Luego, ese código se revisa contra las specs.
+- **Motivo:** la entrega prioriza un proceso de ingeniería verificable: desarrollo guiado por specs (GitHub Spec Kit), escenarios BDD ejecutables y reglas de arquitectura comprobadas en el build (ArchUnit). El stack elegido tiene herramientas maduras para cada una de esas barreras (Cucumber-JVM, ArchUnit, Testcontainers).
+- **Costo aceptado:** quien evalúe puede considerarlo un incumplimiento del requisito técnico del enunciado.
+- **Mitigación:** el análisis funcional, los casos de uso, este PRD y el contrato de la API son independientes del lenguaje. Una implementación en Node.js podría reutilizarlos sin cambios.
+
+**Forma de trabajo:** desarrollo asistido por agentes de IA. Las definiciones, specs, escenarios BDD y reglas de arquitectura se escriben completas antes del código; **un agente de IA implementa** a partir de ellas, y cada entrega se revisa contra las specs.
 
 ## 2. Objetivos
 
