@@ -73,10 +73,10 @@ src/main/java/com/cocos/challenge/
     │   ├── format/DecimalString.java                      (constraint annotation)
     │   ├── format/DecimalStringValidator.java
     │   ├── tracing/RequestIdFilter.java
-    │   └── internal/AdminRoleInterceptor.java
+    │   └── internal/AdminRoleFilter.java
     ├── adapter/out/metrics/MicrometerBusinessMetrics.java
     └── config/
-        ├── WebConfiguration.java       registers the two argument resolvers and the admin interceptor
+        ├── WebConfiguration.java       registers the two argument resolvers and the admin filter
         ├── JacksonConfiguration.java   § Jackson
         ├── MetricsConfiguration.java   BusinessMetrics bean
         └── ClockConfiguration.java     java.time.Clock bean (Clock.systemUTC())
@@ -183,9 +183,21 @@ exception is **never** copied into the response unless the table says so.
 - `@RequesterId` (target: parameter) marks a controller parameter of type `UserId`.
   `RequesterIdArgumentResolver` reads `X-User-Id`: trims it; missing or blank → `ApiException(VALIDATION_ERROR,
   "The 'X-User-Id' header is required.")`; not matching `^\d+$`, zero, or greater than 2147483647 →
-  `ApiException(VALIDATION_ERROR, "The 'X-User-Id' header must be a positive integer.")`.
-- `AdminRoleInterceptor` is registered for `/api/internal/**`. If the header `X-Role` is not exactly `ADMIN`, it
-  throws `ApiException(NOT_FOUND, "Resource not found.")` — identical to a missing route.
+  `ApiException(VALIDATION_ERROR, "The 'X-User-Id' header must be a positive integer.")`. Check the range without
+  risking an overflow (more than 10 digits is already invalid): a `NumberFormatException` must never escape, because
+  it would become a 500.
+- `AdminRoleFilter` (`rest.internal`, `OncePerRequestFilter`) is registered in `WebConfiguration` with a
+  `FilterRegistrationBean` for the URL pattern `/api/internal/*`, with the default order (so it runs after
+  `RequestIdFilter`, which has the highest precedence). If the header `X-Role` is not exactly `ADMIN`, it does **not**
+  call the chain: it passes `new ApiException(NOT_FOUND, "Resource not found.")` to the `HandlerExceptionResolver`
+  bean named `handlerExceptionResolver` (`resolveException(request, response, null, exception)`), so
+  `ApiExceptionHandler` writes exactly the Problem of a missing route.
+  **Why a filter and not a `HandlerInterceptor`:** an interceptor runs after Spring MVC has matched the route. An
+  unsupported method on an existing internal route would then answer 405 with an `Allow` header (and an unsupported
+  content type, 415), revealing that the route exists (US3 scenario 4). The filter runs before the route is matched.
+  Verified on 2026-11-22 with Spring Boot 4.1.3: without the role, `GET`, `POST`, `DELETE`, a `POST` with
+  `application/xml` and the path variants `;x=1`, `/./`, `//`, `%2F`, trailing slash and upper case all answer the
+  same 404; with `ADMIN`, behavior is unchanged (204, and 405 for an unsupported method).
 - Internal controllers are annotated with
   `@ConditionalOnProperty(name = "cocos.internal-tools.enabled", havingValue = "true")`: when disabled they do not
   exist and Spring answers `NoResourceFoundException` → `NOT_FOUND` `Resource not found.`
@@ -337,7 +349,7 @@ never appear in other test contexts (in particular, not in `PublishedContractMat
   - `GET /required-param` with `@RequestParam("count") Integer count` (required) → `{"count": <count>}` (US1
     scenario 12, DEC-25).
 - `InternalProbeController` at `/api/internal/probe`, annotated with `@ConditionalOnProperty` as in production
-  → `GET` returns 204. The admin interceptor applies to it because it is registered by path (`/api/internal/**`).
+  → `GET` returns 204. The admin filter applies to it because it is registered by path (`/api/internal/*`).
 
 If a probe ever shows up in a context that did not import `ProbeControllers`, stop and report: the exclusion is
 not working as described.
@@ -347,7 +359,7 @@ not working as described.
 | Test | Covers |
 |---|---|
 | `ErrorHandlingIT` | US1 scenarios 1–11 (slice 003-b) and 12 (slice 003-d) |
-| `IdentityAndAdminIT` (`cocos.internal-tools.enabled=true`) | US2 1–3, US3 2–3 |
+| `IdentityAndAdminIT` (`cocos.internal-tools.enabled=true`) | US2 1–3, US3 2–4 |
 | `InternalToolsDisabledIT` (default properties) | US3 1 |
 | `IdempotencyKeyIT` | US4 1–4 |
 | `FormatsIT` | US5 1–4, plus: `{"quantity": 1.5}`, `{"quantity": "10"}` and `{"quantity": 10.0}` on the `/validate` probe → 400 `VALIDATION_ERROR` naming `quantity` |
