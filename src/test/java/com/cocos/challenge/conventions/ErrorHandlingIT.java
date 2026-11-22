@@ -29,6 +29,12 @@ class ErrorHandlingIT {
     }
 
     @Test
+    void domainExceptionSubclassUsesTheDomainMapping() {
+        assertProblem(get("/test/conventions/throw/not-found-subclass"), 404, "NOT_FOUND", "Resource not found",
+                "not-found", "Order subclass was not found.", "/test/conventions/throw/not-found-subclass");
+    }
+
+    @Test
     void unknownApiRouteIsNotFound() {
         assertProblem(get("/api/does-not-exist"), 404, "NOT_FOUND", "Resource not found", "not-found",
                 "Resource not found.", "/api/does-not-exist");

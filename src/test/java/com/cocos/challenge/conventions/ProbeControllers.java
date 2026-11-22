@@ -37,6 +37,8 @@ public class ProbeControllers {
         void throwException(@PathVariable String kind) {
             switch (kind) {
                 case "not-found" -> throw new NotFoundException("Order 1234 was not found.");
+                case "not-found-subclass" -> throw new NotFoundException("Order subclass was not found.") {
+                };
                 case "idempotency-conflict" -> throw new IdempotencyConflictException("k1");
                 case "order-not-cancellable" -> throw new OrderNotCancellableException(1234, OrderStatus.FILLED);
                 case "invalid-request" -> throw new InvalidRequestException("The request is invalid.");
