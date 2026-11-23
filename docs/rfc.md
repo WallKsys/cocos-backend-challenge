@@ -318,6 +318,8 @@ Los mensajes nunca revelan datos de otros usuarios. Por ejemplo, el error por un
 | `INSUFFICIENT_SHARES` | Venta que supera las acciones disponibles | `Insufficient available shares of PAMP in account 10001: required 41, available 40.` |
 | `AMOUNT_BELOW_PRICE` | Orden por monto que no alcanza para una acción (DEC-22) | `The amount ARS 500.00 is not enough to buy one share of PAMP at ARS 925.85.` |
 | `NO_MARKET_PRICE` | Orden `MARKET` sobre un instrumento sin market data | `No market price is available for PGR; MARKET orders cannot be executed.` |
+| `PRICE_OUT_OF_RANGE` | Orden `LIMIT` con un precio fuera de la banda de ±20 % del último precio (DEC-29) | `The limit price ARS 1111.03 is outside the allowed range for PAMP: ARS 740.68 to ARS 1111.02 (20% around the last price ARS 925.85).` |
+| `QUANTITY_TOO_LARGE` | Orden por monto que calcula más de 2.147.483.647 acciones (DEC-30) | `The amount ARS 9999999999.00 would buy more than 2147483647 shares of PGR at ARS 0.01.` |
 
 **Respuestas de éxito relevantes:**
 

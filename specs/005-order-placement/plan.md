@@ -126,9 +126,15 @@ CashBalance cash, ShareBalance shares)` → `OrderEvaluation`. Pure Java, no I/O
 
 1. **Reference price**: MARKET → `quote.close()`; if there is no quote → `REJECTED`, reason `NO_MARKET_PRICE`,
    quantity = requested quantity or 0 (by amount), price = null. LIMIT → the limit price.
+   **Price band** (LIMIT only, and only when there is a quote; DEC-29): `min` = `close × 0.80` rounded **UP**
+   (`RoundingMode.CEILING`) to 2 decimals, `max` = `close × 1.20` rounded **DOWN** (`RoundingMode.FLOOR`). A limit
+   price below `min` or above `max` → `REJECTED`, reason `PRICE_OUT_OF_RANGE`, quantity = requested quantity or 0
+   (by amount), price = the limit price. Both bounds are allowed (PAMP at 925.85: 740.68 to 1111.02). Without a
+   quote there is no band (CU-03.19).
 2. **Quantity**: by quantity → as requested. By amount → `amount / price` rounded **DOWN** to an integer
-   (`BigDecimal.divide(price, 0, RoundingMode.DOWN)`). If it is 0 → `REJECTED`, reason `AMOUNT_BELOW_PRICE`,
-   quantity 0, price = reference price.
+   (`BigDecimal.divide(price, 0, RoundingMode.DOWN)`). If it is greater than 2147483647 → `REJECTED`, reason
+   `QUANTITY_TOO_LARGE`, quantity 0, price = reference price (DEC-30). If it is 0 → `REJECTED`, reason
+   `AMOUNT_BELOW_PRICE`, quantity 0, price = reference price.
 3. **Total** = `quantity × price` (`Money.times`).
 4. **Availability**: BUY → total must be ≤ `cash.available()`, otherwise `INSUFFICIENT_FUNDS`. SELL → quantity must
    be ≤ `shares.available()`, otherwise `INSUFFICIENT_SHARES`. Rejected orders keep the computed quantity and price.
@@ -142,6 +148,8 @@ Rejection messages (English, exact; money as plain text with 2 decimals; `<acct>
 | `INSUFFICIENT_SHARES` | `Insufficient available shares of <TICKER> in account <acct>: required <quantity>, available <available>.` |
 | `AMOUNT_BELOW_PRICE` | `The amount ARS <amount> is not enough to buy one share of <TICKER> at ARS <price>.` (`sell` for SELL) |
 | `NO_MARKET_PRICE` | `No market price is available for <TICKER>; MARKET orders cannot be executed.` |
+| `PRICE_OUT_OF_RANGE` | `The limit price ARS <price> is outside the allowed range for <TICKER>: ARS <min> to ARS <max> (20% around the last price ARS <close>).` |
+| `QUANTITY_TOO_LARGE` | `The amount ARS <amount> would buy more than 2147483647 shares of <TICKER> at ARS <price>.` (`sell` for SELL) |
 
 Available shares may be negative (seed BMA: `-10`); the message shows it as is (DEC-11).
 
@@ -264,6 +272,7 @@ Every CU test carries `@Tag("<CU id>")` plus `unit` or `integration`.
 | CU | Unit (class) | Integration (class) |
 |---|---|---|
 | 03.01–03.12, 03.13–03.19, 03.38–03.40 | `OrderEvaluatorTest` (one test per CU with the scenario's numbers) | — (BDD covers the HTTP path) |
+| 03.43, 03.44, 03.45, 03.46 | `OrderEvaluatorTest` (also, without a CU tag: one cent inside and one cent outside each bound, a SELL by amount with `QUANTITY_TOO_LARGE`) | — (BDD covers the HTTP path) |
 | 03.20 | `PlaceOrderServiceTest` (fake lock returns empty → `NotFoundException`) | — |
 | 03.21, 03.28 | `PlaceOrderServiceTest` (fake instrument repository) | — |
 | 03.22, 03.24, 03.25, 03.26, 03.27 | `OrderRequestTest` | — |
@@ -290,5 +299,8 @@ lock — use two threads and assert ordering), `OrderEvaluatorTest` rounding cas
 - `cp specs/005-order-placement/contracts/openapi.yaml src/main/resources/static/openapi/openapi.yaml`
 - `cp specs/005-order-placement/features/cu-03-order-placement.feature src/test/resources/features/`
 - `cp specs/005-order-placement/migrations/V6__orders_requested_amount.sql src/main/resources/db/migration/`
+- `cp specs/005-order-placement/migrations/V7__orders_new_rejection_codes.sql src/main/resources/db/migration/`
+  (CM-13: the two new rejection codes in `orders_rejection_code_check`; verified on PostgreSQL 18 on top of V1–V6,
+  it accepts both new codes and still rejects an unknown one)
 - `http/005-order-placement.http`: market buy by quantity, by amount, limit sell, a rejection, a replay (same key),
   a conflict.

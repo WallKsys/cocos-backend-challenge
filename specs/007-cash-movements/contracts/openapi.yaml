@@ -419,7 +419,8 @@ components:
       enum: [NEW, FILLED, REJECTED, CANCELLED]
     RejectionReason:
       type: string
-      enum: [INSUFFICIENT_FUNDS, INSUFFICIENT_SHARES, AMOUNT_BELOW_PRICE, NO_MARKET_PRICE]
+      enum: [INSUFFICIENT_FUNDS, INSUFFICIENT_SHARES, AMOUNT_BELOW_PRICE, NO_MARKET_PRICE, PRICE_OUT_OF_RANGE,
+             QUANTITY_TOO_LARGE]
     ErrorCode:
       type: string
       enum:

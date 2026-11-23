@@ -26,7 +26,8 @@ idempotency by client key.
 
 ### User Story 2 - Limit orders that reserve what they commit (Priority: P1)
 
-**Acceptance Scenarios**: CU-03.13 to CU-03.19, CU-03.38, CU-03.40.
+**Acceptance Scenarios**: CU-03.13 to CU-03.19, CU-03.38, CU-03.40, CU-03.43 to CU-03.46 (price band and maximum
+quantity, DEC-29 and DEC-30).
 
 ### User Story 3 - Invalid requests store nothing (Priority: P1)
 
@@ -61,7 +62,7 @@ idempotency by client key.
 - **FR-004**: The flow MUST follow Constitution Principle VII (lock → idempotency → evaluate → store).
 - **FR-005**: Every processed order MUST be recorded with `BusinessMetrics.orderProcessed`; replays with
   `idempotentReplay`; conflicts with `idempotencyConflict`; the lock wait with `accountLockWaited`.
-- **FR-006**: Migration V6 MUST be copied byte-identical from `specs/005-order-placement/migrations/`.
+- **FR-006**: Migrations V6 and V7 MUST be copied byte-identical from `specs/005-order-placement/migrations/`.
 
 ### Key Entities
 
