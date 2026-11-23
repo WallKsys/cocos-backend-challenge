@@ -5,7 +5,10 @@ import com.cocos.challenge.domain.model.OrderStatus;
 import com.cocos.challenge.domain.model.OrderType;
 import com.cocos.challenge.domain.model.RejectionReason;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -22,10 +25,20 @@ class MicrometerBusinessMetricsTest {
 
     private SimpleMeterRegistry registry;
     private MicrometerBusinessMetrics metrics;
+    private DistributionStatisticConfig accountLockWaitConfig;
 
     @BeforeEach
     void setUp() {
         registry = new SimpleMeterRegistry();
+        registry.config().meterFilter(new MeterFilter() {
+            @Override
+            public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
+                if (id.getName().equals("cocos.account.lock.wait")) {
+                    accountLockWaitConfig = config;
+                }
+                return config;
+            }
+        });
         metrics = new MicrometerBusinessMetrics(registry);
     }
 
@@ -57,7 +70,7 @@ class MicrometerBusinessMetricsTest {
         assertThat(timer.count()).isEqualTo(1);
         assertThat(timer.totalTime(TimeUnit.MILLISECONDS)).isEqualTo(125.0);
         assertThat(timer.getId().getTags()).isEmpty();
-        assertThat(timer.takeSnapshot().histogramCounts()).isNotEmpty();
+        assertThat(accountLockWaitConfig.isPercentileHistogram()).isTrue();
     }
 
     @Test
