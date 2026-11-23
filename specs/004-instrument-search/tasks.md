@@ -28,11 +28,11 @@
 (repository + its IT).
 
 - [x] T004 [P] Write `SearchInstrumentsServiceTest` with a fake `InstrumentSearchRepository`.
-- [ ] T005 [P] Write `JdbcInstrumentSearchRepositoryIT` (`@IntegrationTest`), one test per row of plan.md § Tests that
+- [x] T005 [P] Write `JdbcInstrumentSearchRepositoryIT` (`@IntegrationTest`), one test per row of plan.md § Tests that
   has an integration test, with the exact expected tickers of the feature file.
-- [ ] T006 Create skeletons of `SearchInstrumentsQuery`, `InstrumentSearchRepository`, `SearchInstrumentsService`,
+- [x] T006 Create skeletons of `SearchInstrumentsQuery`, `InstrumentSearchRepository`, `SearchInstrumentsService`,
   `JdbcInstrumentSearchRepository`, `InstrumentSearchConfiguration`. Run: **tests fail**. Record it.
-- [ ] T007 Implement plan.md § Application and § Persistence until green; ArchUnit green.
+- [x] T007 Implement plan.md § Application and § Persistence until green; ArchUnit green.
 
 **Checkpoint**: open PR `004-b`.
 
