@@ -339,13 +339,16 @@ Los logs de consola son JSON estructurado (formato ECS).
 
 El proyecto se construye con **spec-driven development** ([GitHub Spec Kit](https://github.com/github/spec-kit)):
 
-1. **Análisis funcional** del enunciado: reglas explícitas, ambigüedades y 24 decisiones de producto justificadas.
+1. **Análisis funcional** del enunciado: reglas explícitas, ambigüedades y 25 decisiones de producto justificadas.
 2. **PRD** con objetivos y métricas de éxito; **RFC** con 34 decisiones técnicas y sus alternativas descartadas.
 3. **Constitución** del proyecto: reglas no negociables (arquitectura, dinero, concurrencia, testing, tamaño de PR).
 4. **Una spec por funcionalidad**, con plan, contrato OpenAPI, escenarios Gherkin y tareas divididas en PRs
    revisables.
 5. **Implementación test-first** por un agente de desarrollo asistido por IA que sigue las specs, con revisión
    automática y manual de cada PR. Los tests aprobados no se modifican para que pasen.
+
+Todas las reglas que guían al agente, con dónde se decidió cada una, por qué y qué la hace cumplir (build, merge o
+revisión), están reunidas en [Reglas y barreras](docs/reglas-y-barreras.md).
 
 ---
 
@@ -358,6 +361,7 @@ El proyecto se construye con **spec-driven development** ([GitHub Spec Kit](http
 | [PRD](docs/prd.md) | Objetivos, alcance, requisitos y métricas de éxito |
 | [RFC](docs/rfc.md) | Decisiones técnicas (TEC-xx) con alternativas evaluadas |
 | [Constitución](.specify/memory/constitution.md) | Reglas de ingeniería no negociables |
+| [Reglas y barreras](docs/reglas-y-barreras.md) | Índice de todas las reglas, dónde se decidieron y qué las hace cumplir |
 | [Specs](specs/) | Spec, plan, contrato, escenarios y tareas de cada funcionalidad |
 | [Enunciado original](docs/referencia/backend-challenge.md) | Challenge y `database.sql` provistos |
 
