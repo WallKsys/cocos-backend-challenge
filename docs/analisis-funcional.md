@@ -4,8 +4,8 @@
 > dominio, alcance, reglas explícitas, ambigüedades detectadas y las decisiones tomadas para resolverlas.
 > No contiene decisiones técnicas (lenguaje, arquitectura, librerías): esas van en un documento aparte.
 
-- Enunciado original: [`referencia/backend-challenge.md`](referencia/backend-challenge.md)
-- Script de base provisto: [`referencia/database.sql`](referencia/database.sql)
+- Enunciado original: [`referencia/backend-challenge.md`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/docs/referencia/backend-challenge.md)
+- Script de base provisto: [`referencia/database.sql`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/docs/referencia/database.sql)
 - Fecha de inicio del análisis: 2026-11-21
 - **Estado:** análisis funcional **cerrado** (2026-11-21), pendiente de cualquier ajuste que surja en la etapa técnica. Decisiones DEC-01 a DEC-20; casos de uso y escenarios en [`casos-de-uso.md`](casos-de-uso.md). DEC-11 quedó marcada como revisable.
 
@@ -317,7 +317,7 @@ BMA      -10      0   1.502,80    -15.028,00   1.540,00       -2,42 %      -1,15
 
 ## 8. Cambios al modelo de datos provisto
 
-El enunciado permite modificar o agregar tablas justificándolo. Estos son los cambios que **exigen las decisiones funcionales**. Su forma técnica (nombre de columna, tipo, índice, migración) se define en la etapa técnica. El archivo original se conserva sin cambios en [`referencia/database.sql`](referencia/database.sql) para poder comparar.
+El enunciado permite modificar o agregar tablas justificándolo. Estos son los cambios que **exigen las decisiones funcionales**. Su forma técnica (nombre de columna, tipo, índice, migración) se define en la etapa técnica. El archivo original se conserva sin cambios en [`referencia/database.sql`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/docs/referencia/database.sql) para poder comparar.
 
 | ID | Cambio | Tabla | Origen | Justificación |
 |---|---|---|---|---|

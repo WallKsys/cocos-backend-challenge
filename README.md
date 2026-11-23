@@ -354,6 +354,10 @@ revisión), están reunidas en [Reglas y barreras](docs/reglas-y-barreras.md).
 
 ## Documentación
 
+La documentación de `docs/` también se publica como sitio navegable, con buscador, en
+**[wallksys.github.io/cocos-backend-challenge](https://wallksys.github.io/cocos-backend-challenge/)**. Se regenera en
+cada merge a `main` y se previsualiza localmente con `pip install -r requirements-docs.txt && zensical serve`.
+
 | Documento | Contenido |
 |---|---|
 | [Análisis funcional](docs/analisis-funcional.md) | Dominio, reglas del enunciado, ambigüedades y decisiones de producto (DEC-xx) |

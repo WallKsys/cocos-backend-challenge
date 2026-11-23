@@ -5,7 +5,7 @@
 | **Estado** | **Aprobado** (2026-11-21) |
 | **Fecha** | 2026-11-21 |
 | **Plazo** | 5 días (2026-11-21 → 2026-11-26) |
-| **Documentos relacionados** | [Análisis funcional](analisis-funcional.md) (razonamiento y decisiones DEC-xx) · [Casos de uso](casos-de-uso.md) (criterios de aceptación CU-xx) · [Enunciado original](referencia/backend-challenge.md) |
+| **Documentos relacionados** | [Análisis funcional](analisis-funcional.md) (razonamiento y decisiones DEC-xx) · [Casos de uso](casos-de-uso.md) (criterios de aceptación CU-xx) · [Enunciado original](https://github.com/WallKsys/cocos-backend-challenge/blob/main/docs/referencia/backend-challenge.md) |
 
 > Este PRD define **qué** se construye y **por qué**, y cómo se mide el éxito. El **cómo** (tecnología, arquitectura,
 > herramientas de prueba) se define en el RFC. Las referencias DEC-xx y CU-xx apuntan al detalle en los documentos relacionados.

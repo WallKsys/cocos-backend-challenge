@@ -389,8 +389,8 @@ Los mensajes nunca revelan datos de otros usuarios. Por ejemplo, el error por un
 - **Etiquetas permitidas:** operación, side, tipo de orden, estado, motivo de rechazo y resultado. **Prohibido** usar como etiqueta `userId`, id de orden, clave de idempotencia o ticker: crearían millones de series distintas (alta cardinalidad) y saturarían el backend de métricas.
 - **Arquitectura:** `domain` y `application` no conocen Micrometer ni OpenTelemetry. `application` registra los hechos de negocio a través del puerto de salida **`BusinessMetrics`** (`application.port.out`), implementado con Micrometer en `infrastructure.adapter.out.metrics`. ArchUnit lo controla.
 - **Tableros versionados** en el repositorio (JSON de Grafana, aprovisionados automáticamente al levantar el compose):
-  - **Salud de la aplicación:** disponibilidad (health), latencia p95/p99 por endpoint, tasa de errores 4xx/5xx, pool de conexiones, JVM.
-  - **Negocio:** las métricas de la tabla anterior.
+    - **Salud de la aplicación:** disponibilidad (health), latencia p95/p99 por endpoint, tasa de errores 4xx/5xx, pool de conexiones, JVM.
+    - **Negocio:** las métricas de la tabla anterior.
 - **Distribución en specs:** el puerto `BusinessMetrics` y su adaptador se crean en la spec 003, para que cada funcionalidad registre sus métricas desde su propia spec. El backend, la exportación OTLP, la correlación de trazas y logs y los tableros se hacen en la **spec 010**.
 
 **Justificación.** Un broker necesita detectar en tiempo real anomalías de negocio (por ejemplo, un pico de rechazos por `INSUFFICIENT_FUNDS` o de conflictos de idempotencia) además de la salud técnica. OpenTelemetry es el estándar actual de la industria y Spring Boot 4 lo soporta de forma nativa; la imagen todo-en-uno mantiene el arranque en un solo comando. Separar el tiempo real (contadores) del histórico (SQL sobre el libro contable) da números exactos sin duplicar datos. Definir el puerto desde la spec 003 evita retocar funcionalidades ya terminadas.
