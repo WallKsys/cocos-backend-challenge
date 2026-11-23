@@ -107,6 +107,26 @@ class PlaceOrderServiceTest {
         assertThat(ports.calls).containsSubsequence("save", "BUY MARKET REJECTED INSUFFICIENT_FUNDS");
     }
 
+    @Test
+    void limitOrderUsesQuoteToRejectPriceOutsideTheBand() {
+        var request = OrderRequest.of(47L, "BUY", "LIMIT", 10, null, "1111.03");
+
+        var result = service.place(new PlaceOrderCommand(USER, "outside-band", request));
+
+        assertThat(ports.orders).containsExactly(result.order());
+        assertThat(result.order().status()).isEqualTo(OrderStatus.REJECTED);
+        assertThat(result.order().rejection().reason()).isEqualTo(RejectionReason.PRICE_OUT_OF_RANGE);
+    }
+
+    @Test
+    void passesTheOriginalRequestedAmountToTheRepository() {
+        var request = OrderRequest.of(47L, "BUY", "MARKET", null, "50000.00", null);
+
+        service.place(new PlaceOrderCommand(USER, "buy-by-amount", request));
+
+        assertThat(ports.lastSaved.requestedAmount()).isEqualTo(Money.of("50000.00"));
+    }
+
     private static PlaceOrderCommand buy(UserId user, String key, int quantity) {
         return new PlaceOrderCommand(user, key, OrderRequest.of(47L, "BUY", "MARKET", quantity, null, null));
     }
@@ -115,6 +135,7 @@ class PlaceOrderServiceTest {
             LedgerReader, MarketDataRepository, BusinessMetrics {
         final List<String> calls = new ArrayList<>();
         final List<Order> orders = new ArrayList<>();
+        NewOrder lastSaved;
 
         public Optional<Account> lock(UserId user) {
             calls.add("lock");
@@ -133,6 +154,7 @@ class PlaceOrderServiceTest {
 
         public Order save(NewOrder order) {
             calls.add("save");
+            lastSaved = order;
             long id = orders.size() + 1L;
             Order saved = new Order(id, order.userId(), order.instrumentId(), order.ticker(), order.side(), order.type(),
                     order.status(), order.quantity(), order.price(), order.requestedAmount(), order.rejection(),
