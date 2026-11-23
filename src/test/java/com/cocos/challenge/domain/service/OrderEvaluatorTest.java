@@ -318,6 +318,94 @@ class OrderEvaluatorTest {
         assertThat(evaluation.status()).isEqualTo(OrderStatus.FILLED);
     }
 
+    @Test
+    @Tag("CU-03.43")
+    void rejectsLimitPriceAboveTheBand() {
+        assertOutsidePampBand("BUY", "1111.03");
+    }
+
+    @Test
+    @Tag("CU-03.44")
+    void rejectsLimitPriceBelowTheBand() {
+        assertOutsidePampBand("SELL", "740.67");
+    }
+
+    @Test
+    @Tag("CU-03.45")
+    void acceptsLimitPriceAtTheUpperBound() {
+        OrderEvaluation evaluation = evaluate(OrderRequest.of(47L, "BUY", "LIMIT", 10, null, "1111.02"));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.NEW);
+        assertThat(evaluation.rejection()).isNull();
+        assertThat(total(evaluation)).isEqualTo(Money.of("11110.20"));
+        assertThat(SEED_CASH.available().minus(total(evaluation))).isEqualTo(Money.of("616389.80"));
+    }
+
+    @Test
+    @Tag("CU-03.46")
+    void rejectsBuyByAmountAboveTheMaximumQuantity() {
+        assertQuantityTooLarge("BUY", "buy");
+    }
+
+    @Test
+    void rejectsSellByAmountAboveTheMaximumQuantity() {
+        assertQuantityTooLarge("SELL", "sell");
+    }
+
+    @Test
+    void roundsTheBandInwardsAndIncludesBothBounds() {
+        MarketQuote quote = new MarketQuote(Money.of("1.02"), Money.of("1.02"));
+        for (String price : new String[]{"0.82", "0.83", "1.21", "1.22"}) {
+            OrderEvaluation evaluation = evaluate(
+                    OrderRequest.of(47L, "BUY", "LIMIT", 10, null, price), PAMP, quote, PAMP_SHARES);
+            assertThat(evaluation.status()).as("limit price %s", price).isEqualTo(OrderStatus.NEW);
+        }
+        for (String price : new String[]{"0.81", "1.23"}) {
+            // The amount alone would fail with AMOUNT_BELOW_PRICE.
+            OrderEvaluation evaluation = evaluate(
+                    OrderRequest.of(47L, "BUY", "LIMIT", null, "0.01", price), PAMP, quote, PAMP_SHARES);
+            assertThat(evaluation.status()).as("limit price %s", price).isEqualTo(OrderStatus.REJECTED);
+            assertThat(evaluation.quantity()).isZero();
+            assertThat(evaluation.price()).isEqualTo(Money.of(price));
+            assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.PRICE_OUT_OF_RANGE);
+        }
+    }
+
+    @Test
+    void acceptsCalculatedQuantityAtTheMaximum() {
+        OrderEvaluation evaluation = evaluate(
+                OrderRequest.of(3L, "BUY", "LIMIT", null, "2147483647.99", "1.00"),
+                PGR, null, new ShareBalance(0, 0));
+
+        assertThat(evaluation.quantity()).isEqualTo(Integer.MAX_VALUE);
+        assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.INSUFFICIENT_FUNDS);
+    }
+
+    private void assertOutsidePampBand(String side, String price) {
+        OrderEvaluation evaluation = evaluate(OrderRequest.of(47L, side, "LIMIT", 10, null, price));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.REJECTED);
+        assertThat(evaluation.quantity()).isEqualTo(10);
+        assertThat(evaluation.price()).isEqualTo(Money.of(price));
+        assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.PRICE_OUT_OF_RANGE);
+        assertThat(evaluation.rejection().message()).isEqualTo(
+                "The limit price ARS " + price + " is outside the allowed range for PAMP: "
+                        + "ARS 740.68 to ARS 1111.02 (20% around the last price ARS 925.85).");
+    }
+
+    private void assertQuantityTooLarge(String side, String verb) {
+        OrderEvaluation evaluation = evaluate(
+                OrderRequest.of(3L, side, "LIMIT", null, "9999999999.00", "0.01"),
+                PGR, null, new ShareBalance(0, 0));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.REJECTED);
+        assertThat(evaluation.quantity()).isZero();
+        assertThat(evaluation.price()).isEqualTo(Money.of("0.01"));
+        assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.QUANTITY_TOO_LARGE);
+        assertThat(evaluation.rejection().message()).isEqualTo(
+                "The amount ARS 9999999999.00 would " + verb + " more than 2147483647 shares of PGR at ARS 0.01.");
+    }
+
     private static Money total(OrderEvaluation evaluation) {
         return evaluation.price().times(BigDecimal.valueOf(evaluation.quantity()));
     }
