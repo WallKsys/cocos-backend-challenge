@@ -44,6 +44,22 @@ public class OrderEvaluator {
                     quantity, price);
         }
         OrderStatus status = request.type() == OrderType.MARKET ? OrderStatus.FILLED : OrderStatus.NEW;
+        if (request.side() == OrderSide.BUY) {
+            Money total = price.times(BigDecimal.valueOf(quantity));
+            if (total.isGreaterThan(cash.available())) {
+                return rejected(RejectionReason.INSUFFICIENT_FUNDS,
+                        "Insufficient available cash in account " + account.accountNumber()
+                                + ": required ARS " + total.amount().toPlainString()
+                                + ", available ARS " + cash.available().amount().toPlainString() + ".",
+                        quantity, price);
+            }
+        } else if (quantity > shares.available()) {
+            return rejected(RejectionReason.INSUFFICIENT_SHARES,
+                    "Insufficient available shares of " + instrument.ticker()
+                            + " in account " + account.accountNumber()
+                            + ": required " + quantity + ", available " + shares.available() + ".",
+                    quantity, price);
+        }
         return new OrderEvaluation(status, quantity, price, null);
     }
 

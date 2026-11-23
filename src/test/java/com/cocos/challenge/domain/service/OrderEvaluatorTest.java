@@ -31,6 +31,8 @@ class OrderEvaluatorTest {
     private static final Account ACCOUNT = new Account(new UserId(1), "10001");
     private static final Instrument PAMP = new Instrument(new InstrumentId(47), "PAMP", InstrumentType.ACCIONES);
     private static final Instrument PGR = new Instrument(new InstrumentId(3), "PGR", InstrumentType.ACCIONES);
+    private static final Instrument BMA = new Instrument(new InstrumentId(31), "BMA", InstrumentType.ACCIONES);
+    private static final Instrument GGAL = new Instrument(new InstrumentId(34), "GGAL", InstrumentType.ACCIONES);
     private static final MarketQuote PAMP_QUOTE = new MarketQuote(Money.of("925.85"), Money.of("921.80"));
     private static final CashBalance SEED_CASH = new CashBalance(Money.of("753000.00"), Money.of("125500.00"));
     private static final ShareBalance PAMP_SHARES = new ShareBalance(40, 0);
@@ -193,6 +195,100 @@ class OrderEvaluatorTest {
     }
 
     @Test
+    @Tag("CU-03.03")
+    void buyAboveTheAvailableCashIsRejectedAndKeepsTheComputedValues() {
+        OrderEvaluation evaluation = evaluate(OrderRequest.of(47L, "BUY", "MARKET", 1000, null, null));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.REJECTED);
+        assertThat(evaluation.quantity()).isEqualTo(1000);
+        assertThat(evaluation.price()).isEqualTo(Money.of("925.85"));
+        assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.INSUFFICIENT_FUNDS);
+        assertThat(evaluation.rejection().message()).isEqualTo(
+                "Insufficient available cash in account 10001: required ARS 925850.00, available ARS 627500.00.");
+    }
+
+    @Test
+    @Tag("CU-03.04")
+    void reservedCashCannotBeSpent() {
+        OrderEvaluation evaluation = evaluate(OrderRequest.of(47L, "BUY", "MARKET", 700, null, null));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.REJECTED);
+        assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.INSUFFICIENT_FUNDS);
+        assertThat(evaluation.rejection().message()).isEqualTo(
+                "Insufficient available cash in account 10001: required ARS 648095.00, available ARS 627500.00.");
+    }
+
+    @Test
+    @Tag("CU-03.06")
+    void sellAboveTheAvailableSharesIsRejected() {
+        OrderEvaluation evaluation = evaluate(OrderRequest.of(47L, "SELL", "MARKET", 41, null, null));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.REJECTED);
+        assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.INSUFFICIENT_SHARES);
+        assertThat(evaluation.rejection().message()).isEqualTo(
+                "Insufficient available shares of PAMP in account 10001: required 41, available 40.");
+    }
+
+    @Test
+    @Tag("CU-03.07")
+    void sellingAnInstrumentThatIsNotHeldIsRejected() {
+        OrderEvaluation evaluation = evaluate(
+                OrderRequest.of(34L, "SELL", "MARKET", 1, null, null), GGAL, PAMP_QUOTE, new ShareBalance(0, 0));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.REJECTED);
+        assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.INSUFFICIENT_SHARES);
+        assertThat(evaluation.rejection().message()).isEqualTo(
+                "Insufficient available shares of GGAL in account 10001: required 1, available 0.");
+    }
+
+    @Test
+    @Tag("CU-03.08")
+    void sellingFromTheNegativeSeedPositionIsRejected() {
+        OrderEvaluation evaluation = evaluate(
+                OrderRequest.of(31L, "SELL", "MARKET", 1, null, null), BMA, PAMP_QUOTE, new ShareBalance(-10, 0));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.REJECTED);
+        assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.INSUFFICIENT_SHARES);
+        assertThat(evaluation.rejection().message()).isEqualTo(
+                "Insufficient available shares of BMA in account 10001: required 1, available -10.");
+    }
+
+    @Test
+    @Tag("CU-03.09")
+    void sellByAmountIsNeverReducedToTheAvailableShares() {
+        OrderEvaluation evaluation = evaluate(OrderRequest.of(47L, "SELL", "MARKET", null, "50000.00", null));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.REJECTED);
+        assertThat(evaluation.quantity()).isEqualTo(54);
+        assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.INSUFFICIENT_SHARES);
+        assertThat(evaluation.rejection().message()).isEqualTo(
+                "Insufficient available shares of PAMP in account 10001: required 54, available 40.");
+    }
+
+    @Test
+    @Tag("CU-03.16")
+    void reservedSharesCannotBeSold() {
+        OrderEvaluation evaluation = evaluate(
+                OrderRequest.of(47L, "SELL", "MARKET", 11, null, null), PAMP, PAMP_QUOTE, new ShareBalance(40, 30));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.REJECTED);
+        assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.INSUFFICIENT_SHARES);
+        assertThat(evaluation.rejection().message()).isEqualTo(
+                "Insufficient available shares of PAMP in account 10001: required 11, available 10.");
+    }
+
+    @Test
+    @Tag("CU-03.18")
+    void limitBuyAboveTheAvailableCashIsRejected() {
+        OrderEvaluation evaluation = evaluate(OrderRequest.of(47L, "BUY", "LIMIT", 1000, null, "900.00"));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.REJECTED);
+        assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.INSUFFICIENT_FUNDS);
+        assertThat(evaluation.rejection().message()).isEqualTo(
+                "Insufficient available cash in account 10001: required ARS 900000.00, available ARS 627500.00.");
+    }
+
+    @Test
     void quantityOfAnAmountOrderRoundsDownToWholeShares() {
         assertThat(evaluate(OrderRequest.of(47L, "BUY", "MARKET", null, "50000.00", null)).quantity())
                 .isEqualTo(54);
@@ -202,6 +298,24 @@ class OrderEvaluatorTest {
                 .isEqualTo(21);
         assertThat(evaluate(OrderRequest.of(47L, "BUY", "LIMIT", null, "949.99", "950.00")).quantity())
                 .isZero();
+    }
+
+    @Test
+    void buyWhoseTotalEqualsTheAvailableCashIsFilled() {
+        OrderRequest request = OrderRequest.of(47L, "BUY", "MARKET", 2, null, null);
+        CashBalance cash = new CashBalance(Money.of("1851.70"), Money.of("0.00"));
+
+        OrderEvaluation evaluation = evaluator.evaluate(
+                request, PAMP, Optional.of(PAMP_QUOTE), ACCOUNT, cash, PAMP_SHARES);
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.FILLED);
+    }
+
+    @Test
+    void sellOfExactlyTheAvailableSharesIsFilled() {
+        OrderEvaluation evaluation = evaluate(OrderRequest.of(47L, "SELL", "MARKET", 40, null, null));
+
+        assertThat(evaluation.status()).isEqualTo(OrderStatus.FILLED);
     }
 
     private static Money total(OrderEvaluation evaluation) {
