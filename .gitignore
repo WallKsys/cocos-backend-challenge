@@ -40,3 +40,6 @@ target/
 
 ### Documentation site (zensical build) ###
 site/
+
+### Claude Code local data (session worktrees, local settings) ###
+.claude/
