@@ -1,5 +1,6 @@
 package com.cocos.challenge.domain.model;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 public record Order(
@@ -8,10 +9,11 @@ public record Order(
         Instant createdAt, String idempotencyKey, RequestFingerprint fingerprint) {
 
     public Money totalAmount() {
-        throw new UnsupportedOperationException();
+        return price == null ? null : price.times(BigDecimal.valueOf(quantity));
     }
 
     public Money remainingAmount() {
-        throw new UnsupportedOperationException();
+        Money total = totalAmount();
+        return requestedAmount == null || total == null ? null : requestedAmount.minus(total);
     }
 }

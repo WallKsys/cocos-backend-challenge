@@ -55,11 +55,11 @@ half follows the test-first cycle on its own and leaves the suite green:
 **Estimated size**: ~390 lines. Split into c1 (lock + ledger + instrument + market data) and c2 (order repository +
 V6) if needed.
 
-- [ ] T007 Copy V6 (plan.md § Contract, features and HTTP examples). Extend `SeedDataIT` (spec 002) to expect
+- [x] T007 Copy V6 (plan.md § Contract, features and HTTP examples). Extend `SeedDataIT` (spec 002) to expect
   migrations 1–6.
-- [ ] T008 [P] Write `JdbcLedgerReaderIT`, `JdbcAccountLockIT`, `JdbcOrderRepositoryIT` (CU-03.33, 03.35, 03.37, 03.42).
-- [ ] T009 Skeletons of the ports and `Jdbc*` adapters. **Fail**. Record.
-- [ ] T010 Implement plan.md § Persistence until green.
+- [x] T008 [P] Write `JdbcLedgerReaderIT`, `JdbcAccountLockIT`, `JdbcOrderRepositoryIT` (CU-03.33, 03.35, 03.37, 03.42).
+- [x] T009 Skeletons of the ports and `Jdbc*` adapters. **Fail**. Record.
+- [x] T010 Implement plan.md § Persistence until green.
 
 ## Slice 005-c3 — Migration V7 for the new rejection codes (branch `005-order-placement-c3`)
 
