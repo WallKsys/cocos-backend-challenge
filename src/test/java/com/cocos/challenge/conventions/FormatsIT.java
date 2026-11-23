@@ -79,7 +79,7 @@ class FormatsIT {
         Problem problem = result.getResponseBody();
         assertThat(problem).isNotNull();
         assertThat(problem.code()).isEqualTo("VALIDATION_ERROR");
-        assertThat(problem.detail()).isEqualTo("Request validation failed: 'amount' " + DECIMAL_MESSAGE);
+        assertThat(problem.detail()).isEqualTo("Request validation failed: 'amount' " + DECIMAL_MESSAGE + ".");
         assertThat(problem.instance()).isEqualTo("/test/conventions/validate");
         assertThat(problem.errors()).containsExactly(new FieldError("amount", DECIMAL_MESSAGE));
     }
