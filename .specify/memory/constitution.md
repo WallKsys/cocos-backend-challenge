@@ -59,6 +59,7 @@ For each spec (`specs/NNN-*`), follow this cycle in order (TEC-08):
 (TEC-09). If you believe a test or scenario is wrong, STOP and report it with your reasoning. Forbidden
 examples: `@Disabled`, `@Ignore`, `assumeTrue(false)`, deleting assertions, widening expected values,
 catching and swallowing exceptions in tests, editing `.feature` files.
+The only exception is a change that the slice's `tasks.md` **prescribes for a named existing test file**, for example extending `SeedDataIT`'s expected migration versions when a migration is added, or switching a BDD step to a real endpoint. That change goes in the tests commit, does exactly what the task says and nothing else, and is explained in the PR under "Test adjustments after the red run".
 
 ### IV. Every scenario is verified, and traceability is enforced by the build
 
@@ -260,4 +261,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.3.5 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21 (v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)
+**Version**: 1.3.6 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-23 (v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)

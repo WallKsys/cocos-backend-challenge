@@ -50,7 +50,9 @@ in PR #N, continue" or "Address the review of PR #N". Everything else is in this
 ### 2. Implement
 
 1. Create the branch named in `tasks.md` (`NNN-short-name-<letter>`) from the updated `main`.
-2. **Commit 1, tests:** new test classes, or NEW methods in existing classes. Never change an existing test method.
+2. **Commit 1, tests:** new test classes, or NEW methods in existing classes. Never change an existing test method,
+   unless the slice's `tasks.md` prescribes that change for that file (Constitution III): then make exactly that
+   change in this commit and explain it in the PR.
 3. **Commit 2, skeletons:** they compile and keep the rest of the application working (for example, a filter
    skeleton passes the request through). Run `./mvnw verify` and confirm that the new tests fail **for the expected
    reason**; keep that output for the PR. A task that `tasks.md` says "passes at once" needs no red run: say so in
@@ -98,7 +100,8 @@ Integration tests need Docker running (Testcontainers).
 
 ## Never do this
 
-- Never modify, disable, skip or weaken an existing test or a `.feature` file to make the build pass.
+- Never modify, disable, skip or weaken an existing test or a `.feature` file to make the build pass. The only
+  exception is a change that the slice's `tasks.md` prescribes for a named test file (Constitution III).
 - Never use JPA, Hibernate, Spring Data JPA or any ORM. All SQL is hand-written with `JdbcClient` in
   `infrastructure.adapter.out.persistence`.
 - Never use `double` or `float` for money.
