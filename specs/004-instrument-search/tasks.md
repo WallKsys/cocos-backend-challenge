@@ -12,11 +12,11 @@
 
 **Estimated size**: ~330 lines.
 
-- [ ] T001 [P] Write unit tests `PercentageTest`, `MarketQuoteTest`, `SearchTermTest`, `SearchCursorTest`,
+- [x] T001 [P] Write unit tests `PercentageTest`, `MarketQuoteTest`, `SearchTermTest`, `SearchCursorTest`,
   `InstrumentSearchCriteriaTest` (plan.md § Domain rules), with the CU tags of plan.md § Tests.
-- [ ] T002 Create skeletons of the domain types and `SearchTermTooShortException`. Run
+- [x] T002 Create skeletons of the domain types and `SearchTermTooShortException`. Run
   `./mvnw test -Dgroups=unit`: **tests fail**. Record it.
-- [ ] T003 Implement until green; `./mvnw verify` green.
+- [x] T003 Implement until green; `./mvnw verify` green.
 
 **Checkpoint**: open PR `004-a`.
 
