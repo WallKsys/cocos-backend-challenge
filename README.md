@@ -270,7 +270,7 @@ cambio: [análisis funcional §8](docs/analisis-funcional.md).
 |---|---|---|
 | Unitarios | JUnit + AssertJ | Reglas de dominio sin Spring ni base de datos |
 | Integración | Testcontainers (PostgreSQL 18 real) | SQL, bloqueos, idempotencia ante reintentos simultáneos, paginado |
-| Aceptación | Cucumber (BDD) | **124 escenarios** de [casos de uso](docs/casos-de-uso.md), con valores calculados sobre los datos del challenge |
+| Aceptación | Cucumber (BDD) | **128 escenarios** de [casos de uso](docs/casos-de-uso.md), con valores calculados sobre los datos del challenge |
 | Arquitectura | ArchUnit | Capas, dependencias, `@Transactional`, sin ORM, sin `double` para dinero |
 | Trazabilidad | Test propio | Cada escenario tiene su escenario Gherkin y al menos un test; si falta uno, el build falla |
 | Planes de ejecución | `EXPLAIN` en el build | Ninguna consulta crítica puede perder sus índices sin romper el build |
@@ -361,7 +361,7 @@ cada merge a `main` y se previsualiza localmente con `pip install -r requirement
 | Documento | Contenido |
 |---|---|
 | [Análisis funcional](docs/analisis-funcional.md) | Dominio, reglas del enunciado, ambigüedades y decisiones de producto (DEC-xx) |
-| [Casos de uso](docs/casos-de-uso.md) | 124 escenarios de aceptación (dado / cuando / entonces) con valores reales |
+| [Casos de uso](docs/casos-de-uso.md) | 128 escenarios de aceptación (dado / cuando / entonces) con valores reales |
 | [PRD](docs/prd.md) | Objetivos, alcance, requisitos y métricas de éxito |
 | [RFC](docs/rfc.md) | Decisiones técnicas (TEC-xx) con alternativas evaluadas |
 | [Constitución](.specify/memory/constitution.md) | Reglas de ingeniería no negociables |

@@ -35,6 +35,19 @@ half follows the test-first cycle on its own and leaves the suite green:
 - [x] T005 Skeletons of `Account`, `Instrument`, `CashBalance`, `ShareBalance`, `OrderEvaluator`. **Fail**. Record.
 - [x] T006 Implement plan.md § Order evaluation until green.
 
+## Slice 005-b3 — Price band and maximum quantity (branch `005-order-placement-b3`)
+
+**Manual review**: required. Focus: the band bounds (rounded inwards, both allowed), the rule order (band before quantity, maximum before `AMOUNT_BELOW_PRICE`), the exact messages and the boundary tests.
+
+**Estimated size**: ~150 lines. Added on 2026-11-23 (DEC-29, DEC-30), after 005-b was merged. Domain only: the migration for the new codes is slice 005-c3.
+
+- [ ] T022 Write NEW methods in `OrderEvaluatorTest` (never change existing ones): CU-03.43, CU-03.44, CU-03.45 and
+  CU-03.46, plus, without a CU tag, one cent inside and one cent outside each band bound and a SELL by amount with
+  `QUANTITY_TOO_LARGE` (plan.md § Order evaluation and § Tests).
+- [ ] T023 Add `PRICE_OUT_OF_RANGE` and `QUANTITY_TOO_LARGE` to `RejectionReason`. Run the unit tests: **the new tests
+  fail**. Record it.
+- [ ] T024 Implement the price band and the maximum quantity in `OrderEvaluator` until green.
+
 ## Slice 005-c — Persistence (branch `005-order-placement-c`)
 
 **Manual review**: required. If the slice is split, both halves get it. Focus: the cash and share ledger SQL, the `FOR UPDATE` lock, the lightweight idempotency record lookup (a deposit with cents) and UTC timestamps.
@@ -47,6 +60,17 @@ V6) if needed.
 - [ ] T008 [P] Write `JdbcLedgerReaderIT`, `JdbcAccountLockIT`, `JdbcOrderRepositoryIT` (CU-03.33, 03.35, 03.37, 03.42).
 - [ ] T009 Skeletons of the ports and `Jdbc*` adapters. **Fail**. Record.
 - [ ] T010 Implement plan.md § Persistence until green.
+
+## Slice 005-c3 — Migration V7 for the new rejection codes (branch `005-order-placement-c3`)
+
+**Manual review**: required. Focus: V7 copied byte-identical, and the database accepts both new codes and still rejects an unknown one.
+
+**Estimated size**: ~60 lines. Added on 2026-11-23 (DEC-29, DEC-30). It comes after 005-c, so migrations stay in version order.
+
+- [ ] T025 Add NEW cases to `SchemaConstraintsIT` (spec 002): a `REJECTED` order with `PRICE_OUT_OF_RANGE` and one with
+  `QUANTITY_TOO_LARGE` (quantity 0) succeed. Extend `SeedDataIT` to expect migration versions 1 to 7. Run
+  `./mvnw verify`: **the new cases fail**. Record it.
+- [ ] T026 Copy V7 byte-identical (plan.md § Contract, features and HTTP examples). Run `./mvnw verify` until green.
 
 ## Slice 005-d — Use case (branch `005-order-placement-d`)
 

@@ -275,6 +275,52 @@ Feature: Order placement
     Then the order is created with status "REJECTED"
     And the order rejection is "AMOUNT_BELOW_PRICE" with message "The amount ARS 800.00 is not enough to buy one share of PAMP at ARS 1000.00."
 
+  @CU-03.43
+  Scenario: A limit price above the price band is rejected
+    When user 1 places an order:
+      | instrument | PAMP    |
+      | side       | BUY     |
+      | type       | LIMIT   |
+      | quantity   | 10      |
+      | price      | 1111.03 |
+    Then the order is created with status "REJECTED"
+    And the order rejection is "PRICE_OUT_OF_RANGE" with message "The limit price ARS 1111.03 is outside the allowed range for PAMP: ARS 740.68 to ARS 1111.02 (20% around the last price ARS 925.85)."
+    And the available cash of user 1 is "627500.00"
+
+  @CU-03.44
+  Scenario: A limit price below the price band is rejected
+    When user 1 places an order:
+      | instrument | PAMP   |
+      | side       | SELL   |
+      | type       | LIMIT  |
+      | quantity   | 10     |
+      | price      | 740.67 |
+    Then the order is created with status "REJECTED"
+    And the order rejection is "PRICE_OUT_OF_RANGE" with message "The limit price ARS 740.67 is outside the allowed range for PAMP: ARS 740.68 to ARS 1111.02 (20% around the last price ARS 925.85)."
+    And user 1 can sell 40 shares of "PAMP"
+
+  @CU-03.45
+  Scenario: A limit price on the edge of the price band is accepted
+    When user 1 places an order:
+      | instrument | PAMP    |
+      | side       | BUY     |
+      | type       | LIMIT   |
+      | quantity   | 10      |
+      | price      | 1111.02 |
+    Then the order is created with status "NEW"
+    And the available cash of user 1 is "616389.80"
+
+  @CU-03.46
+  Scenario: An order by amount that would buy too many shares is rejected
+    When user 1 places an order:
+      | instrument | PGR           |
+      | side       | BUY           |
+      | type       | LIMIT         |
+      | amount     | 9999999999.00 |
+      | price      | 0.01          |
+    Then the order is created with status "REJECTED"
+    And the order rejection is "QUANTITY_TOO_LARGE" with message "The amount ARS 9999999999.00 would buy more than 2147483647 shares of PGR at ARS 0.01."
+
   # ---------------------------------------------------------------- Invalid requests: nothing is stored
 
   @CU-03.20

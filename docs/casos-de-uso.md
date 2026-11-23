@@ -121,6 +121,10 @@ Salvo que el escenario diga otra cosa, se parte de los **datos semilla** y del *
 | CU-03.38 | PAMP 40 | `SELL` `LIMIT` por $ 20.000 de PAMP a $ 950 | `NEW` por **21** acciones (⌊20.000 / 950⌋); se reservan 21 acciones (quedan 19 disponibles); la respuesta informa monto real $ 19.950,00 y sobrante $ 50,00 (DEC-14). |
 | CU-03.39 | PAMP 40, último precio $ 925,85 | `SELL` `MARKET` por $ 500 de PAMP | `REJECTED` (`AMOUNT_BELOW_PRICE`), mensaje *"The amount ARS 500.00 is not enough to sell one share of PAMP at ARS 925.85."* (DEC-22). |
 | CU-03.40 | Disponible $ 627.500, último precio PAMP $ 925,85 | `BUY` `LIMIT` por $ 800 de PAMP a $ 1.000 | `REJECTED` (`AMOUNT_BELOW_PRICE`): la cantidad se calcula con el **precio límite** ($ 1.000), no con el `close` (DEC-06, DEC-22). |
+| CU-03.43 | Último precio PAMP $ 925,85 (banda $ 740,68 a $ 1.111,02) | `BUY` `LIMIT` 10 PAMP a $ 1.111,03 | `REJECTED` (`PRICE_OUT_OF_RANGE`): *"The limit price ARS 1111.03 is outside the allowed range for PAMP: ARS 740.68 to ARS 1111.02 (20% around the last price ARS 925.85)."* No se reserva nada (DEC-29). |
+| CU-03.44 | PAMP 40, último precio $ 925,85 | `SELL` `LIMIT` 10 PAMP a $ 740,67 | `REJECTED` (`PRICE_OUT_OF_RANGE`) con el mismo rango; no se reservan acciones (DEC-29). |
+| CU-03.45 | Disponible $ 627.500, último precio PAMP $ 925,85 | `BUY` `LIMIT` 10 PAMP a $ 1.111,02 (el máximo de la banda) | `NEW`; se reservan $ 11.110,20. Los dos bordes de la banda se aceptan (DEC-29). |
+| CU-03.46 | PGR sin market data | `BUY` `LIMIT` por $ 9.999.999.999,00 de PGR a $ 0,01 | `REJECTED` (`QUANTITY_TOO_LARGE`), cantidad 0: *"The amount ARS 9999999999.00 would buy more than 2147483647 shares of PGR at ARS 0.01."* (DEC-30). |
 
 ### Pedidos inválidos (error, **no** se guardan · DEC-05)
 
