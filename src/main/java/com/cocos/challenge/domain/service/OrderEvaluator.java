@@ -23,6 +23,10 @@ import java.util.Optional;
  */
 public class OrderEvaluator {
 
+    private static final BigDecimal LOWER_PRICE_FACTOR = new BigDecimal("0.80");
+    private static final BigDecimal UPPER_PRICE_FACTOR = new BigDecimal("1.20");
+    private static final BigDecimal MAX_QUANTITY = BigDecimal.valueOf(Integer.MAX_VALUE);
+
     public OrderEvaluation evaluate(
             OrderRequest request, Instrument instrument, Optional<MarketQuote> quote, Account account,
             CashBalance cash, ShareBalance shares) {
@@ -34,7 +38,25 @@ public class OrderEvaluator {
                             + "; MARKET orders cannot be executed.",
                     quantity, null);
         }
-        long quantity = quantity(request, price);
+        if (request.type() == OrderType.LIMIT && quote.isPresent()) {
+            Rejection rejection = priceBandRejection(instrument, price, quote.get().close());
+            if (rejection != null) {
+                long quantity = request.byQuantity() ? request.quantity() : 0;
+                return new OrderEvaluation(OrderStatus.REJECTED, quantity, price, rejection);
+            }
+        }
+
+        BigDecimal calculatedQuantity = quantity(request, price);
+        // DEC-30: check the maximum before converting to an integer or computing the total.
+        if (calculatedQuantity.compareTo(MAX_QUANTITY) > 0) {
+            return rejected(RejectionReason.QUANTITY_TOO_LARGE,
+                    "The amount ARS " + request.amount().amount().toPlainString() + " would "
+                            + (request.side() == OrderSide.BUY ? "buy" : "sell")
+                            + " more than " + Integer.MAX_VALUE + " shares of " + instrument.ticker()
+                            + " at ARS " + price.amount().toPlainString() + ".",
+                    0, price);
+        }
+        long quantity = calculatedQuantity.longValueExact();
         if (quantity == 0) {
             return rejected(RejectionReason.AMOUNT_BELOW_PRICE,
                     "The amount ARS " + request.amount().amount().toPlainString() + " is not enough to "
@@ -70,11 +92,25 @@ public class OrderEvaluator {
         return request.price();
     }
 
-    private static long quantity(OrderRequest request, Money price) {
-        if (request.byQuantity()) {
-            return request.quantity();
+    private static Rejection priceBandRejection(Instrument instrument, Money price, Money close) {
+        // DEC-29: round the bounds inwards and allow both endpoints.
+        BigDecimal min = close.amount().multiply(LOWER_PRICE_FACTOR).setScale(2, RoundingMode.CEILING);
+        BigDecimal max = close.amount().multiply(UPPER_PRICE_FACTOR).setScale(2, RoundingMode.FLOOR);
+        if (price.amount().compareTo(min) >= 0 && price.amount().compareTo(max) <= 0) {
+            return null;
         }
-        return request.amount().amount().divide(price.amount(), 0, RoundingMode.DOWN).longValueExact();
+        return new Rejection(RejectionReason.PRICE_OUT_OF_RANGE,
+                "The limit price ARS " + price.amount().toPlainString()
+                        + " is outside the allowed range for " + instrument.ticker()
+                        + ": ARS " + min.toPlainString() + " to ARS " + max.toPlainString()
+                        + " (20% around the last price ARS " + close.amount().toPlainString() + ").");
+    }
+
+    private static BigDecimal quantity(OrderRequest request, Money price) {
+        if (request.byQuantity()) {
+            return BigDecimal.valueOf(request.quantity());
+        }
+        return request.amount().amount().divide(price.amount(), 0, RoundingMode.DOWN);
     }
 
     private static OrderEvaluation rejected(
