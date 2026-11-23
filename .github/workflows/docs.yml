@@ -1,0 +1,58 @@
+name: Docs
+
+# Documentation site (docs/reglas-y-barreras.md, REV-10). Every PR that touches the documentation builds the site in
+# strict mode, so a broken link fails before the merge. Every merge to main publishes it to GitHub Pages.
+# The Markdown files in docs/ are the only source.
+
+on:
+  pull_request:
+    paths: [docs/**, zensical.toml, requirements-docs.txt, .github/workflows/docs.yml]
+  push:
+    branches: [main]
+    paths: [docs/**, zensical.toml, requirements-docs.txt, .github/workflows/docs.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install the pinned documentation tools
+        run: pip install -r requirements-docs.txt
+
+      - name: Build the site in strict mode (warnings such as broken links fail the build)
+        run: zensical build --clean --strict
+
+      - name: Upload the site for GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: docs
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v6
+
+      - id: deployment
+        uses: actions/deploy-pages@v5

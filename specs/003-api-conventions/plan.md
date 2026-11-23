@@ -300,8 +300,15 @@ Tags are **only** these. Never a user id, order id, idempotency key or ticker (T
 
 - Copy `specs/003-api-conventions/contracts/openapi.yaml` to `src/main/resources/static/openapi/openapi.yaml`
   byte-identical (`cp`). Each later spec replaces it with its own cumulative contract.
-- `PublishedContractIsLatestSpecContractTest` (unit): find the folder `specs/NNN-*` with the highest `NNN` that
-  contains `contracts/openapi.yaml`; assert its bytes equal the published file.
+- `PublishedContractIsLatestSpecContractTest` (unit). Every spec contract is committed from the start (specs 003 to
+  009), so "latest" means **the latest implemented spec**, and the published file declares which one it is. Read
+  `info.version` from the published YAML (SnakeYAML); it is `0.N.0` for spec `N` (verified for specs 003 to 009).
+  Find the single folder `specs/NNN-*` with that number (`0.3.0` → `specs/003-*`), and assert that its
+  `contracts/openapi.yaml` exists and that its bytes equal the published file. A missing or malformed version, or
+  no matching folder, fails the test. Do **not** pick the highest-numbered folder: that is a future spec.
+  Together with `PublishedContractMatchesRoutesIT`, this guarantees that the published file is a verbatim spec
+  contract whose routes are exactly the implemented ones. Every later spec adds routes, so a stale copy fails the
+  route test.
 - `PublishedContractMatchesRoutesIT`: start the context with `cocos.internal-tools.enabled=true`; collect every
   `(HTTP method, path pattern)` of `RequestMappingHandlerMapping` whose path starts with `/api/`; parse the
   published YAML (SnakeYAML is on the classpath) and collect `(method, path)` from `paths`; assert both sets are
