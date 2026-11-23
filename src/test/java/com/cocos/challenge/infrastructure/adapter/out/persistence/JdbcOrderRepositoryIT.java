@@ -115,6 +115,18 @@ class JdbcOrderRepositoryIT {
         assertThat(replay.remainingAmount()).isEqualTo(amount);
     }
 
+    @Test
+    void findByIdReadsTheTickerOfTheStoredInstrument() {
+        JdbcOrderRepository repository = new JdbcOrderRepository(jdbc);
+        RequestFingerprint fingerprint = OrderRequest.of(54L, "BUY", "MARKET", 1, null, null).fingerprint();
+        NewOrder order = new NewOrder(USER, new InstrumentId(54), "METR", OrderSide.BUY, OrderType.MARKET,
+                OrderStatus.FILLED, 1, Money.of("100.00"), null, null, CREATED_AT, "metr-ticker", fingerprint);
+
+        Order saved = repository.save(order);
+
+        assertThat(repository.findById(saved.id()).ticker()).isEqualTo("METR");
+    }
+
     private static NewOrder buy(UserId user, String key) {
         return new NewOrder(user, PAMP, "PAMP", OrderSide.BUY, OrderType.MARKET, OrderStatus.FILLED,
                 1, Money.of("925.85"), null, null, CREATED_AT, key, BUY_FINGERPRINT);
