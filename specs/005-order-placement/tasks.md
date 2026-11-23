@@ -70,10 +70,10 @@ V6) if needed.
 **Not a half of 005-c.** 005-c is one slice, or the halves 005-c1 and 005-c2 when it is split (V6 is in 005-c, or in
 005-c2). 005-c3 is an independent slice: start it only when every task of 005-c is checked on `main`.
 
-- [ ] T025 Add NEW cases to `SchemaConstraintsIT` (spec 002): a `REJECTED` order with `PRICE_OUT_OF_RANGE` and one with
+- [x] T025 Add NEW cases to `SchemaConstraintsIT` (spec 002): a `REJECTED` order with `PRICE_OUT_OF_RANGE` and one with
   `QUANTITY_TOO_LARGE` (quantity 0) succeed. Extend `SeedDataIT` to expect migration versions 1 to 7. Run
   `./mvnw verify`: **the new cases fail**. Record it.
-- [ ] T026 Copy V7 byte-identical (plan.md § Contract, features and HTTP examples). Run `./mvnw verify` until green.
+- [x] T026 Copy V7 byte-identical (plan.md § Contract, features and HTTP examples). Run `./mvnw verify` until green.
 
 ## Slice 005-d — Use case (branch `005-order-placement-d`)
 
