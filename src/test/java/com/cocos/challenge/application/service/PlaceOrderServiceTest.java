@@ -166,7 +166,7 @@ class PlaceOrderServiceTest {
         }
 
         public void accountLockWaited(Duration duration) {
-            assertThat(duration).isNotNegative();
+            assertThat(duration.isNegative()).isFalse();
             calls.add("wait");
         }
 
