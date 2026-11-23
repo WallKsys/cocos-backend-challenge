@@ -83,6 +83,34 @@ class SchemaConstraintsIT {
     }
 
     @Test
+    void priceOutOfRangeRejectionIsAccepted() {
+        assertThatNoException().isThrownBy(() -> insertRejectedLimitOrder(
+                47, 10, new BigDecimal("1111.03"), null, "PRICE_OUT_OF_RANGE"));
+    }
+
+    @Test
+    void quantityTooLargeRejectionWithZeroSharesIsAccepted() {
+        assertThatNoException().isThrownBy(() -> insertRejectedLimitOrder(
+                3, 0, new BigDecimal("0.01"), new BigDecimal("9999999999.00"), "QUANTITY_TOO_LARGE"));
+    }
+
+    private void insertRejectedLimitOrder(
+            int instrumentId, int quantity, BigDecimal price, BigDecimal requestedAmount, String reason) {
+        jdbcClient.sql("""
+                        INSERT INTO orders (instrumentid, userid, size, price, side, status, type, datetime,
+                                            requested_amount, rejection_code, rejection_message)
+                        VALUES (:instrumentId, 1, :quantity, :price, 'BUY', 'REJECTED', 'LIMIT',
+                                CURRENT_TIMESTAMP, :requestedAmount, :reason, 'Rejected for the constraint test')
+                        """)
+                .param("instrumentId", instrumentId)
+                .param("quantity", quantity)
+                .param("price", price)
+                .param("requestedAmount", requestedAmount)
+                .param("reason", reason)
+                .update();
+    }
+
+    @Test
     void orderWithIdempotencyKeyAndNoFingerprintIsRejected() {
         assertThatExceptionOfType(DataIntegrityViolationException.class)
                 .isThrownBy(() -> insertOrderWithIdempotencyKeyOnly("k1"))
