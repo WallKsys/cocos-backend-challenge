@@ -120,12 +120,12 @@ is merged; it is the source for both halves.
 
 **Estimated size**: ~150 counted lines (the copied `openapi.yaml` is excluded from the count).
 
-- [ ] T018 Write `PublishedContractIsLatestSpecContractTest`, `PublishedContractMatchesRoutesIT`, and an IT that
+- [x] T018 Write `PublishedContractIsLatestSpecContractTest`, `PublishedContractMatchesRoutesIT`, and an IT that
   checks `GET /openapi/openapi.yaml` (200, YAML containing `openapi: 3.1.0`) and `GET /swagger-ui/index.html` (200).
   Run: **they fail**. Record it.
-- [ ] T019 Add the springdoc dependency (plan.md § Configuration), the `springdoc.swagger-ui.url` property, and copy
+- [x] T019 Add the springdoc dependency (plan.md § Configuration), the `springdoc.swagger-ui.url` property, and copy
   the contract with `cp specs/003-api-conventions/contracts/openapi.yaml src/main/resources/static/openapi/openapi.yaml`.
-- [ ] T020 Run `./mvnw verify` until green. Open `http://localhost:8080/swagger-ui/index.html` with
+- [x] T020 Run `./mvnw verify` until green. Open `http://localhost:8080/swagger-ui/index.html` with
   `docker compose up --build` and paste a screenshot or the page title in the PR.
 
 **Checkpoint**: open PR `003-e`.
