@@ -20,7 +20,7 @@ import java.util.Map;
 import static com.cocos.challenge.conventions.ProblemResponses.assertProblem;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Spec 003 US2 scenarios 1–3 and US3 scenarios 2–4 (TEC-18, DEC-17). */
+/** Spec 003 US2 scenarios 1–4 and US3 scenarios 2–4 (TEC-18, DEC-17, DEC-27). */
 @IntegrationTest
 @Import(ProbeControllers.class)
 @TestPropertySource(properties = "cocos.internal-tools.enabled=true")

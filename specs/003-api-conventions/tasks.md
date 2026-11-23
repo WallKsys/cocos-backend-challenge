@@ -138,11 +138,11 @@ is merged; it is the source for both halves.
 after slice 004-a, before slice 004-b: an exception to the numeric order, because spec 005 depends on it and the
 conventions belong to spec 003.
 
-- [ ] T021 Add NEW test methods, without changing existing ones: `IdentityAndAdminIT` (US2 scenario 4) and
+- [x] T021 Add NEW test methods, without changing existing ones: `IdentityAndAdminIT` (US2 scenario 4) and
   `IdempotencyKeyIT` (US4 scenario 6), both with two header lines over a raw socket (plan.md § Idempotency key,
   "Testing repeated headers"); `ErrorHandlingIT` (US1 scenario 13) on the `/validate` probe. Run `./mvnw verify`:
   **the three new tests fail**. Record it.
-- [ ] T022 Implement: both argument resolvers reject more than one header value, checked first (plan.md § Identity
+- [x] T022 Implement: both argument resolvers reject more than one header value, checked first (plan.md § Identity
   and admin, § Idempotency key); `ApiExceptionHandler` treats `InputCoercionException` with a field path like
   `MismatchedInputException` (plan.md § Exception mapping). Run `./mvnw verify` until green.
 

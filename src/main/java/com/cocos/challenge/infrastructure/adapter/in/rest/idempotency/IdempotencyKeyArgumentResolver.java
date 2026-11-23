@@ -19,6 +19,11 @@ public class IdempotencyKeyArgumentResolver implements HandlerMethodArgumentReso
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
             NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+        String[] headers = webRequest.getHeaderValues("Idempotency-Key");
+        if (headers != null && headers.length > 1) {
+            throw new ApiException(ApiErrorCode.VALIDATION_ERROR,
+                    "The 'Idempotency-Key' header must be sent only once.");
+        }
         String key = webRequest.getHeader("Idempotency-Key");
         if (key == null || key.isBlank()) {
             throw new ApiException(ApiErrorCode.MISSING_IDEMPOTENCY_KEY,
