@@ -9,6 +9,7 @@ import com.cocos.challenge.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,5 +35,23 @@ class JdbcLedgerReaderIT {
         assertThat(reader.shareBalance(user, new InstrumentId(54))).isEqualTo(new ShareBalance(500, 0));
         assertThat(reader.shareBalance(user, new InstrumentId(31))).isEqualTo(new ShareBalance(-10, 0));
         assertThat(reader.shareBalance(new UserId(2), new InstrumentId(47))).isEqualTo(new ShareBalance(0, 0));
+    }
+
+    @Test
+    @Transactional
+    void newLimitSellReservesSharesWithoutChangingCash() {
+        JdbcLedgerReader reader = new JdbcLedgerReader(jdbc);
+        UserId user = new UserId(1);
+        CashBalance cashBefore = reader.cashBalance(user);
+
+        jdbc.sql("""
+                INSERT INTO orders (instrumentid, userid, size, price, side, status, type, datetime)
+                VALUES (47, 1, 15, 950.00, 'SELL', 'NEW', 'LIMIT', CURRENT_TIMESTAMP)
+                """).update();
+
+        ShareBalance shares = reader.shareBalance(user, new InstrumentId(47));
+        assertThat(shares).isEqualTo(new ShareBalance(40, 15));
+        assertThat(shares.available()).isEqualTo(25);
+        assertThat(reader.cashBalance(user)).isEqualTo(cashBefore);
     }
 }
