@@ -13,10 +13,10 @@ exceed 400 counted lines. Each: tests → skeletons → confirm failure → impl
 
 **Estimated size**: ~250 lines.
 
-- [ ] T001 Write `OrderRequestTest` (plan.md § Validation rules 1–8 in order, § Request fingerprint), tagged
+- [x] T001 Write `OrderRequestTest` (plan.md § Validation rules 1–8 in order, § Request fingerprint), tagged
   CU-03.22, CU-03.24, CU-03.25, CU-03.26, CU-03.27 as in plan.md § Tests.
-- [ ] T002 Skeletons of `OrderRequest`, `Rejection`, `OrderEvaluation`. Run unit tests: **fail**. Record it.
-- [ ] T003 Implement until green.
+- [x] T002 Skeletons of `OrderRequest`, `Rejection`, `OrderEvaluation`. Run unit tests: **fail**. Record it.
+- [x] T003 Implement until green.
 
 ## Slice 005-b — Order evaluation (branch `005-order-placement-b`)
 
