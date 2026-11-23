@@ -32,7 +32,7 @@ instructions are this file and the workflow prompt.
 |---|---|---|
 | 1 | Every task of the slice is done, and nothing outside the slice | compare files with `tasks.md` and `plan.md` |
 | 2 | Files marked **VERBATIM** / copied artifacts are identical | `cmp` against the spec copy (features, migrations, contract, `observability/`, verbatim files of the plan) |
-| 3 | No existing test or `.feature` was modified, disabled, skipped or weakened | `git diff` on test files and `src/test/resources/features/`; look for `@Disabled`, `assumeTrue(false)`, removed assertions |
+| 3 | No existing test or `.feature` was modified, disabled, skipped or weakened, except a change that the slice's `tasks.md` prescribes for that named file (Constitution III): then it must do exactly what the task says, live in the tests commit and be explained under "Test adjustments" | `git diff` on test files and `src/test/resources/features/`; look for `@Disabled`, `assumeTrue(false)`, removed assertions |
 | 4 | Test-first evidence is present and credible | PR description + commit order (tests committed before implementation) |
 | 5 | Every CU scenario of the slice has its Gherkin scenario and tagged tests (`unit` / `integration` as the plan says) | test files and tags |
 | 6 | Architecture rules (Constitution V) respected; `ArchitectureTest` untouched | package of each new class, imports |
