@@ -55,6 +55,9 @@ half follows the test-first cycle on its own and leaves the suite green:
 **Estimated size**: ~390 lines. Split into c1 (lock + ledger + instrument + market data) and c2 (order repository +
 V6) if needed.
 
+**005-c1 completed**: lock, ledger, instrument and market-data adapters and their integration tests (T008–T010).
+Finish the shared tasks in 005-c2 alongside T007.
+
 - [ ] T007 Copy V6 (plan.md § Contract, features and HTTP examples). Extend `SeedDataIT` (spec 002) to expect
   migrations 1–6.
 - [ ] T008 [P] Write `JdbcLedgerReaderIT`, `JdbcAccountLockIT`, `JdbcOrderRepositoryIT` (CU-03.33, 03.35, 03.37, 03.42).
