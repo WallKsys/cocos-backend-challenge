@@ -100,6 +100,10 @@ src/main/java/com/cocos/challenge/
 
 ## Persistence
 
+Every SQL statement of this section is a **package-private `static final String` constant** of its adapter (named
+after the query, for example `CASH_BALANCE_SQL`). The plan guard of spec 009 (`PlanGuardIT`, same package) runs
+`EXPLAIN` on these constants, so they must be the exact statements the adapter executes.
+
 `JdbcAccountReader.find`: `SELECT id, accountnumber FROM users WHERE id = :userId` (no lock).
 
 `JdbcPortfolioReader.openPositions`:
@@ -140,8 +144,11 @@ ORDER BY instrumentid, date DESC
 
 - `PortfolioController` — `GET /api/v1/portfolio` with `@RequesterId UserId`.
 - `InternalPortfolioController` (`rest.internal`, `@ConditionalOnProperty(name = "cocos.internal-tools.enabled",
-  havingValue = "true")`) — `GET /api/internal/users/{userId}/portfolio`; the path variable is an `int`, converted
-  with `new UserId(...)` (invalid → `VALIDATION_ERROR`). Same response mapping as the user endpoint.
+  havingValue = "true")`) — `GET /api/internal/users/{userId}/portfolio`; the path variable is `@Positive int userId`, converted
+  with `new UserId(...)`. 0 or negative → 400 `VALIDATION_ERROR` `Request validation failed: 'userId' must be greater
+  than 0.` (DEC-26, Bean Validation on the path variable); not an integer or out of the `int` range →
+  `Request validation failed: 'userId' has an invalid type or format.` (DEC-25). Same response mapping as the user
+  endpoint.
 - Response DTOs follow the contract schema `Portfolio`; money and percentages via `ApiDecimals.format`; `warnings` is
   always an array (empty when none).
 
@@ -173,13 +180,15 @@ ORDER BY instrumentid, date DESC
 | 01.07 | `PortfolioTest` (empty) | `GetPortfolioServiceIT` (user 2) |
 | 01.08 | `GetPortfolioServiceTest` (unknown user → `NotFoundException`) | — |
 | 01.09 | — | `PortfolioControllerIT` (`/api/v1/users/1/portfolio` → 404; user 2 gets their own) |
-| 01.10 | — | `InternalPortfolioControllerIT` (admin 200; without role 404) |
+| 01.10 | — | `InternalPortfolioControllerIT` (admin 200; without role 404; also, without CU tag, `userId` 0 → 400 DEC-26) |
 | 01.11 | — | `GetPortfolioServiceIT` (after placing an order through `PlaceOrderUseCase`) |
 | 01.12, 01.13 | `AverageCostCalculatorTest` | — |
 | 01.14 | `AverageCostCalculatorTest` (order matters) | `JdbcPortfolioReaderIT` (fills ordered by `datetime`, then `id`) |
 
-Also (no CU tag): `GetPortfolioServiceIT` asserts the number of SQL statements per request is constant (for
-example with a counting `DataSource` proxy or by asserting the reader methods are called once each), FR-003.
+Also (no CU tag): `GetPortfolioServiceIT` asserts that the number of SQL statements per request is constant
+(FR-003). Use `@MockitoSpyBean` on the `AccountReader`, `LedgerReader`, `PortfolioReader` and `MarketDataRepository`
+beans and, for user 1 (three open positions), verify that `find`, `cashBalance`, `openPositions`, `fills` and
+`latestQuotes` are each called exactly once. Do not add a `DataSource` proxy library.
 
 ## Contract, features and HTTP examples
 

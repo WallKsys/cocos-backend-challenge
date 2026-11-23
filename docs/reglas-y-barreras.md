@@ -74,6 +74,7 @@ SC-003; evidencia en el PR #4).
 | ARQ-12 | Solo Jackson 3 (`tools.jackson.*`); nunca `com.fasterxml.jackson.databind`. | Trampa típica de Spring Boot 3 → 4. | TEC-11, Const. "Spring Boot 4 pitfalls" | `no_jackson_2_databind` | 🔴 |
 | ARQ-13 | Los controladores internos viven en `rest.internal` y llevan `@ConditionalOnProperty`; ningún otro controlador mapea `/api/internal`. | Las herramientas internas quedan fuera del alcance del challenge y apagadas por defecto. | TEC-18, spec 003 FR-003 | [`InternalToolsArchitectureTest`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/architecture/InternalToolsArchitectureTest.java) (2 reglas) | 🔴 |
 | ARQ-14 | Las reglas de ArchUnit no se modifican ni se debilitan. | Son la ley de la arquitectura; un agente tendería a ajustarlas a su código. | TEC-05, TEC-09, Const. V | Chequeo 6 ("`ArchitectureTest` untouched") | 🟡 |
+| ARQ-15 | Toda excepción de dominio mapeada a un código hereda directamente de `DomainException`; ninguna es subclase de otra mapeada. Se registra en los dos lugares del manejador. | El manejador resuelve el código con `isInstance` sobre un mapa sin orden: con herencia entre mapeadas, el código devuelto dependería del azar. | Revisión de planes 004–010, specs 004 y 009 | Revisión | 🟡 |
 
 ### 3.2 Datos y dinero (DAT)
 
@@ -90,6 +91,7 @@ SC-003; evidencia en el PR #4).
 | DAT-09 | `V1` es copia byte a byte del `database.sql` provisto, y una migración ya commiteada nunca se edita. | Partir de los datos originales y mantener la historia de Flyway reproducible. | CM-xx, Const. VI | [`OriginalScriptIsUnchangedTest`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/database/OriginalScriptIsUnchangedTest.java) (V1); V2 en adelante: chequeo 2 (`cmp` contra `specs/002-database/migrations/`) | 🔴 V1 · 🟡 resto |
 | DAT-10 | Las fechas se guardan y se devuelven en UTC (ISO 8601 con `Z`); la conversión a hora local es del consumidor. | Sin ambigüedad de zona horaria. | DEC-18, Const. IX | [`TimestampsAndSearchColumnsIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/database/TimestampsAndSearchColumnsIT.java); formato JSON en [`FormatsIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/FormatsIT.java) | 🔴 |
 | DAT-11 | Restricciones de integridad en la base: lados, tipos, estados, códigos de rechazo, par clave/huella de idempotencia, tamaño no negativo. | La base es la última red de seguridad. | CM-04, CM-10, CM-11 | `SchemaConstraintsIT` (14 casos) | 🔴 |
+| DAT-12 | Cada sentencia SQL es una constante package-private de su adaptador; la búsqueda y el historial, que se arman por fragmentos, exponen un método package-private que construye la sentencia. | La guardia de planes ejecuta `EXPLAIN` sobre el SQL real; sin esto, la spec 009 tendría que refactorizar seis adaptadores. | Revisión de planes 004–010, specs 004 a 009 | Chequeo 1 (tareas del plan); `PlanGuardIT` (spec 009) ⏳ | 🟡 → 🔴 ⏳ |
 
 ### 3.3 Concurrencia e idempotencia (CON)
 
@@ -99,7 +101,7 @@ SC-003; evidencia en el PR #4).
 | CON-02 | Flujo fijo: validar → bloquear → buscar la clave de idempotencia → calcular disponibles → aplicar reglas → guardar. Un pedido inválido no consume la clave. | Un reintento nunca ejecuta dos veces y un error de validación no "quema" la clave. | TEC-16, Const. VII | Tests de `PlaceOrderService` (spec 005) ⏳; chequeo 10 | 🟡 → 🔴 ⏳ |
 | CON-03 | Una sola clave de idempotencia por usuario para todas las operaciones, con restricción única en la base. | Una regla simple; la base garantiza la unicidad aunque falle el código. | DEC-23, TEC-32, CM-02 | `SchemaConstraintsIT` (casos 10 a 12) | 🔴 |
 | CON-04 | Misma clave y mismo pedido → `200` con `Idempotent-Replayed: true`; misma clave y otro pedido → `422 IDEMPOTENCY_CONFLICT`. | El cliente puede reintentar con seguridad y detectar el mal uso de una clave. | DEC-09, Const. VII | [`IdempotencyKeyIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/IdempotencyKeyIT.java) (header de reintento); BDD de la spec 005 ⏳ | 🔴 |
-| CON-05 | `Idempotency-Key` se lee solo a través de `@IdempotencyKeyHeader`: obligatoria, de 1 a 255 caracteres ASCII visibles. | Una única validación para todas las operaciones. | Spec 003 US4 y FR-004 | `IdempotencyKeyIT` (incluye un pedido HTTP crudo por socket para los caracteres no ASCII); lectura en un solo lugar: revisión manual | 🔴 · 🟡 |
+| CON-05 | `Idempotency-Key` se lee solo a través de `@IdempotencyKeyHeader`: obligatoria, de 1 a 255 caracteres ASCII visibles. Si llega más de una vez, se rechaza. | Una única validación para todas las operaciones. | Spec 003 US4 y FR-004, DEC-27 | `IdempotencyKeyIT` (incluye un pedido HTTP crudo por socket para los caracteres no ASCII); lectura en un solo lugar: revisión manual; header repetido: `IdempotencyKeyIT` (porción 003-f) ⏳ | 🔴 · 🟡 |
 | CON-06 | Las consultas nunca bloquean. | Las lecturas no frenan a las operaciones. | Const. VII | Revisión manual | 🟡 |
 
 ### 3.4 API (API)
@@ -109,9 +111,9 @@ SC-003; evidencia en el PR #4).
 | API-01 | Todo texto de la API está en inglés, aunque el pedido traiga `Accept-Language: es`. | Un solo idioma para clientes y logs. | TEC-19, Const. IX | [`ErrorHandlingIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/ErrorHandlingIT.java) (locale fijo y `Accept-Language: es`); textos exactos en cada test | 🔴 |
 | API-02 | Errores en formato RFC 9457 con un `code` estable, de un catálogo cerrado: no se agregan códigos sin una spec. | El cliente decide qué hacer por el `code`; la persona entiende por el `detail`. | TEC-19, RNF-06, Const. IX | `ErrorHandlingIT`; catálogo cerrado: chequeo 9 | 🔴 · 🟡 |
 | API-03 | Un error 500 nunca expone detalles internos. | Seguridad. | Spec 003 US1 | `ErrorHandlingIT.unexpectedExceptionNeverLeaksItsMessage` | 🔴 |
-| API-04 | JSON estricto: se rechazan los campos desconocidos y no se convierte `1.5`, `"10"` ni `10.0` a entero, ni un número a texto. | Jackson truncaba `1.5` a `1`: se habría ejecutado una orden por otra cantidad. | DEC-24, Const. IX, spec 003 § Jackson | `ErrorHandlingIT`, [`FormatsIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/FormatsIT.java) | 🔴 |
+| API-04 | JSON estricto: se rechazan los campos desconocidos y no se convierte `1.5`, `"10"` ni `10.0` a entero, ni un número a texto. Un número que no entra en su campo (`{"quantity": 99999999999}`) nombra el campo en lugar de responder "Malformed JSON". | Jackson truncaba `1.5` a `1`: se habría ejecutado una orden por otra cantidad. | DEC-24, Const. IX, spec 003 § Jackson, DEC-28 | `ErrorHandlingIT`, [`FormatsIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/FormatsIT.java); desbordes: `ErrorHandlingIT` (porción 003-f) ⏳ | 🔴 |
 | API-05 | Montos, precios y porcentajes viajan como texto con 2 decimales; las cantidades, como enteros. | Precisión al cruzar JSON. | TEC-20, Const. VIII | [`FormatsIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/FormatsIT.java), [`ApiDecimalsTest`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/infrastructure/adapter/in/rest/format/ApiDecimalsTest.java), [`DecimalStringValidatorTest`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/infrastructure/adapter/in/rest/format/DecimalStringValidatorTest.java) | 🔴 |
-| API-06 | El usuario sale solo de `X-User-Id`, leído por `@RequesterId`; las URLs nunca llevan el id del usuario y el recurso de otro usuario responde igual que uno inexistente. | Aislamiento por construcción. | TEC-18, DEC-17, Const. IX | [`IdentityAndAdminIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/IdentityAndAdminIT.java); lectura en un solo lugar: revisión manual | 🔴 · 🟡 |
+| API-06 | El usuario sale solo de `X-User-Id`, leído por `@RequesterId`; las URLs nunca llevan el id del usuario y el recurso de otro usuario responde igual que uno inexistente. Un pedido con dos headers `X-User-Id` se rechaza, aunque los valores coincidan. | Aislamiento por construcción. | TEC-18, DEC-17, Const. IX, DEC-27 | [`IdentityAndAdminIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/IdentityAndAdminIT.java); lectura en un solo lugar: revisión manual; header repetido: `IdentityAndAdminIT` (porción 003-f) ⏳ | 🔴 · 🟡 |
 | API-07 | Las herramientas internas (`/api/internal/**`) exigen `X-Role: ADMIN` y se activan por configuración. Sin el rol, cualquier método responde el mismo 404 que una ruta inexistente, porque el rol se controla antes de buscar la ruta. | No revelar que existen. | TEC-18, spec 003 US3, PR #21 | `IdentityAndAdminIT`, [`InternalToolsDisabledIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/InternalToolsDisabledIT.java), ARQ-13 | 🔴 |
 | API-08 | Una orden `REJECTED` no es un error HTTP: responde `201` con `rejection.code` y `rejection.message`. | El rechazo es un resultado de negocio y queda guardado. | DEC-12, Const. IX | BDD de la spec 005 ⏳ | 🟡 → 🔴 ⏳ |
 | API-09 | Paginación por cursor (`cursor`, `limit`, `nextCursor`). | Páginas estables aunque lleguen órdenes nuevas. | CM-08, Const. IX | Tests de las specs 004 y 008 ⏳ | 🟡 → 🔴 ⏳ |
@@ -119,6 +121,7 @@ SC-003; evidencia en el PR #4).
 | API-11 | El contrato OpenAPI publicado es copia exacta del contrato de la última spec implementada (identificada por su `info.version`), y sus rutas coinciden con las de la aplicación. | Contract-first: el contrato no miente. | TEC-22, Const. IX | [`PublishedContractIsLatestSpecContractTest`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/contract/PublishedContractIsLatestSpecContractTest.java), [`PublishedContractMatchesRoutesIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/contract/PublishedContractMatchesRoutesIT.java), [`PublishedContractEndpointsIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/contract/PublishedContractEndpointsIT.java) (`/openapi/openapi.yaml` y Swagger UI) | 🔴 |
 | API-12 | Toda respuesta lleva `X-Request-Id`; un id entrante inválido se reemplaza y nunca se refleja. | Correlación de logs sin inyección. | TEC-27 | [`RequestIdIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/RequestIdIT.java), [`ProblemResponses`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/ProblemResponses.java) | 🔴 |
 | API-13 | Las métricas nunca se etiquetan con id de usuario, id de orden, clave de idempotencia ni ticker. | Cardinalidad acotada. | TEC-31, Const. "Technology Stack" | [`MicrometerBusinessMetricsTest`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/infrastructure/adapter/out/metrics/MicrometerBusinessMetricsTest.java) (ninguna etiqueta prohibida) | 🔴 |
+| API-14 | Un id de la ruta (`orderId`, `userId`, `instrumentId`) 0 o negativo responde 400 `Request validation failed: '<id>' must be greater than 0.`; uno que no es número o no entra en su tipo sigue API-10. | El contrato declara `minimum: 1`: un 0 lo viola y es un error de validación, no "no encontrado". | DEC-26 | Tests de los controladores de las specs 006, 008 y 009 ⏳ | 🟡 → 🔴 ⏳ |
 
 ### 3.5 Proceso de desarrollo (PRO)
 
@@ -161,14 +164,15 @@ SC-003; evidencia en el PR #4).
 |---|---|
 | 003-b (b1, b2) | Errores: `1.5` y campos desconocidos rechazados, sin detalles internos en un 500, inglés con `Accept-Language: es` |
 | 003-c (c1, c2) | `X-User-Id` leído en un solo lugar; sin el rol, igual que una ruta inexistente; validación de `Idempotency-Key` |
-| 005-b | `OrderEvaluator`: cantidad redondeada hacia abajo, monto real y pedido, orden de las reglas, mensajes exactos |
+| 003-f | Headers repetidos rechazados de verdad (dos líneas por socket); un desborde numérico nombra el campo |
+| 005-b (b1 y b2 si se divide) | `OrderEvaluator`: cantidad redondeada hacia abajo, monto real y pedido, orden de las reglas, mensajes exactos |
 | 005-c | SQL del libro contable, `FOR UPDATE`, búsqueda liviana de idempotencia, fechas UTC |
-| 005-d | Flujo bloqueo → idempotencia → validación → evaluación → guardado; un pedido inválido no consume la clave |
+| 005-d (d1 y d2 si se divide) | Flujo bloqueo → idempotencia → validación → evaluación → guardado; un pedido inválido no consume la clave |
 | 005-f | Tests de concurrencia y carga: simultaneidad real, estables en 3 corridas |
 | 006-a | Costo promedio móvil, reinicio exacto en 0 |
 | 007-a | Refactor de `IdempotencyLookup` sin cambios de comportamiento ni tests de la 005 modificados |
-| 008-b | Cancelación concurrente: `UPDATE ... WHERE status = 'NEW'` bajo bloqueo, CU-04.08 |
-| 009-b | Ejecución forzada: protocolo de bloqueo; CU-04.08 con la herramienta real |
+| 008-b (b2 si se divide) | Cancelación concurrente: `UPDATE ... WHERE status = 'NEW'` bajo bloqueo, CU-04.08 |
+| 009-b y 009-c3 | Ejecución forzada: protocolo de bloqueo (009-b); CU-04.08 con la herramienta real (009-c3) |
 | 009-d | Volumen: datos reales, cálculo de percentiles, tabla de latencias en el PR |
 
 ---
@@ -193,6 +197,7 @@ después el agente aplica el cambio con un test nuevo que primero falla.
 | Revisión manual del PR #23 | El esqueleto de un filtro rompía todos los pedidos y el rojo no apuntaba al comportamiento que faltaba. | PRO-15; la revisión manual agrega una mutación para confirmar que los tests detectan la falta. |
 | Porción 003-d (PR #26) | `SimpleMeterRegistry` no arma los buckets del histograma de percentiles, así que una aserción sobre ellos nunca podía distinguir un timer bien configurado de uno mal configurado. | El test verifica la configuración del timer con un `MeterFilter`, sin cambiar las métricas de producción. |
 | Porción 003-e (PR #28) | El plan elegía el contrato de la spec de número más alto, pero los contratos de todas las specs ya estaban commiteados. | API-11: el contrato publicado se identifica por su `info.version`. |
+| Revisión de planes 004–010 (2026-11-23) | Antes de implementarlas se encontraron excepciones nuevas con herencia sin definir, SQL que la spec 009 iba a necesitar refactorizar, ids de ruta sin validar frente al contrato, headers repetidos sin regla, desbordes numéricos sin nombrar el campo y 12 porciones sin punto de corte. | ARQ-15, DAT-12, API-14 (DEC-26), DEC-27, DEC-28, porción 003-f y cortes predefinidos en `tasks.md`. |
 
 ---
 
@@ -216,8 +221,10 @@ Lo siguiente depende de la revisión o del proceso, no de una máquina:
 
 | Barrera | Spec | Reglas |
 |---|---|---|
+| Headers repetidos y desbordes numéricos en `IdentityAndAdminIT`, `IdempotencyKeyIT` y `ErrorHandlingIT` | 003-f | API-04, API-06, CON-05 |
 | `FeaturesMatchSpecsTest` y el alcance de trazabilidad creciendo spec a spec | 004 en adelante | PRO-05, PRO-06 |
 | Tests de concurrencia y carga | 005-f, 008-b | CON-01, CON-02, DAT-02 |
+| Ids de ruta inválidos en los tests de controladores | 006, 008, 009 | API-14 |
 | `PlanGuardIT` (índices obligatorios) y `VolumeIT` (`-Pvolume`) | 009 | DAT-08 |
 
 ---

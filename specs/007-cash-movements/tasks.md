@@ -4,7 +4,7 @@
 
 **Before starting**: specs 001–006 merged. `export SPECIFY_FEATURE_DIRECTORY=specs/007-cash-movements`.
 
-**Slices**: three PRs. Each: tests → skeletons → confirm failure → implement → full suite → PR size check.
+**Slices**: three planned slices; 007-b and 007-c have predefined split points if they exceed 400 counted lines. Each: tests → skeletons → confirm failure → implement → full suite → PR size check.
 
 ---
 
@@ -22,7 +22,10 @@
 
 ## Slice 007-b — Persistence and use cases (branch `007-cash-movements-b`)
 
-**Estimated size**: ~350 lines.
+**Estimated size**: ~350 lines. If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
+half follows the test-first cycle on its own and leaves the suite green:
+- **007-b1:** `CashMovementRepository`, `JdbcCashMovementRepository` and `JdbcCashMovementRepositoryIT`.
+- **007-b2:** `CashMovementService`, its configuration and `CashMovementServiceTest`.
 
 - [ ] T006 [P] Write `JdbcCashMovementRepositoryIT` (CU-05.01, 05.02).
 - [ ] T007 [P] Write `CashMovementServiceTest` with fakes (CU-05.05, 05.07, 06.04, 06.06, metrics).
@@ -31,7 +34,11 @@
 
 ## Slice 007-c — Endpoints, BDD and contract (branch `007-cash-movements-c`)
 
-**Estimated size**: ~350 lines (feature and contract copies excluded).
+**Estimated size**: ~350 lines (feature and contract copies excluded). If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
+half follows the test-first cycle on its own and leaves the suite green:
+- **007-c1:** the controller, the DTOs, the contract copy, `CashMovementControllerIT`, `CashIdempotencyIT` and
+  `http/007-cash-movements.http`.
+- **007-c2:** the two feature copies, `CU-05` and `CU-06` in `scope.txt`, and `CashMovementSteps`.
 
 - [ ] T010 Copy the two features and the contract; append `CU-05` and `CU-06` to `scope.txt`.
 - [ ] T011 [P] Write `CashMovementSteps` (plan.md § BDD steps).

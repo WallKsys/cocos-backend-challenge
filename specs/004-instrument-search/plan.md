@@ -103,7 +103,9 @@ the **last returned** item; otherwise null.
 ## Persistence
 
 `JdbcInstrumentSearchRepository` builds the SQL from **fixed fragments** chosen by which criteria are present;
-values always travel as named parameters. LIKE values are escaped in Java before binding:
+values always travel as named parameters. The fragments are `private static final String` constants, and the
+statement is built by a **package-private** method `String sql(InstrumentSearchCriteria criteria)`: the plan guard of
+spec 009 (`PlanGuardIT`, same package) calls it to run `EXPLAIN` on the real SQL. LIKE values are escaped in Java before binding:
 `text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")`.
 
 | Fragment | When | SQL |
@@ -159,7 +161,12 @@ this exact detail for `limit=abc`. No `@RequesterId`.
 ## Errors
 
 Add to `ApiExceptionHandler` (spec 003): `SearchTermTooShortException` → `SEARCH_TERM_TOO_SHORT` (400), detail = the
-exception message. This is the only change to spec 003 code.
+exception message. This is the only change to spec 003 code. Register the exception in **both** places of the
+handler: the `DOMAIN_CODES` map and the `@ExceptionHandler` list.
+
+`SearchTermTooShortException` **extends `DomainException` directly**, never `InvalidRequestException`. The handler
+resolves a domain code with `isInstance` over an unordered `Map.of`, so a mapped exception must never be a subclass
+of another mapped one: the code returned would depend on iteration order.
 
 ## BDD infrastructure (shared by all later specs)
 

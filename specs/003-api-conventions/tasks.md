@@ -4,8 +4,8 @@
 
 **Before starting**: specs 001 and 002 are merged. `export SPECIFY_FEATURE_DIRECTORY=specs/003-api-conventions`.
 
-**Slices**: five planned slices, in order; 003-b and 003-c were each split in two after measuring their size, so
-seven PRs. Each starts from an up-to-date `main`, follows tests → skeletons → confirm failure
+**Slices**: five planned slices, in order; 003-b and 003-c were each split in two after measuring their size, and
+003-f was added by the plan review of 2026-11-23, so eight PRs. Each starts from an up-to-date `main`, follows tests → skeletons → confirm failure
 → implement → full suite, and ends with `scripts/check-pr-size.sh` within 400 lines.
 
 ---
@@ -132,8 +132,26 @@ is merged; it is the source for both halves.
 
 ---
 
+## Slice 003-f — Repeated headers and numbers out of range (branch `003-api-conventions-f`)
+
+**Estimated size**: ~120 lines. Added after the plan review of 2026-11-23 (DEC-27, DEC-28). It is implemented right
+after slice 004-a, before slice 004-b: an exception to the numeric order, because spec 005 depends on it and the
+conventions belong to spec 003.
+
+- [ ] T021 Add NEW test methods, without changing existing ones: `IdentityAndAdminIT` (US2 scenario 4) and
+  `IdempotencyKeyIT` (US4 scenario 6), both with two header lines over a raw socket (plan.md § Idempotency key,
+  "Testing repeated headers"); `ErrorHandlingIT` (US1 scenario 13) on the `/validate` probe. Run `./mvnw verify`:
+  **the three new tests fail**. Record it.
+- [ ] T022 Implement: both argument resolvers reject more than one header value, checked first (plan.md § Identity
+  and admin, § Idempotency key); `ApiExceptionHandler` treats `InputCoercionException` with a field path like
+  `MismatchedInputException` (plan.md § Exception mapping). Run `./mvnw verify` until green.
+
+**Checkpoint**: open PR `003-f`.
+
+---
+
 ## Definition of done (spec 003)
 
-- [ ] Slices 003-a to 003-e merged into `main`.
+- [ ] Slices 003-a to 003-f merged into `main`.
 - [ ] `./mvnw verify` green; ArchUnit (both files) green.
 - [ ] Every error response of the probes matches plan.md § Error catalog exactly.

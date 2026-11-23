@@ -45,7 +45,10 @@ on purpose (DEC-03).
 New domain exception `OrderNotExecutableException(long orderId, OrderStatus status)`, message
 `Order <id> cannot be executed because its status is <STATUS>. Only NEW orders can be executed.`, mapped by
 `ApiExceptionHandler` to `ORDER_NOT_EXECUTABLE` (409, title `Order not executable`, slug `order-not-executable`).
-Add the code to `ApiErrorCode`.
+Add the code to `ApiErrorCode`. `OrderNotExecutableException` **extends `DomainException` directly** (a sibling of
+`OrderNotCancellableException`, never a subclass of another mapped exception: the handler resolves domain codes
+with `isInstance` over an unordered map). Register it in both places of `ApiExceptionHandler`: the `DOMAIN_CODES`
+map and the `@ExceptionHandler` list.
 
 ### Persistence
 
@@ -72,6 +75,11 @@ Add the code to `ApiErrorCode`.
 | `PUT /api/internal/instruments/{instrumentId}/market-data` | `InternalMarketDataController` | 200 `MarketDataView` |
 | `POST /api/internal/reset` | `InternalDataController` | 204 |
 | `POST /api/internal/users` | `InternalDataController` | 201 `UserView` |
+
+Path ids are validated with Bean Validation (DEC-26): `@PathVariable @Positive long orderId` (delete, execute) and
+`@PathVariable @Positive long instrumentId` (market data). 0 or negative → 400 `VALIDATION_ERROR`
+`Request validation failed: '<orderId|instrumentId>' must be greater than 0.`; `InternalToolsControllerIT` asserts
+it for each of the three routes, with `X-Role: ADMIN`.
 
 Request bodies: `MarketDataUpdateBody(@NotNull @DecimalString String close, @DecimalString String previousClose)`,
 `CreateUserBody(@NotBlank @Email @Size(max = 255) String email)`.
@@ -117,7 +125,8 @@ short, ticker filter, name filter, no criteria with cursor.
 ## Volume profile
 
 - `src/test/resources/volume/volume-dataset.sql`: copy of `specs/009-internal-tools-volume/volume/volume-dataset.sql`
-  (byte-identical; add it to the PR-size exclusions as a copied artifact if needed — it is under 100 lines anyway).
+  (byte-identical; it is under 100 lines and counts towards the PR size like any file. The implementing agent never
+  edits `scripts/check-pr-size.sh`).
 - `pom.xml`: Failsafe gets `<excludedGroups>volume</excludedGroups>` by default; a profile `volume` overrides it with
   `<groups>volume</groups>` and an empty `excludedGroups`, so `./mvnw verify -Pvolume` runs only the volume test.
 - `volume/VolumeIT` (`@Tag("volume")`): its **own** PostgreSQL container (never the shared one), the application

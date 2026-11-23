@@ -41,6 +41,8 @@ market value, average cost, total return and daily change. Everything is derived
 - A negative cash total (only reachable through internal tools) is shown and flagged with `NEGATIVE_CASH`.
 - A position whose average cost cannot be determined (quantity ≠ 0 but no buy since the last reset — only with
   inconsistent data) has `averageCost` and `totalReturnPct` null.
+- The administrator endpoint with `userId` 0 or negative → 400 `VALIDATION_ERROR`,
+  `Request validation failed: 'userId' must be greater than 0.` (DEC-26).
 
 ## Requirements *(mandatory)*
 
