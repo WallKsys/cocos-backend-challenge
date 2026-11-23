@@ -8,22 +8,82 @@ import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
+import com.cocos.challenge.application.port.out.NewOrder;
 import com.cocos.challenge.application.port.out.OrderRepository;
+import com.cocos.challenge.domain.exception.InvalidRequestException;
+import com.cocos.challenge.domain.exception.NotFoundException;
+import com.cocos.challenge.domain.model.Account;
+import com.cocos.challenge.domain.model.CashBalance;
+import com.cocos.challenge.domain.model.Instrument;
+import com.cocos.challenge.domain.model.InstrumentType;
+import com.cocos.challenge.domain.model.MarketQuote;
+import com.cocos.challenge.domain.model.Order;
+import com.cocos.challenge.domain.model.OrderEvaluation;
+import com.cocos.challenge.domain.model.OrderRequest;
+import com.cocos.challenge.domain.model.Rejection;
+import com.cocos.challenge.domain.model.ShareBalance;
+import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.domain.service.OrderEvaluator;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 public class PlaceOrderService implements PlaceOrderUseCase {
+
+    private final AccountLock accountLock;
+    private final OrderRepository orders;
+    private final InstrumentRepository instruments;
+    private final MarketDataRepository marketData;
+    private final LedgerReader ledger;
+    private final OrderEvaluator evaluator;
+    private final BusinessMetrics metrics;
+    private final Clock clock;
 
     public PlaceOrderService(AccountLock accountLock, OrderRepository orders, InstrumentRepository instruments,
             MarketDataRepository marketData, LedgerReader ledger, OrderEvaluator evaluator,
             BusinessMetrics metrics, Clock clock) {
+        this.accountLock = accountLock;
+        this.orders = orders;
+        this.instruments = instruments;
+        this.marketData = marketData;
+        this.ledger = ledger;
+        this.evaluator = evaluator;
+        this.metrics = metrics;
+        this.clock = clock;
     }
 
     @Override
     @Transactional
     public PlaceOrderResult place(PlaceOrderCommand command) {
-        throw new UnsupportedOperationException();
+        long start = System.nanoTime();
+        UserId user = command.userId();
+        Account account = accountLock.lock(user)
+                .orElseThrow(() -> new NotFoundException("User " + user.value() + " was not found."));
+        metrics.accountLockWaited(Duration.ofNanos(System.nanoTime() - start));
+
+        OrderRequest request = command.request();
+        Instrument instrument = instruments.findById(request.instrumentId()).orElseThrow(() ->
+                new InvalidRequestException(
+                        "Request validation failed: 'instrumentId' does not reference an existing instrument."));
+        if (instrument.type() == InstrumentType.MONEDA) {
+            throw new InvalidRequestException(
+                    "Request validation failed: 'instrumentId' must reference a tradable instrument; ARS cannot be bought or sold.");
+        }
+
+        Optional<MarketQuote> quote = marketData.latestQuote(instrument.id());
+        CashBalance cash = ledger.cashBalance(user);
+        ShareBalance shares = ledger.shareBalance(user, instrument.id());
+        OrderEvaluation evaluation = evaluator.evaluate(request, instrument, quote, account, cash, shares);
+        Rejection rejection = evaluation.rejection();
+        Order saved = orders.save(new NewOrder(user, instrument.id(), instrument.ticker(), request.side(),
+                request.type(), evaluation.status(), evaluation.quantity(), evaluation.price(), request.amount(),
+                rejection, clock.instant().truncatedTo(ChronoUnit.MICROS), command.idempotencyKey(),
+                request.fingerprint()));
+        metrics.orderProcessed(request.side(), request.type(), evaluation.status(),
+                rejection == null ? null : rejection.reason());
+        return new PlaceOrderResult(saved, false);
     }
 }
