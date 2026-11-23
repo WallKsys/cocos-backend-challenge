@@ -4,7 +4,7 @@
 |---|---|
 | **Estado** | Vigente. Se actualiza en el mismo PR que cambia una regla (chequeo 17 de la revisión automática). |
 | **Fecha** | 2026-11-22 |
-| **Documentos relacionados** | [Constitución](../.specify/memory/constitution.md) · [AGENTS.md](../AGENTS.md) · [RFC](rfc.md) · [Análisis funcional](analisis-funcional.md) · [README](../README.md) |
+| **Documentos relacionados** | [Constitución](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.specify/memory/constitution.md) · [AGENTS.md](https://github.com/WallKsys/cocos-backend-challenge/blob/main/AGENTS.md) · [RFC](rfc.md) · [Análisis funcional](analisis-funcional.md) · [README](https://github.com/WallKsys/cocos-backend-challenge#readme) |
 
 > Índice de las reglas de arquitectura y de desarrollo que guían al agente implementador. Para cada una indica
 > **dónde se decidió, por qué existe y qué la hace cumplir**. Es un índice, no la fuente: el texto que manda está en
@@ -21,12 +21,12 @@ Cada regla tiene un **nivel**: qué tan automático es su cumplimiento.
 |---|---|
 | 🔴 **Build** | Si se viola, `./mvnw verify` falla. Lo detecta una máquina en cada build, local y en CI. |
 | 🟠 **Merge** | GitHub no deja mergear: checks obligatorios y protección de `main`. |
-| 🟡 **Revisión** | Lo controla la revisión automática (chequeo N de [`pr-review.md`](../.github/claude/pr-review.md)) o la revisión manual. |
+| 🟡 **Revisión** | Lo controla la revisión automática (chequeo N de [`pr-review.md`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/claude/pr-review.md)) o la revisión manual. |
 | ⚪ **Instrucción** | Está escrito para el agente. Depende de que lo respete y de que una revisión lo note. |
 | ⏳ | La barrera automática llega con la spec indicada. Hasta entonces rige el nivel que figura al lado. |
 
 Los IDs (`ARQ-01`, `PRO-05`, ...) son estables: no se renumeran ni se reutilizan. "Const. V.4" es la regla 4 del
-principio V de la [constitución](../.specify/memory/constitution.md).
+principio V de la [constitución](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.specify/memory/constitution.md).
 
 ---
 
@@ -34,26 +34,18 @@ principio V de la [constitución](../.specify/memory/constitution.md).
 
 Un cambio pasa por estas barreras, en orden, antes de llegar a `main`:
 
-```text
-Specs aprobadas: constitución, spec, plan, tareas, .feature, contrato (las escribe Claude)
-  │
-  ▼
-Agente implementador (OpenCode)        ⚪ AGENTS.md: prohibiciones y "detenerse y reportar"
-  │  tests → esqueletos → rojo → implementación → suite completa
-  ▼
-./mvnw verify                          🔴 ArchUnit, trazabilidad, tests de base, convenciones y BDD
-  │
-  ▼
-Pull request                           🟠 checks obligatorios: verify (CI) y pr-size (≤ 400 líneas)
-  │
-  ▼
-Revisión automática (claude[bot])      🟡 17 chequeos; espera a que termine verify
-  │
-  ▼
-Revisión manual (porciones críticas)   🟡 pruebas temporales contra la aplicación real
-  │
-  ▼
-Merge a main protegida                 🟠 PR obligatorio, rama al día, conversaciones resueltas
+```mermaid
+flowchart TD
+    S["<b>Specs aprobadas</b><br/>constitución · spec · plan · tareas · .feature · contrato<br/>las escribe Claude"]
+    A["<b>Agente implementador (OpenCode)</b><br/>⚪ AGENTS.md: prohibiciones y «detenerse y reportar»"]
+    B["<b>./mvnw verify</b><br/>🔴 ArchUnit · trazabilidad · tests de base, convenciones y BDD"]
+    P["<b>Pull request</b><br/>🟠 checks obligatorios: verify (CI) y pr-size (≤ 400 líneas)"]
+    R["<b>Revisión automática (claude[bot])</b><br/>🟡 17 chequeos; espera a que termine verify"]
+    M["<b>Revisión manual (porciones críticas)</b><br/>🟡 pruebas temporales contra la aplicación real"]
+    G["<b>Merge a main protegida</b><br/>🟠 PR obligatorio, rama al día, conversaciones resueltas"]
+    S --> A
+    A -- "tests → esqueletos → rojo → implementación → suite completa" --> B
+    B --> P --> R --> M --> G
 ```
 
 ---
@@ -68,7 +60,7 @@ SC-003; evidencia en el PR #4).
 
 | ID | Regla | Por qué | Decidido en | Se hace cumplir en | Nivel |
 |---|---|---|---|---|---|
-| ARQ-01 | `domain` depende solo de `domain` y del JDK. | Las reglas de negocio se prueban sin Spring y no dependen del framework. | TEC-10, Const. V.1 | [`ArchitectureTest`](../src/test/java/com/cocos/challenge/architecture/ArchitectureTest.java) `domain_depends_only_on_domain_and_the_jdk` | 🔴 |
+| ARQ-01 | `domain` depende solo de `domain` y del JDK. | Las reglas de negocio se prueban sin Spring y no dependen del framework. | TEC-10, Const. V.1 | [`ArchitectureTest`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/architecture/ArchitectureTest.java) `domain_depends_only_on_domain_and_the_jdk` | 🔴 |
 | ARQ-02 | `application` depende solo de `domain`, `application`, el JDK y `@Transactional` (más sus enums `Propagation` e `Isolation`). | Los casos de uso no conocen la infraestructura; el límite transaccional es la única concesión. | TEC-14, Const. V.2 | `application_depends_only_on_domain_application_jdk_and_transactional` | 🔴 |
 | ARQ-03 | Las clases de `application` no son componentes de Spring: se registran en `infrastructure.config`. | El cableado queda visible en un solo lugar. | Const. V.2 | `application_classes_are_not_spring_components` | 🔴 |
 | ARQ-04 | Todo caso de uso que modifica datos es `@Transactional`; toda consulta es `@Transactional(readOnly = true)`. | Una operación es una transacción; una consulta lee una foto consistente. | TEC-14, Const. V.3 | `command_use_case_methods_are_transactional`, `query_use_case_methods_are_read_only_transactional` | 🔴 |
@@ -80,23 +72,23 @@ SC-003; evidencia en el PR #4).
 | ARQ-10 | Ningún campo ni retorno `double`/`float` (ni sus envoltorios) en `domain`, `application` ni REST. | El dinero es exacto (ver DAT-05). | Const. V.8 y VIII | `no_floating_point_fields`, `no_floating_point_return_types` | 🔴 |
 | ARQ-11 | Solo `infrastructure` usa Micrometer u OpenTelemetry; `application` registra hechos de negocio a través del puerto `BusinessMetrics`. | Las métricas no contaminan los casos de uso. | TEC-31, Const. V.9 | `only_infrastructure_uses_metrics_libraries` | 🔴 |
 | ARQ-12 | Solo Jackson 3 (`tools.jackson.*`); nunca `com.fasterxml.jackson.databind`. | Trampa típica de Spring Boot 3 → 4. | TEC-11, Const. "Spring Boot 4 pitfalls" | `no_jackson_2_databind` | 🔴 |
-| ARQ-13 | Los controladores internos viven en `rest.internal` y llevan `@ConditionalOnProperty`; ningún otro controlador mapea `/api/internal`. | Las herramientas internas quedan fuera del alcance del challenge y apagadas por defecto. | TEC-18, spec 003 FR-003 | [`InternalToolsArchitectureTest`](../src/test/java/com/cocos/challenge/architecture/InternalToolsArchitectureTest.java) (2 reglas) | 🔴 |
+| ARQ-13 | Los controladores internos viven en `rest.internal` y llevan `@ConditionalOnProperty`; ningún otro controlador mapea `/api/internal`. | Las herramientas internas quedan fuera del alcance del challenge y apagadas por defecto. | TEC-18, spec 003 FR-003 | [`InternalToolsArchitectureTest`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/architecture/InternalToolsArchitectureTest.java) (2 reglas) | 🔴 |
 | ARQ-14 | Las reglas de ArchUnit no se modifican ni se debilitan. | Son la ley de la arquitectura; un agente tendería a ajustarlas a su código. | TEC-05, TEC-09, Const. V | Chequeo 6 ("`ArchitectureTest` untouched") | 🟡 |
 
 ### 3.2 Datos y dinero (DAT)
 
 | ID | Regla | Por qué | Decidido en | Se hace cumplir en | Nivel |
 |---|---|---|---|---|---|
-| DAT-01 | La tabla `orders` es el libro contable: efectivo, reservas, posiciones y costo promedio se derivan siempre de ella. | Una sola fuente de verdad; nada que se desincronice. | TEC-17, Const. I | [`LedgerReferenceQueriesIT`](../src/test/java/com/cocos/challenge/database/LedgerReferenceQueriesIT.java) (fórmulas de referencia sobre los datos provistos); tests de las specs 005 a 007 ⏳ | 🔴 |
+| DAT-01 | La tabla `orders` es el libro contable: efectivo, reservas, posiciones y costo promedio se derivan siempre de ella. | Una sola fuente de verdad; nada que se desincronice. | TEC-17, Const. I | [`LedgerReferenceQueriesIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/database/LedgerReferenceQueriesIT.java) (fórmulas de referencia sobre los datos provistos); tests de las specs 005 a 007 ⏳ | 🔴 |
 | DAT-02 | Las órdenes `NEW` reservan lo que comprometen y toda validación usa el saldo **disponible**. Ninguna operación aceptada deja un disponible negativo. | Un broker no puede vender dos veces la misma plata ni las mismas acciones. | DEC-01, D-07, Const. I | Escenarios BDD y tests de la spec 005 ⏳; chequeo 10 | 🟡 → 🔴 ⏳ |
-| DAT-03 | Las acciones son siempre enteras. | Regla del mercado (R-08). | DEC-14, Const. I | [`SchemaConstraintsIT`](../src/test/java/com/cocos/challenge/database/SchemaConstraintsIT.java) (`orders_whole_shares_check`); tipos enteros en el JSON (API-04) | 🔴 |
+| DAT-03 | Las acciones son siempre enteras. | Regla del mercado (R-08). | DEC-14, Const. I | [`SchemaConstraintsIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/database/SchemaConstraintsIT.java) (`orders_whole_shares_check`); tipos enteros en el JSON (API-04) | 🔴 |
 | DAT-04 | Un pedido inválido se responde con error y **no se guarda nada**. | Separar "orden rechazada" (se guarda) de "pedido inválido" (no existe). | DEC-05, Const. I | Tests de la spec 005 ⏳; chequeo 10 | 🟡 → 🔴 ⏳ |
-| DAT-05 | El dinero es `BigDecimal` con escala 2 y `HALF_UP`, envuelto en `Money`. | Exactitud: nunca errores de punto flotante. | Const. VIII | [`MoneyTest`](../src/test/java/com/cocos/challenge/domain/model/MoneyTest.java) y ARQ-10 | 🔴 |
+| DAT-05 | El dinero es `BigDecimal` con escala 2 y `HALF_UP`, envuelto en `Money`. | Exactitud: nunca errores de punto flotante. | Const. VIII | [`MoneyTest`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/domain/model/MoneyTest.java) y ARQ-10 | 🔴 |
 | DAT-06 | Las columnas de dinero son `NUMERIC(18,2)`. | Rango y precisión fijos en la base. | CM-09 | Migraciones de la spec 002; `SchemaConstraintsIT` (monto `99999999999.99`) | 🔴 |
 | DAT-07 | SQL escrito a mano en text blocks con parámetros con nombre; nunca concatenar valores. | Evitar inyección SQL y mantener las consultas legibles. | TEC-12, Const. VI | Chequeo 7 | 🟡 |
 | DAT-08 | Las agregaciones se calculan en SQL; nunca se cargan las órdenes en memoria para sumarlas. | Rendimiento con 10 M de órdenes (RSK-01, M-08 a M-11). | TEC-17, TEC-24, Const. VI | `PlanGuardIT` (spec 009, `EXPLAIN` con `enable_seqscan = off`) ⏳; perfil `-Pvolume` (manual) | 🟡 → 🔴 ⏳ |
-| DAT-09 | `V1` es copia byte a byte del `database.sql` provisto, y una migración ya commiteada nunca se edita. | Partir de los datos originales y mantener la historia de Flyway reproducible. | CM-xx, Const. VI | [`OriginalScriptIsUnchangedTest`](../src/test/java/com/cocos/challenge/database/OriginalScriptIsUnchangedTest.java) (V1); V2 en adelante: chequeo 2 (`cmp` contra `specs/002-database/migrations/`) | 🔴 V1 · 🟡 resto |
-| DAT-10 | Las fechas se guardan y se devuelven en UTC (ISO 8601 con `Z`); la conversión a hora local es del consumidor. | Sin ambigüedad de zona horaria. | DEC-18, Const. IX | [`TimestampsAndSearchColumnsIT`](../src/test/java/com/cocos/challenge/database/TimestampsAndSearchColumnsIT.java); formato JSON en `FormatsIT` (003-d) ⏳ | 🔴 |
+| DAT-09 | `V1` es copia byte a byte del `database.sql` provisto, y una migración ya commiteada nunca se edita. | Partir de los datos originales y mantener la historia de Flyway reproducible. | CM-xx, Const. VI | [`OriginalScriptIsUnchangedTest`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/database/OriginalScriptIsUnchangedTest.java) (V1); V2 en adelante: chequeo 2 (`cmp` contra `specs/002-database/migrations/`) | 🔴 V1 · 🟡 resto |
+| DAT-10 | Las fechas se guardan y se devuelven en UTC (ISO 8601 con `Z`); la conversión a hora local es del consumidor. | Sin ambigüedad de zona horaria. | DEC-18, Const. IX | [`TimestampsAndSearchColumnsIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/database/TimestampsAndSearchColumnsIT.java); formato JSON en `FormatsIT` (003-d) ⏳ | 🔴 |
 | DAT-11 | Restricciones de integridad en la base: lados, tipos, estados, códigos de rechazo, par clave/huella de idempotencia, tamaño no negativo. | La base es la última red de seguridad. | CM-04, CM-10, CM-11 | `SchemaConstraintsIT` (14 casos) | 🔴 |
 
 ### 3.3 Concurrencia e idempotencia (CON)
@@ -106,7 +98,7 @@ SC-003; evidencia en el PR #4).
 | CON-01 | Toda operación que modifica datos bloquea primero la fila del usuario (`SELECT id FROM users WHERE id = :userId FOR UPDATE`): exactamente una fila, siempre como primer paso. | Serializa las operaciones de un usuario sin riesgo de deadlocks. | TEC-16, Const. VII | Tests de concurrencia de las porciones 005-f y 008-b ⏳; revisión manual de 005-c y 005-d | 🟡 → 🔴 ⏳ |
 | CON-02 | Flujo fijo: validar → bloquear → buscar la clave de idempotencia → calcular disponibles → aplicar reglas → guardar. Un pedido inválido no consume la clave. | Un reintento nunca ejecuta dos veces y un error de validación no "quema" la clave. | TEC-16, Const. VII | Tests de `PlaceOrderService` (spec 005) ⏳; chequeo 10 | 🟡 → 🔴 ⏳ |
 | CON-03 | Una sola clave de idempotencia por usuario para todas las operaciones, con restricción única en la base. | Una regla simple; la base garantiza la unicidad aunque falle el código. | DEC-23, TEC-32, CM-02 | `SchemaConstraintsIT` (casos 10 a 12) | 🔴 |
-| CON-04 | Misma clave y mismo pedido → `200` con `Idempotent-Replayed: true`; misma clave y otro pedido → `422 IDEMPOTENCY_CONFLICT`. | El cliente puede reintentar con seguridad y detectar el mal uso de una clave. | DEC-09, Const. VII | [`IdempotencyKeyIT`](../src/test/java/com/cocos/challenge/conventions/IdempotencyKeyIT.java) (header de reintento); BDD de la spec 005 ⏳ | 🔴 |
+| CON-04 | Misma clave y mismo pedido → `200` con `Idempotent-Replayed: true`; misma clave y otro pedido → `422 IDEMPOTENCY_CONFLICT`. | El cliente puede reintentar con seguridad y detectar el mal uso de una clave. | DEC-09, Const. VII | [`IdempotencyKeyIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/IdempotencyKeyIT.java) (header de reintento); BDD de la spec 005 ⏳ | 🔴 |
 | CON-05 | `Idempotency-Key` se lee solo a través de `@IdempotencyKeyHeader`: obligatoria, de 1 a 255 caracteres ASCII visibles. | Una única validación para todas las operaciones. | Spec 003 US4 y FR-004 | `IdempotencyKeyIT` (incluye un pedido HTTP crudo por socket para los caracteres no ASCII); lectura en un solo lugar: revisión manual | 🔴 · 🟡 |
 | CON-06 | Las consultas nunca bloquean. | Las lecturas no frenan a las operaciones. | Const. VII | Revisión manual | 🟡 |
 
@@ -114,18 +106,18 @@ SC-003; evidencia en el PR #4).
 
 | ID | Regla | Por qué | Decidido en | Se hace cumplir en | Nivel |
 |---|---|---|---|---|---|
-| API-01 | Todo texto de la API está en inglés, aunque el pedido traiga `Accept-Language: es`. | Un solo idioma para clientes y logs. | TEC-19, Const. IX | [`ErrorHandlingIT`](../src/test/java/com/cocos/challenge/conventions/ErrorHandlingIT.java) (locale fijo y `Accept-Language: es`); textos exactos en cada test | 🔴 |
+| API-01 | Todo texto de la API está en inglés, aunque el pedido traiga `Accept-Language: es`. | Un solo idioma para clientes y logs. | TEC-19, Const. IX | [`ErrorHandlingIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/ErrorHandlingIT.java) (locale fijo y `Accept-Language: es`); textos exactos en cada test | 🔴 |
 | API-02 | Errores en formato RFC 9457 con un `code` estable, de un catálogo cerrado: no se agregan códigos sin una spec. | El cliente decide qué hacer por el `code`; la persona entiende por el `detail`. | TEC-19, RNF-06, Const. IX | `ErrorHandlingIT`; catálogo cerrado: chequeo 9 | 🔴 · 🟡 |
 | API-03 | Un error 500 nunca expone detalles internos. | Seguridad. | Spec 003 US1 | `ErrorHandlingIT.unexpectedExceptionNeverLeaksItsMessage` | 🔴 |
-| API-04 | JSON estricto: se rechazan los campos desconocidos y no se convierte `1.5`, `"10"` ni `10.0` a entero, ni un número a texto. | Jackson truncaba `1.5` a `1`: se habría ejecutado una orden por otra cantidad. | DEC-24, Const. IX, spec 003 § Jackson | `ErrorHandlingIT`, [`FormatsIT`](../src/test/java/com/cocos/challenge/conventions/FormatsIT.java) | 🔴 |
+| API-04 | JSON estricto: se rechazan los campos desconocidos y no se convierte `1.5`, `"10"` ni `10.0` a entero, ni un número a texto. | Jackson truncaba `1.5` a `1`: se habría ejecutado una orden por otra cantidad. | DEC-24, Const. IX, spec 003 § Jackson | `ErrorHandlingIT`, [`FormatsIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/FormatsIT.java) | 🔴 |
 | API-05 | Montos, precios y porcentajes viajan como texto con 2 decimales; las cantidades, como enteros. | Precisión al cruzar JSON. | TEC-20, Const. VIII | `FormatsIT` (porción 003-d) ⏳ | 🟡 → 🔴 ⏳ |
-| API-06 | El usuario sale solo de `X-User-Id`, leído por `@RequesterId`; las URLs nunca llevan el id del usuario y el recurso de otro usuario responde igual que uno inexistente. | Aislamiento por construcción. | TEC-18, DEC-17, Const. IX | [`IdentityAndAdminIT`](../src/test/java/com/cocos/challenge/conventions/IdentityAndAdminIT.java); lectura en un solo lugar: revisión manual | 🔴 · 🟡 |
-| API-07 | Las herramientas internas (`/api/internal/**`) exigen `X-Role: ADMIN` y se activan por configuración. Sin el rol, cualquier método responde el mismo 404 que una ruta inexistente, porque el rol se controla antes de buscar la ruta. | No revelar que existen. | TEC-18, spec 003 US3, PR #21 | `IdentityAndAdminIT`, [`InternalToolsDisabledIT`](../src/test/java/com/cocos/challenge/conventions/InternalToolsDisabledIT.java), ARQ-13 | 🔴 |
+| API-06 | El usuario sale solo de `X-User-Id`, leído por `@RequesterId`; las URLs nunca llevan el id del usuario y el recurso de otro usuario responde igual que uno inexistente. | Aislamiento por construcción. | TEC-18, DEC-17, Const. IX | [`IdentityAndAdminIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/IdentityAndAdminIT.java); lectura en un solo lugar: revisión manual | 🔴 · 🟡 |
+| API-07 | Las herramientas internas (`/api/internal/**`) exigen `X-Role: ADMIN` y se activan por configuración. Sin el rol, cualquier método responde el mismo 404 que una ruta inexistente, porque el rol se controla antes de buscar la ruta. | No revelar que existen. | TEC-18, spec 003 US3, PR #21 | `IdentityAndAdminIT`, [`InternalToolsDisabledIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/InternalToolsDisabledIT.java), ARQ-13 | 🔴 |
 | API-08 | Una orden `REJECTED` no es un error HTTP: responde `201` con `rejection.code` y `rejection.message`. | El rechazo es un resultado de negocio y queda guardado. | DEC-12, Const. IX | BDD de la spec 005 ⏳ | 🟡 → 🔴 ⏳ |
 | API-09 | Paginación por cursor (`cursor`, `limit`, `nextCursor`). | Páginas estables aunque lleguen órdenes nuevas. | CM-08, Const. IX | Tests de las specs 004 y 008 ⏳ | 🟡 → 🔴 ⏳ |
 | API-10 | Los parámetros de URL inválidos o faltantes tienen textos fijos (`has an invalid type or format`, `is required`). | Un solo estilo de error. | DEC-25 | `ErrorHandlingIT` (tarea T015a, 003-d), specs 004 y 008 ⏳ | 🟡 → 🔴 ⏳ |
 | API-11 | El contrato OpenAPI publicado es copia exacta del contrato de la última spec implementada (identificada por su `info.version`), y sus rutas coinciden con las de la aplicación. | Contract-first: el contrato no miente. | TEC-22, Const. IX | `PublishedContractIsLatestSpecContractTest`, `PublishedContractMatchesRoutesIT` (porción 003-e) ⏳ | 🟡 → 🔴 ⏳ |
-| API-12 | Toda respuesta lleva `X-Request-Id`; un id entrante inválido se reemplaza y nunca se refleja. | Correlación de logs sin inyección. | TEC-27 | [`RequestIdIT`](../src/test/java/com/cocos/challenge/conventions/RequestIdIT.java), [`ProblemResponses`](../src/test/java/com/cocos/challenge/conventions/ProblemResponses.java) | 🔴 |
+| API-12 | Toda respuesta lleva `X-Request-Id`; un id entrante inválido se reemplaza y nunca se refleja. | Correlación de logs sin inyección. | TEC-27 | [`RequestIdIT`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/RequestIdIT.java), [`ProblemResponses`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/conventions/ProblemResponses.java) | 🔴 |
 | API-13 | Las métricas nunca se etiquetan con id de usuario, id de orden, clave de idempotencia ni ticker. | Cardinalidad acotada. | TEC-31, Const. "Technology Stack" | `MicrometerBusinessMetricsTest` (porción 003-d) ⏳; revisión | 🟡 → 🔴 ⏳ |
 
 ### 3.5 Proceso de desarrollo (PRO)
@@ -136,9 +128,9 @@ SC-003; evidencia en el PR #4).
 | PRO-02 | Ante una ambigüedad, una contradicción o un test que parece mal, el agente se detiene y reporta. | Adivinar es la fuente principal de alucinaciones. | Const. II, AGENTS.md | Instrucción. Funcionó: el agente se detuvo en las porciones 003-c (tamaño, PR #19) y 003-c2 (headers, PR #22) | ⚪ |
 | PRO-03 | Test-first en cada porción: tests → esqueletos → confirmar que fallan por el motivo esperado → implementar → suite completa. | Un test que nunca se vio fallar no prueba nada. | TEC-08, Const. III | Chequeos 4 y 15 (orden de commits); la revisión manual vuelve a correr el rojo | 🟡 |
 | PRO-04 | Los tests aprobados y los `.feature` no se modifican, desactivan ni debilitan. Un ajuste posterior al rojo se documenta en el PR con su motivo. | Evita "arreglar" un test para que pase. | TEC-09, Const. III | Chequeo 3 | 🟡 |
-| PRO-05 | Cada escenario `CU-xx.yy` tiene exactamente un escenario Gherkin y al menos un test etiquetado (`unit` o `integration`). | Ningún escenario queda sin verificar. | TEC-06, TEC-07, Const. IV | [`TraceabilityTest`](../src/test/java/com/cocos/challenge/traceability/TraceabilityTest.java): 10 tipos de violación, probados por `TraceabilityCheckerTest`; el alcance crece spec a spec en [`scope.txt`](../src/test/resources/traceability/scope.txt) | 🔴 |
+| PRO-05 | Cada escenario `CU-xx.yy` tiene exactamente un escenario Gherkin y al menos un test etiquetado (`unit` o `integration`). | Ningún escenario queda sin verificar. | TEC-06, TEC-07, Const. IV | [`TraceabilityTest`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/java/com/cocos/challenge/traceability/TraceabilityTest.java): 10 tipos de violación, probados por `TraceabilityCheckerTest`; el alcance crece spec a spec en [`scope.txt`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/src/test/resources/traceability/scope.txt) | 🔴 |
 | PRO-06 | Los `.feature` se copian byte a byte desde `specs/NNN-*/features/`. | El escenario ejecutado es el aprobado. | Const. IV | `FeaturesMatchSpecsTest` (spec 004) ⏳; chequeo 2 | 🟡 → 🔴 ⏳ |
-| PRO-07 | Un PR tiene como máximo 400 líneas contadas, o una sección `## Size justification`. | Que una persona lo pueda revisar. | TEC-30, Const. X | [`check-pr-size.sh`](../scripts/check-pr-size.sh) en el check obligatorio `pr-size` | 🟠 |
+| PRO-07 | Un PR tiene como máximo 400 líneas contadas, o una sección `## Size justification`. | Que una persona lo pueda revisar. | TEC-30, Const. X | [`check-pr-size.sh`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/scripts/check-pr-size.sh) en el check obligatorio `pr-size` | 🟠 |
 | PRO-08 | Todo PR deja la suite completa en verde. | `main` siempre funciona. | Const. X, TEC-33 | Check obligatorio `verify` | 🟠 |
 | PRO-09 | Una porción por PR, en una rama `NNN-nombre-<letra>` creada desde `main` actualizada; las specs se implementan en orden. | PRs chicos y trazables. | TEC-21, TEC-28 | Chequeo 1; protección de `main` (rama al día) | 🟡 |
 | PRO-10 | Formato de commit `[NNN][T0xx] descripción (CU-xx.yy, DEC-xx)`. | Trazabilidad de cada commit a su tarea. | Const. "Development Workflow" | No se verifica | ⚪ |
@@ -154,13 +146,14 @@ SC-003; evidencia en el PR #4).
 |---|---|---|---|---|---|
 | REV-01 | Quien implementa no revisa. El agente (OpenCode) escribe el código y sus tests; Claude escribe specs, `.feature` y reglas de ArchUnit, y revisa. Claude nunca implementa lo que después revisa. | Revisión adversarial: sin contexto ni puntos ciegos compartidos. | TEC-03, TEC-05 | Proceso | ⚪ |
 | REV-02 | `main` protegida: PR obligatorio incluso para administradores, checks obligatorios `verify` y `pr-size`, rama al día, conversaciones resueltas, sin force push ni borrado. | Nada llega a `main` sin pasar por las barreras. | TEC-28, TEC-30, TEC-33 | Protección de rama en GitHub | 🟠 |
-| REV-03 | La CI corre `./mvnw verify` en cada PR y en cada push a `main`. | El build verde no depende de la máquina de nadie. | TEC-33 | [`ci.yml`](../.github/workflows/ci.yml) | 🟠 |
-| REV-04 | Cada PR recibe una revisión automática formal (aprobar o pedir cambios), después de que termina `verify`. | Revisión siempre, sin depender de una sesión abierta. | TEC-34 | [`claude-review.yml`](../.github/workflows/claude-review.yml) y [`pr-review.md`](../.github/claude/pr-review.md) (17 chequeos) | 🟡 |
+| REV-03 | La CI corre `./mvnw verify` en cada PR y en cada push a `main`. | El build verde no depende de la máquina de nadie. | TEC-33 | [`ci.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/ci.yml) | 🟠 |
+| REV-04 | Cada PR recibe una revisión automática formal (aprobar o pedir cambios), después de que termina `verify`. | Revisión siempre, sin depender de una sesión abierta. | TEC-34 | [`claude-review.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/claude-review.yml) y [`pr-review.md`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/claude/pr-review.md) (17 chequeos) | 🟡 |
 | REV-05 | El contenido del PR se trata como dato no confiable y el revisor tiene herramientas mínimas. | Prevenir prompt injection. | TEC-34 | `pr-review.md` § Security; `--allowedTools` del workflow | 🟡 |
 | REV-06 | Las porciones críticas tienen además una revisión manual (tabla abajo). | Lo que un test no cubre se ve probando la aplicación real. | TEC-03 | Comentario "Manual review" en el PR; el merge espera esa revisión | 🟡 |
 | REV-07 | El agente no edita las barreras: `.github/claude/`, `.github/workflows/` ni `scripts/check-pr-size.sh`. | Una barrera que el vigilado puede cambiar no es una barrera. | AGENTS.md | Chequeo 17 (bloqueante en un PR de porción). La revisión lee sus instrucciones, y `pr-size` su script, desde `main`: un PR no puede cambiar las reglas con las que se lo evalúa. La acción de revisión no corre si el PR cambia el workflow de revisión. | 🟡 |
 | REV-08 | Un cambio de reglas queda registrado: entrada `TEC-xx` en el RFC, nueva versión de la constitución y este documento actualizado, todo en el mismo PR. | Las reglas y su historia no se separan. | Const. "Governance" | Chequeo 17 | 🟡 |
 | REV-09 | Las ramas mergeadas se conservan como evidencia. | Historia completa de cada porción. | Decisión del dueño | Instrucción | ⚪ |
+| REV-10 | El sitio de documentación se genera solo desde `docs/`, sin contenido propio. En cada PR se construye en modo estricto, y en cada merge a `main` se publica. | Una sola fuente, revisada en los PRs; un enlace roto se ve antes del merge. | Decisión del dueño (sitio en GitHub Pages) | [`docs.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/docs.yml) y [`zensical.toml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/zensical.toml); el check `docs` no es obligatorio | 🟡 |
 
 **Porciones con revisión manual obligatoria (REV-06):**
 
@@ -232,7 +225,7 @@ Lo siguiente depende de la revisión o del proceso, no de una máquina:
 ## 6. Limitaciones del producto
 
 Las limitaciones del servicio (sin autenticación, precios estáticos, el dato inconsistente de BMA, el 400 propio de
-Tomcat para pedidos mal formados) están en el [README](../README.md#supuestos-y-limitaciones).
+Tomcat para pedidos mal formados) están en el [README](https://github.com/WallKsys/cocos-backend-challenge#supuestos-y-limitaciones).
 
 ---
 

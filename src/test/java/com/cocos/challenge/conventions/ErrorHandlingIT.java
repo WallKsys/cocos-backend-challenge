@@ -134,6 +134,20 @@ class ErrorHandlingIT {
                 List.of(new FieldError("userId", "is not a recognized field")));
     }
 
+    @Test
+    void missingRequiredIntegerParameterHasAStableProblem() {
+        assertProblem(get("/test/conventions/required-param"), 400, "VALIDATION_ERROR", "Validation error",
+                "validation-error", "Request validation failed: 'count' is required.",
+                "/test/conventions/required-param");
+    }
+
+    @Test
+    void invalidRequiredIntegerParameterHasAStableProblem() {
+        assertProblem(get("/test/conventions/required-param?count=abc"), 400, "VALIDATION_ERROR", "Validation error",
+                "validation-error", "Request validation failed: 'count' has an invalid type or format.",
+                "/test/conventions/required-param");
+    }
+
     private RestTestClient.ResponseSpec get(String path) {
         return restTestClient.get().uri(path).exchange();
     }
