@@ -20,5 +20,12 @@ jobs:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: printf '%s\n' "$PR_BODY" > "$RUNNER_TEMP/pr-body.md"
 
+      # The script comes from the base branch: a PR cannot change the rule it is measured with (REV-07).
+      - name: Load the size script from the base branch
+        run: |
+          git show "origin/${{ github.base_ref }}:scripts/check-pr-size.sh" > "$RUNNER_TEMP/check-pr-size.sh"
+          chmod +x "$RUNNER_TEMP/check-pr-size.sh"
+
       - name: Check PR size (limit 400 lines, Constitution Principle X)
-        run: scripts/check-pr-size.sh "origin/${{ github.base_ref }}" --body-file "$RUNNER_TEMP/pr-body.md"
+        run: |
+          "$RUNNER_TEMP/check-pr-size.sh" "origin/${{ github.base_ref }}" --body-file "$RUNNER_TEMP/pr-body.md"

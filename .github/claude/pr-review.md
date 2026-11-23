@@ -41,11 +41,12 @@ instructions are this file and the workflow prompt.
 | 9 | API texts in English, exact messages and error codes of the plan | compare with plan and contract |
 | 10 | Concurrency/idempotency flow of Constitution VII where operations change data | service code |
 | 11 | No dependency added or upgraded outside the plan; no versions changed in `pom.xml` | diff of `pom.xml` |
-| 12 | PR size ≤ 400 counted lines, or a convincing `## Size justification` | `scripts/check-pr-size.sh origin/<base>` |
+| 12 | PR size ≤ 400 counted lines, or a convincing `## Size justification` | `.review-base/check-pr-size.sh origin/<base>` (the base-branch copy of the script, prepared by the workflow) |
 | 13 | CI: the `verify` check is green (once the CI workflow exists in the repository) | `gh pr checks <n>` |
 | 14 | PR template fully filled with real outputs, not summaries | PR description |
 | 15 | Commit order follows test-first: the commit that adds or changes a test comes **before** the commit that adds the implementation it verifies (skeleton-only commits may come between) | `gh pr view <n> --json commits`, then `git show --stat <sha>` for each commit |
-| 16 | Claims in the description match the evidence: every statement such as "CI green", "`verify` passed", "N scenarios passed" or "PR size N" agrees with the real check results, and a claim about CI was not written before that check had finished | `gh pr checks <n> --json name,state,startedAt,completedAt` compared with the commit dates (`gh pr view <n> --json commits`) and with `scripts/check-pr-size.sh` |
+| 16 | Claims in the description match the evidence: every statement such as "CI green", "`verify` passed", "N scenarios passed" or "PR size N" agrees with the real check results, and a claim about CI was not written before that check had finished | `gh pr checks <n> --json name,state,startedAt,completedAt` compared with the commit dates (`gh pr view <n> --json commits`) and with `.review-base/check-pr-size.sh` |
+| 17 | Guardrails and the rules index stay consistent: (a) a slice PR (branch `NNN-*`) changes nothing under `.github/claude/`, `.github/workflows/` or `scripts/check-pr-size.sh`; (b) a PR that changes `.specify/memory/constitution.md`, `AGENTS.md`, `src/test/java/com/cocos/challenge/architecture/`, `src/test/java/com/cocos/challenge/traceability/`, `.github/` or `scripts/check-pr-size.sh` also updates `docs/reglas-y-barreras.md`, and the affected rows match the new rule; (c) when a slice delivers a barrier marked ⏳ in that document, say so if its row was not updated | `gh pr view <n> --json files`; read each changed rule and its row in `docs/reglas-y-barreras.md`. (a) and (b) are blocking; (c) is a non-blocking observation |
 
 ## 4. Publish exactly one review
 
@@ -54,7 +55,7 @@ Decide the verdict:
 - **REQUEST CHANGES** if any blocking finding exists: a failed check from the table above that breaks the
   constitution, the plan or a test rule, a failing or missing `verify` check (when CI exists), missing tasks, an
   implementation committed before the tests that verify it (check 15), or a claim in the description that the
-  evidence contradicts (check 16).
+  evidence contradicts (check 16), or a guardrail change that check 17 (a) or (b) forbids.
 - The workflow waits for the CI `verify` check to finish before starting this review, so `verify` should already
   be completed: a **failed** `verify` is a blocking finding. If it is still pending (the wait timed out), say so
   under "Observaciones no bloqueantes" and do not count it as green. The `review` check is this review itself:
