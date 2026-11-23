@@ -1,0 +1,90 @@
+# Documentation site published to GitHub Pages by .github/workflows/docs.yml (docs/reglas-y-barreras.md, REV-10).
+# The Markdown files in docs/ are the only source: the site adds no content of its own.
+# Local preview: pip install -r requirements-docs.txt && zensical serve
+
+[project]
+site_name = "Cocos Broker API · Documentación"
+site_description = "Análisis, casos de uso, PRD, decisiones técnicas y reglas de ingeniería de la API de broker."
+site_url = "https://wallksys.github.io/cocos-backend-challenge/"
+repo_url = "https://github.com/WallKsys/cocos-backend-challenge"
+repo_name = "WallKsys/cocos-backend-challenge"
+edit_uri = "blob/main/docs/"
+docs_dir = "docs"
+site_dir = "site"
+
+# Verbatim copies of the provided challenge: shown on GitHub, where they render exactly as provided.
+exclude_docs = """
+referencia/
+"""
+
+nav = [
+  { "Inicio" = "index.md" },
+  { "Producto" = [
+    { "Análisis funcional" = "analisis-funcional.md" },
+    { "Casos de uso" = "casos-de-uso.md" },
+    { "PRD" = "prd.md" },
+  ] },
+  { "Técnica" = [
+    { "RFC" = "rfc.md" },
+    { "Reglas y barreras" = "reglas-y-barreras.md" },
+  ] },
+  { "En GitHub" = [
+    { "README e inicio rápido" = "https://github.com/WallKsys/cocos-backend-challenge#readme" },
+    { "Enunciado original" = "https://github.com/WallKsys/cocos-backend-challenge/blob/main/docs/referencia/backend-challenge.md" },
+    { "Constitución" = "https://github.com/WallKsys/cocos-backend-challenge/blob/main/.specify/memory/constitution.md" },
+    { "Specs" = "https://github.com/WallKsys/cocos-backend-challenge/tree/main/specs" },
+    { "AGENTS.md" = "https://github.com/WallKsys/cocos-backend-challenge/blob/main/AGENTS.md" },
+  ] },
+]
+
+[project.theme]
+language = "es"
+features = [
+  "content.action.view",
+  "content.code.copy",
+  "navigation.footer",
+  "navigation.instant",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  "toc.follow",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Usar el modo claro"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Usar el modo oscuro"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Usar la preferencia del sistema"
+
+# Only extensions that keep the GitHub rendering of the same files. mdx_breakless_lists accepts a list right after
+# a paragraph, as GitHub does. Extensions that rewrite text (smartsymbols, tilde, caret, mark, emoji) are left out.
+[project.markdown_extensions]
+admonition = {}
+attr_list = {}
+footnotes = {}
+md_in_html = {}
+tables = {}
+toc.permalink = true
+mdx_breakless_lists = {}
+pymdownx.betterem = {}
+pymdownx.details = {}
+pymdownx.highlight.anchor_linenums = true
+pymdownx.inlinehilite = {}
+pymdownx.magiclink = {}
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.tasklist.custom_checkbox = true
