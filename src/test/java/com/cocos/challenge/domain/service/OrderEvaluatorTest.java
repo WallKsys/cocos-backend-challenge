@@ -406,6 +406,25 @@ class OrderEvaluatorTest {
                 "The amount ARS 9999999999.00 would " + verb + " more than 2147483647 shares of PGR at ARS 0.01.");
     }
 
+    @Test
+    void roundsBothBandBoundsInwardWhenHalfUpWouldWidenTheBand() {
+        MarketQuote quote = new MarketQuote(Money.of("1.03"), Money.of("1.03"));
+        for (String price : new String[]{"0.82", "1.24"}) {
+            OrderEvaluation evaluation = evaluate(
+                    OrderRequest.of(47L, "BUY", "LIMIT", 10, null, price), PAMP, quote, PAMP_SHARES);
+            assertThat(evaluation.status()).as("limit price %s", price).isEqualTo(OrderStatus.REJECTED);
+            assertThat(evaluation.rejection().reason()).isEqualTo(RejectionReason.PRICE_OUT_OF_RANGE);
+            assertThat(evaluation.rejection().message()).isEqualTo(
+                    "The limit price ARS " + price + " is outside the allowed range for PAMP: "
+                            + "ARS 0.83 to ARS 1.23 (20% around the last price ARS 1.03).");
+        }
+        for (String price : new String[]{"0.83", "1.23"}) {
+            OrderEvaluation evaluation = evaluate(
+                    OrderRequest.of(47L, "BUY", "LIMIT", 10, null, price), PAMP, quote, PAMP_SHARES);
+            assertThat(evaluation.status()).as("limit price %s", price).isEqualTo(OrderStatus.NEW);
+        }
+    }
+
     private static Money total(OrderEvaluation evaluation) {
         return evaluation.price().times(BigDecimal.valueOf(evaluation.quantity()));
     }
