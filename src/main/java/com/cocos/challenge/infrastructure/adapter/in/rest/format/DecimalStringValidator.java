@@ -7,6 +7,6 @@ public class DecimalStringValidator implements ConstraintValidator<DecimalString
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        return true;
+        return value == null || value.matches("^-?\\d{1,16}(\\.\\d{1,2})?$");
     }
 }
