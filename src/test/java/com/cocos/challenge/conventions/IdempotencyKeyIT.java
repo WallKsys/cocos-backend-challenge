@@ -81,6 +81,20 @@ class IdempotencyKeyIT {
     }
 
     @Test
+    void repeatedIdempotencyKeyHeadersAreRejectedOverRawHttp() throws IOException {
+        String response;
+        try (Socket socket = new Socket("localhost", port)) {
+            socket.getOutputStream().write(("POST /test/conventions/idempotent HTTP/1.1\r\nHost: localhost\r\n"
+                    + "Idempotency-Key: k-1\r\nIdempotency-Key: k-1\r\nConnection: close\r\n\r\n")
+                    .getBytes(StandardCharsets.US_ASCII));
+            socket.getOutputStream().flush();
+            response = new String(socket.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        }
+        assertThat(response).startsWith("HTTP/1.1 400");
+        assertThat(response).contains("\"detail\":\"The 'Idempotency-Key' header must be sent only once.\"");
+    }
+
+    @Test
     void replayedResponseHasTheReplayHeader() {
         EntityExchangeResult<KeyResponse> result = restTestClient.post().uri("/test/conventions/replayed")
                 .exchange().returnResult(KeyResponse.class);

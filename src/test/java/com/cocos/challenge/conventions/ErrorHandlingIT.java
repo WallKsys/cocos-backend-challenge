@@ -148,6 +148,15 @@ class ErrorHandlingIT {
                 "/test/conventions/required-param");
     }
 
+    @Test
+    void outOfRangeIntegerBodyFieldHasAStableProblem() {
+        assertProblemWithErrors(post("{\"amount\":\"1.00\",\"quantity\":99999999999}"), 400,
+                "VALIDATION_ERROR", "Validation error", "validation-error",
+                "Request validation failed: 'quantity' has an invalid type or format.",
+                "/test/conventions/validate",
+                List.of(new FieldError("quantity", "has an invalid type or format")));
+    }
+
     private RestTestClient.ResponseSpec get(String path) {
         return restTestClient.get().uri(path).exchange();
     }
