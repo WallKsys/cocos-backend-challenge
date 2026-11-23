@@ -17,6 +17,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
+@Tag("integration")
 class JdbcInstrumentSearchRepositoryIT {
 
     @Autowired

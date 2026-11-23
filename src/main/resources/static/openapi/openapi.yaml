@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Cocos Broker API
-  version: 0.3.0
+  version: 0.4.0
   description: |
     Broker API: portfolio, instrument search and orders (Cocos backend challenge).
 
@@ -17,7 +17,71 @@ info:
 servers:
   - url: http://localhost:8080
 
-paths: {}
+paths:
+  /api/v1/instruments:
+    get:
+      operationId: searchInstruments
+      summary: Search tradable instruments by ticker and/or name
+      description: |
+        Public market data: no `X-User-Id` required. Cash (ARS) is never returned (DEC-08).
+        - `q` matches ticker **or** name; `ticker` matches the ticker; `name` matches the name. All given criteria must match.
+        - Matching ignores case and accents. With 3 or more characters it is partial ("contains").
+          With 1 or 2 characters, `q` and `ticker` only match an exact ticker (DEC-21); `name` is rejected
+          with `SEARCH_TERM_TOO_SHORT`.
+        - Order: exact ticker match of `q`, then tickers starting with `q`, then other matches; alphabetical by
+          ticker within each group. Without `q`: alphabetical by ticker.
+        - No criteria: the whole market, paginated (DEC-19). No matches: empty list, not an error.
+      parameters:
+        - name: q
+          in: query
+          required: false
+          description: General term (ticker or name). Trimmed; blank means absent. Max 100 characters.
+          schema: { type: string, maxLength: 100 }
+          example: banco
+        - name: ticker
+          in: query
+          required: false
+          description: Ticker filter. Trimmed; blank means absent. Max 100 characters.
+          schema: { type: string, maxLength: 100 }
+        - name: name
+          in: query
+          required: false
+          description: Name filter. Trimmed; blank means absent. At least 3 characters, max 100.
+          schema: { type: string, maxLength: 100 }
+        - name: limit
+          in: query
+          required: false
+          description: Page size.
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque cursor from `nextCursor` of the previous page. Only valid with the same criteria.
+          schema: { type: string }
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: A page of instruments.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstrumentPage'
+              example:
+                items:
+                  - id: 47
+                    ticker: PAMP
+                    name: Pampa Holding S.A.
+                    type: ACCIONES
+                    lastPrice: '925.85'
+                    dailyChangePct: '0.44'
+                nextCursor: null
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
 components:
   parameters:
@@ -150,6 +214,45 @@ components:
           description: Present only for VALIDATION_ERROR caused by request fields.
           items:
             $ref: '#/components/schemas/FieldError'
+    InstrumentType:
+      type: string
+      enum: [ACCIONES, MONEDA]
+    InstrumentSummary:
+      type: object
+      required: [id, ticker, name, type, lastPrice, dailyChangePct]
+      properties:
+        id:
+          type: integer
+          example: 47
+        ticker:
+          type: string
+          example: PAMP
+        name:
+          type: string
+          example: Pampa Holding S.A.
+        type:
+          $ref: '#/components/schemas/InstrumentType'
+        lastPrice:
+          description: Latest close. Null when the instrument has no market data.
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+        dailyChangePct:
+          description: (close - previousClose) / previousClose x 100, 2 decimals HALF_UP. Null without market data or previous close.
+          oneOf:
+            - $ref: '#/components/schemas/Percentage'
+            - type: 'null'
+    InstrumentPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstrumentSummary'
+        nextCursor:
+          type: [string, 'null']
+          description: Cursor of the next page; null on the last page.
     CursorPage:
       type: object
       description: Base shape of cursor-paginated responses (items are defined by each endpoint).
