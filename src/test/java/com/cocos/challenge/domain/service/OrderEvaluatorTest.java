@@ -198,9 +198,9 @@ class OrderEvaluatorTest {
                 .isEqualTo(54);
         assertThat(evaluate(OrderRequest.of(47L, "SELL", "LIMIT", null, "20000.00", "950.00")).quantity())
                 .isEqualTo(21);
-        assertThat(evaluate(OrderRequest.of(47L, "BUY", "MARKET", null, "19999.00", "950.00")).quantity())
+        assertThat(evaluate(OrderRequest.of(47L, "BUY", "LIMIT", null, "19999.00", "950.00")).quantity())
                 .isEqualTo(21);
-        assertThat(evaluate(OrderRequest.of(47L, "BUY", "MARKET", null, "949.99", "950.00")).quantity())
+        assertThat(evaluate(OrderRequest.of(47L, "BUY", "LIMIT", null, "949.99", "950.00")).quantity())
                 .isZero();
     }
 
