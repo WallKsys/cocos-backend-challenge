@@ -160,7 +160,7 @@ exception is **never** copied into the response unless the table says so.
 | `OrderNotCancellableException` | `ORDER_NOT_CANCELLABLE` | exception message |
 | `MethodArgumentNotValidException`, `HandlerMethodValidationException` | `VALIDATION_ERROR` | `Request validation failed: '<field>' <message>[; '<field>' <message>...].` plus `errors` (§ Validation) |
 | `HttpMessageNotReadableException` caused by `tools.jackson.databind.exc.UnrecognizedPropertyException` (DEC-24) | `VALIDATION_ERROR` | `Request validation failed: '<property>' is not a recognized field.` plus `errors` with that field and message `is not a recognized field` |
-| `HttpMessageNotReadableException` caused by any other `tools.jackson.databind.exc.MismatchedInputException` with a field path | `VALIDATION_ERROR` | `Request validation failed: '<path>' has an invalid type or format.` plus `errors` with that field |
+| `HttpMessageNotReadableException` caused by any other `tools.jackson.databind.exc.MismatchedInputException`, or by `tools.jackson.core.exc.InputCoercionException` (a number out of the range of its field, DEC-28), with a field path | `VALIDATION_ERROR` | `Request validation failed: '<path>' has an invalid type or format.` plus `errors` with that field |
 | other `HttpMessageNotReadableException` | `VALIDATION_ERROR` | `Malformed JSON request body.` |
 | `MethodArgumentTypeMismatchException` (query or path parameter) | `VALIDATION_ERROR` | `Request validation failed: '<name>' has an invalid type or format.` (DEC-25) |
 | `MissingServletRequestParameterException` | `VALIDATION_ERROR` | `Request validation failed: '<name>' is required.` (DEC-25) |
@@ -181,7 +181,9 @@ exception is **never** copied into the response unless the table says so.
 ## Identity and admin
 
 - `@RequesterId` (target: parameter) marks a controller parameter of type `UserId`.
-  `RequesterIdArgumentResolver` reads `X-User-Id`: trims it; missing or blank → `ApiException(VALIDATION_ERROR,
+  `RequesterIdArgumentResolver` reads `X-User-Id`: more than one header value (`webRequest.getHeaderValues`) →
+  `ApiException(VALIDATION_ERROR, "The 'X-User-Id' header must be sent only once.")` (DEC-27, checked first); then trims
+  it; missing or blank → `ApiException(VALIDATION_ERROR,
   "The 'X-User-Id' header is required.")`; not matching `^\d+$`, zero, or greater than 2147483647 →
   `ApiException(VALIDATION_ERROR, "The 'X-User-Id' header must be a positive integer.")`. Check the range without
   risking an overflow (more than 10 digits is already invalid): a `NumberFormatException` must never escape, because
@@ -210,7 +212,9 @@ exception is **never** copied into the response unless the table says so.
 ## Idempotency key
 
 - `@IdempotencyKeyHeader` (target: parameter, type `String`). `IdempotencyKeyArgumentResolver` reads
-  `Idempotency-Key` as the servlet container delivers it, **without trimming**: missing or empty after `isBlank()` → `ApiException(MISSING_IDEMPOTENCY_KEY,
+  `Idempotency-Key` as the servlet container delivers it, **without trimming**: more than one header value
+  (`webRequest.getHeaderValues`) → `ApiException(VALIDATION_ERROR, "The 'Idempotency-Key' header must be sent only
+  once.")` (DEC-27, checked first); missing or empty after `isBlank()` → `ApiException(MISSING_IDEMPOTENCY_KEY,
   "The 'Idempotency-Key' header is required for this operation.")`; not matching `^[\x21-\x7E]{1,255}$` →
   `ApiException(VALIDATION_ERROR, "The 'Idempotency-Key' header must be 1 to 255 visible ASCII characters.")`.
 - **What reaches the resolver** (verified on 2026-11-22 with raw HTTP bytes against Tomcat on Spring Boot 4.1.3):
@@ -221,6 +225,9 @@ exception is **never** copied into the response unless the table says so.
   `IdempotencyKeyIT` sends that case as a raw HTTP/1.1 request over a `java.net.Socket` to the random port, with
   the header bytes `cl\xC3\xA9` (`clé` in UTF-8) and `Connection: close`, and asserts the status line `400` and
   the exact `detail` in the body.
+- **Testing repeated headers (DEC-27):** send two separate header lines (`X-User-Id: 1` and `X-User-Id: 1`, or two
+  `Idempotency-Key` lines) as a raw HTTP/1.1 request over a `java.net.Socket`, the same way as the non-ASCII case, so
+  that no client joins them into one value. Assert the status line `400` and the exact `detail`.
 - `IdempotentResponses`: `static <T> ResponseEntity<T> created(T body)` (201) and
   `static <T> ResponseEntity<T> replayed(T body)` (200 with header `Idempotent-Replayed: true`). Specs 005 and 007
   use them.
@@ -373,10 +380,10 @@ not working as described.
 
 | Test | Covers |
 |---|---|
-| `ErrorHandlingIT` | US1 scenarios 1–11 (slice 003-b) and 12 (slice 003-d) |
-| `IdentityAndAdminIT` (`cocos.internal-tools.enabled=true`) | US2 1–3, US3 2–4 |
+| `ErrorHandlingIT` | US1 scenarios 1–11 (slice 003-b), 12 (slice 003-d) and 13 (slice 003-f) |
+| `IdentityAndAdminIT` (`cocos.internal-tools.enabled=true`) | US2 1–4, US3 2–4 |
 | `InternalToolsDisabledIT` (default properties) | US3 1 |
-| `IdempotencyKeyIT` | US4 1–5 |
+| `IdempotencyKeyIT` | US4 1–6 |
 | `FormatsIT` | US5 1–4, plus: `{"quantity": 1.5}`, `{"quantity": "10"}` and `{"quantity": 10.0}` on the `/validate` probe → 400 `VALIDATION_ERROR` naming `quantity` |
 | `ApiDecimalsTest`, `DecimalStringValidatorTest`, `MoneyTest`, `UserIdTest`, `RequestFingerprintTest` | US5, domain building blocks |
 | `RequestIdIT` | US6 1–4 (use a log capture such as Spring Boot's `OutputCaptureExtension`) |

@@ -53,6 +53,9 @@ with `type`, `title`, `status`, `code`, `detail` and `instance`, and the `X-Requ
     400 `VALIDATION_ERROR`, detail `Request validation failed: 'count' is required.`; **when** it is `abc`, **then**
     400 `VALIDATION_ERROR`, detail `Request validation failed: 'count' has an invalid type or format.` (DEC-25).
     Neither response has an `errors` list.
+13. **Given** a request body with a number out of the range of its field (`{"amount": "1.00", "quantity":
+    99999999999}`), **Then** 400 `VALIDATION_ERROR`, detail `Request validation failed: 'quantity' has an invalid type
+    or format.`, and `errors` names `quantity` — never `Malformed JSON request body.` (DEC-28).
 
 ---
 
@@ -68,6 +71,8 @@ with `type`, `title`, `status`, `code`, `detail` and `instance`, and the `X-Requ
 3. **When** `X-User-Id` is `abc`, `0`, `-5` or greater than 2147483647 (including values that do not fit in 64 bits,
    such as `99999999999999999999`), **Then** 400 `VALIDATION_ERROR`, detail
    `The 'X-User-Id' header must be a positive integer.`
+4. **When** the request carries two `X-User-Id` headers (even with the same value), **Then** 400 `VALIDATION_ERROR`,
+   detail `The 'X-User-Id' header must be sent only once.` (DEC-27).
 
 ---
 
@@ -105,6 +110,8 @@ with `type`, `title`, `status`, `code`, `detail` and `instance`, and the `X-Requ
 5. **When** the key is sent with surrounding whitespace (` k-1 `), **Then** the endpoint receives `k-1`: leading and
    trailing whitespace is not part of an HTTP header value (RFC 9110 §5.5) and the server removes it before the
    application sees it.
+6. **When** the request carries two `Idempotency-Key` headers (even with the same value), **Then** 400
+   `VALIDATION_ERROR`, detail `The 'Idempotency-Key' header must be sent only once.` (DEC-27).
 
 ---
 

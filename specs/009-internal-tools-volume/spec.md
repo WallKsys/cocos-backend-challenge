@@ -49,6 +49,8 @@ disabled and fails if any of them still reads `orders`, `instruments` or `market
 - Forcing the execution of a MARKET order is impossible in practice (MARKET orders are never `NEW`); the rule is
   "only `NEW` orders", whatever the type.
 - Creating a user without email or with an invalid email → 400 `VALIDATION_ERROR`.
+- An `orderId` or `instrumentId` in the path that is 0 or negative → 400 `VALIDATION_ERROR`,
+  `Request validation failed: '<orderId|instrumentId>' must be greater than 0.` (DEC-26).
 - Restoring the seed data while operations are in flight: the restore waits for them (table locks) and runs alone.
 
 ## Requirements *(mandatory)*

@@ -93,7 +93,8 @@ Body record `PlaceOrderRequestBody(@NotNull @Positive Long instrumentId, @NotNul
 Integer quantity, @DecimalString String amount, @DecimalString String price)`. `side` and `type` are `String` (not
 enums) so the messages above are ours, not Jackson's. Missing `instrumentId`, `side` or `type` → Bean Validation
 `VALIDATION_ERROR` (spec 003 format). A non-integer `quantity` (`1.5`) → `Request validation failed: 'quantity' has
-an invalid type or format.` (spec 003).
+an invalid type or format.` (spec 003). A `quantity` out of the
+range of its type (`99999999999`) → the same detail (DEC-28, slice 003-f).
 
 Checks done by the service (they need the database), with their details:
 
@@ -180,6 +181,10 @@ public record PlaceOrderResult(Order order, boolean replayed) {}
 
 ## Persistence
 
+Every SQL statement of this section is a **package-private `static final String` constant** of its adapter (named
+after the query, for example `CASH_BALANCE_SQL`). The plan guard of spec 009 (`PlanGuardIT`, same package) runs
+`EXPLAIN` on these constants, so they must be the exact statements the adapter executes.
+
 `JdbcAccountLock.lock`: `SELECT id, accountnumber FROM users WHERE id = :userId FOR UPDATE`.
 
 `JdbcLedgerReader.cashBalance` (one query, one row):
@@ -241,7 +246,9 @@ Implements every step of the feature file. Conventions:
   the queries of § Persistence (there is no portfolio endpoint yet).
 - `no order is stored`: the number of rows in `orders` equals the number before the `When` step.
 - `made a deposit of "<amount>" with idempotency key "<k>"`: inserts a `FILLED` `CASH_IN` on instrument 66 with
-  that key and the fingerprint of `CASH_IN|amount=<amount>` (`RequestFingerprint.of`).
+  that key and the fingerprint of `CASH_IN|amount=<amount>` (`RequestFingerprint.of`), with the amount normalized by
+  `Money` to plain text with 2 decimals (`"1234.5"` → `CASH_IN|amount=1234.50`): exactly the canonical form of
+  spec 007, so the row is the one a real deposit would have stored.
 - `places these orders at the same time:` sends all requests concurrently (start them together with a
   `CountDownLatch` on an executor) and waits for all responses.
 - `the current time is "<instant>"`: sets a test clock. Provide `bdd/support/TestClockConfiguration`, a

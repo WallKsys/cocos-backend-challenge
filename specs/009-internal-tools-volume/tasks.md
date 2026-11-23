@@ -12,8 +12,9 @@
 
 **Estimated size**: ~250 lines.
 
-- [ ] T001 Expose the SQL of every `Jdbc*` adapter as package-private constants (refactor only; all tests stay
-  green unmodified).
+- [ ] T001 Check that every `Jdbc*` adapter exposes its SQL as package-private constants (and the search and history
+  adapters their package-private SQL builder methods), as plans 004 to 008 require. Refactor only an adapter that
+  does not, with no behavior change: all tests stay green unmodified.
 - [ ] T002 Write `PlanGuardIT` (plan.md § Plan guard). It should pass immediately; if a query fails, **stop and
   report** (it means an index is missing or a query cannot use it).
 

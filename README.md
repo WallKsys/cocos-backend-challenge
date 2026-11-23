@@ -39,7 +39,7 @@ La implementación avanza por funcionalidades (*specs*), cada una entregada en p
 |---|---|---|
 | 001 | Esqueleto del servicio y barreras de calidad (build, CI, ArchUnit, BDD, trazabilidad) | ✅ Completa |
 | 002 | Base de datos: esquema provisto + migraciones justificadas | ✅ Completa |
-| 003 | Convenciones de la API (errores, identidad, montos, idempotencia) | ✅ Completa |
+| 003 | Convenciones de la API (errores, identidad, montos, idempotencia) | 🚧 Falta la porción 003-f: headers repetidos y números fuera de rango (DEC-27, DEC-28) |
 | 004 | Búsqueda de activos | ⏳ Pendiente |
 | 005 | Envío de órdenes | ⏳ Pendiente |
 | 006 | Portfolio | ⏳ Pendiente |

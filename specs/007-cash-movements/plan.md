@@ -86,6 +86,10 @@ slice 007-a, with no behavior change: every spec 005 test must stay green withou
 
 ## Persistence
 
+Every SQL statement of this section is a **package-private `static final String` constant** of its adapter (named
+after the query, for example `CASH_BALANCE_SQL`). The plan guard of spec 009 (`PlanGuardIT`, same package) runs
+`EXPLAIN` on these constants, so they must be the exact statements the adapter executes.
+
 - `findCashInstrument`: `SELECT id FROM instruments WHERE ticker = 'ARS' AND type = 'MONEDA'`.
 - `save`: `INSERT INTO orders (instrumentid, userid, size, price, type, side, status, datetime, rejection_code,
   rejection_message, idempotency_key, request_fingerprint) VALUES (...) RETURNING id` with `size` = amount, `price`

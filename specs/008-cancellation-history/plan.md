@@ -84,6 +84,11 @@ in one controller; `POST /api/v1/orders` stays in `OrderController` (spec 005).
 - `GetOrderService.get` (`@Transactional(readOnly = true)`): user exists or 404; `findRecord` or
   `NotFoundException("Order <id> was not found.")`.
 
+`JdbcOrderLedgerRepository`: `findRecord` and `cancelIfNew` are package-private `static final String` constants, and
+the history statement is built by a **package-private** method `String historySql(OrderHistoryCriteria criteria)`
+from `private static final String` fragments. The plan guard of spec 009 (`PlanGuardIT`, same package) runs
+`EXPLAIN` on them, so they must be the exact statements the adapter executes.
+
 `JdbcOrderLedgerRepository.history` (fragments in brackets only when present):
 
 ```sql
@@ -110,6 +115,11 @@ UTC. `rejection` is built only when `rejection_code` is not null (seed `REJECTED
   `Request validation failed: 'orderId' has an invalid type or format.` (DEC-25); `OrderQueryControllerIT` asserts
   this exact detail for `GET /api/v1/orders/abc` and `POST /api/v1/orders/abc/cancel`. The path variable must be
   named `orderId`.
+- Path ids are validated with Bean Validation (DEC-26): `@PathVariable @Positive long orderId` in the three
+  `OrderQueryController` routes and `@PathVariable @Positive int userId` in `InternalOrderHistoryController`. 0 or
+  negative → 400 `VALIDATION_ERROR` `Request validation failed: '<orderId|userId>' must be greater than 0.` with the
+  `errors` list. `OrderQueryControllerIT` asserts it for `GET /api/v1/orders/0` and `POST /api/v1/orders/0/cancel`,
+  and `InternalOrderHistoryControllerIT` for `GET /api/internal/users/0/orders` (with `X-Role: ADMIN`).
 - `InternalOrderHistoryController` (`rest.internal`, `@ConditionalOnProperty`): `GET
   /api/internal/users/{userId}/orders`, same parameters and response as the user history.
 - `OrderRecordResponse` follows the contract schema `OrderRecord`: `quantity` null for cash movements; `amount` =
