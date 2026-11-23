@@ -143,6 +143,7 @@ SC-003; evidencia en el PR #4).
 | PRO-14 | La plantilla del PR se completa con salidas reales (rojo, tamaño, CI), y lo que afirma coincide con la evidencia. | Lo declarado tiene que poder comprobarse. | TEC-34 | Chequeos 14 y 16 | 🟡 |
 | PRO-15 | Los esqueletos mantienen funcionando los pedidos que no prueban (un filtro esqueleto deja pasar el pedido). | Que el rojo apunte al comportamiento que falta y no a un error general. | Revisión del PR #23 | `AGENTS.md` § Slice protocol | ⚪ |
 | PRO-16 | Protocolo de porción: el dueño solo indica qué hacer en una línea ("Implement the next slice"); el agente elige la porción (la primera sin tareas marcadas en `main`), no empieza sobre una porción con PR abierto, sigue los cortes predefinidos sin frenar y revisa su PR contra `pr-review.md` antes de abrirlo. | Las mismas instrucciones dejan de repetirse en cada prompt, donde podían olvidarse o variar; la autorrevisión evita una vuelta de revisión. | Decisión del dueño (2026-11-23) | [`AGENTS.md`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/AGENTS.md) § Slice protocol; chequeos 1, 4, 14 y 15 | ⚪ · 🟡 |
+| PRO-17 | El agente no edita `docs/` ni `README.md`. Las filas ⏳ que entrega una porción las actualiza el autor de las specs, una vez por spec. | La documentación para personas tiene un solo autor; un agente que la toca para cumplir una regla agrega ruido. | TEC-05; hallazgo del PR #40 | `AGENTS.md`; chequeo 17 (bloqueante si un PR de porción edita `docs/` o el README) | 🟡 |
 
 ### 3.6 Revisión y repositorio (REV)
 
@@ -200,6 +201,7 @@ después el agente aplica el cambio con un test nuevo que primero falla.
 | Porción 003-d (PR #26) | `SimpleMeterRegistry` no arma los buckets del histograma de percentiles, así que una aserción sobre ellos nunca podía distinguir un timer bien configurado de uno mal configurado. | El test verifica la configuración del timer con un `MeterFilter`, sin cambiar las métricas de producción. |
 | Porción 003-e (PR #28) | El plan elegía el contrato de la spec de número más alto, pero los contratos de todas las specs ya estaban commiteados. | API-11: el contrato publicado se identifica por su `info.version`. |
 | Revisión de planes 004–010 (2026-11-23) | Antes de implementarlas se encontraron excepciones nuevas con herencia sin definir, SQL que la spec 009 iba a necesitar refactorizar, ids de ruta sin validar frente al contrato, headers repetidos sin regla, desbordes numéricos sin nombrar el campo y 12 porciones sin punto de corte. | ARQ-15, DAT-12, API-14 (DEC-26), DEC-27, DEC-28, porción 003-f y cortes predefinidos en `tasks.md`. |
+| PR #40 (porción 004-c1) | La porción entregó `FeaturesMatchSpecsTest`, una barrera ya planificada (⏳), y el chequeo 17(b) le exigía actualizar el índice; el agente cumplió subiendo la fecha del documento. | Chequeo 17(b) acotado a reglas nuevas o modificadas; PRO-17. |
 
 ---
 
