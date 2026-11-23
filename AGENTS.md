@@ -31,6 +31,57 @@ enforced by ArchUnit.
   `scripts/check-pr-size.sh` before opening the PR, paste its output, and fill the PR template. If a slice
   would exceed the limit, split it; only if impossible, add a `## Size justification` section.
 
+## Slice protocol (no other prompt is needed)
+
+The owner only says what to do, in one line: "Implement the next slice", "Implement slice 005-b", "The spec was fixed
+in PR #N, continue" or "Address the review of PR #N". Everything else is in this section and in the spec.
+
+### 1. Pick the slice
+
+- Run `git checkout main && git pull`.
+- **Next slice:** in numeric order of specs, then of slices (`004-b`, `004-c`, `005-a`, ...), the first slice whose
+  tasks are not all checked in its `tasks.md` on `main`. A slice with a predefined split (`NNN-x1` / `NNN-x2` in its
+  `tasks.md`) whose first half is already merged continues with the second half.
+- Run `gh pr list --state open`. If a PR of that slice, or of an earlier one, is still open, **stop**: say that it is
+  waiting for review or merge. Never start a slice on top of one that is not merged.
+- `export SPECIFY_FEATURE_DIRECTORY=specs/NNN-...` and read that spec's `spec.md`, `plan.md`, `data-model.md` (if
+  present), `contracts/` and the slice section of `tasks.md`, **including its notes**, before writing anything.
+
+### 2. Implement
+
+1. Create the branch named in `tasks.md` (`NNN-short-name-<letter>`) from the updated `main`.
+2. **Commit 1, tests:** new test classes, or NEW methods in existing classes. Never change an existing test method.
+3. **Commit 2, skeletons:** they compile and keep the rest of the application working (for example, a filter
+   skeleton passes the request through). Run `./mvnw verify` and confirm that the new tests fail **for the expected
+   reason**; keep that output for the PR. A task that `tasks.md` says "passes at once" needs no red run: say so in
+   the PR instead.
+4. **Measure** with `scripts/check-pr-size.sh`. If the slice will exceed 400 counted lines and `tasks.md` defines a
+   split, implement only the first half now, without stopping. If no split is defined, stop and report.
+5. **Commit 3, implementation:** run `./mvnw verify` until green. Then check off the tasks of the slice. In a split
+   slice, each half checks off the tasks it completes, and a task shared by both halves is checked in the second.
+6. If a test must change after the red run, explain why in the PR under "Test adjustments after the red run".
+
+### 3. Before opening the PR
+
+- Read `.github/claude/pr-review.md` and check the PR against its table of checks yourself; fix anything it would
+  flag.
+- Fill every section of the PR template with real outputs: the red run, `scripts/check-pr-size.sh` and the final
+  `./mvnw verify` summary.
+- Open the PR and stop. Do not start the next slice: the owner merges, then asks for the next one.
+
+### 4. After a stop and report
+
+When the owner says that the spec was fixed in PR #N: run `git fetch && git merge origin/main` on your branch, read
+the cited sections again and continue the slice from where you stopped. Branch history that was never pushed may be
+rebuilt to keep the order tests → skeletons → implementation.
+
+### 5. Addressing a review
+
+When asked to address the review of PR #N: read every review and comment
+(`gh pr view N --comments` and `gh api repos/{owner}/{repo}/pulls/N/reviews`). Apply the requested changes with the
+same order: new tests first, with their red output, then the fix in a separate commit. Push to the same branch and
+update the PR description with the new red output and the new size check.
+
 ## Commands
 
 ```bash

@@ -141,7 +141,8 @@ SC-003; evidencia en el PR #4).
 | PRO-12 | Tabla de trampas de Spring Boot 4 (starters, Jackson 3, `@MockitoBean`, propiedades OTLP, versión del appender). | Los modelos tienden a escribir código de Spring Boot 3. | TEC-11, Const. "Spring Boot 4 pitfalls" | ARQ-12; el resto falla al compilar o al arrancar | 🔴 parcial · ⚪ |
 | PRO-13 | Los artefactos para el agente están en inglés; la documentación para personas, en español; los IDs son idénticos. | Los modelos siguen mejor las instrucciones en inglés. | TEC-29 | Instrucción | ⚪ |
 | PRO-14 | La plantilla del PR se completa con salidas reales (rojo, tamaño, CI), y lo que afirma coincide con la evidencia. | Lo declarado tiene que poder comprobarse. | TEC-34 | Chequeos 14 y 16 | 🟡 |
-| PRO-15 | Los esqueletos mantienen funcionando los pedidos que no prueban (un filtro esqueleto deja pasar el pedido). | Que el rojo apunte al comportamiento que falta y no a un error general. | Revisión del PR #23 | Prompt de cada porción | ⚪ |
+| PRO-15 | Los esqueletos mantienen funcionando los pedidos que no prueban (un filtro esqueleto deja pasar el pedido). | Que el rojo apunte al comportamiento que falta y no a un error general. | Revisión del PR #23 | `AGENTS.md` § Slice protocol | ⚪ |
+| PRO-16 | Protocolo de porción: el dueño solo indica qué hacer en una línea ("Implement the next slice"); el agente elige la porción (la primera sin tareas marcadas en `main`), no empieza sobre una porción con PR abierto, sigue los cortes predefinidos sin frenar y revisa su PR contra `pr-review.md` antes de abrirlo. | Las mismas instrucciones dejan de repetirse en cada prompt, donde podían olvidarse o variar; la autorrevisión evita una vuelta de revisión. | Decisión del dueño (2026-11-23) | [`AGENTS.md`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/AGENTS.md) § Slice protocol; chequeos 1, 4, 14 y 15 | ⚪ · 🟡 |
 
 ### 3.6 Revisión y repositorio (REV)
 
