@@ -43,7 +43,7 @@
 **Estimated size**: ~380 lines (the copied contract and the feature file are excluded). If it exceeds 400, split
 into 004-c1 (BDD infrastructure, T008–T009) and 004-c2 (endpoint, steps, contract).
 
-- [ ] T008 Create the BDD infrastructure of plan.md § BDD infrastructure (`SeedData`, `DatabaseHooks`,
+- [x] T008 Create the BDD infrastructure of plan.md § BDD infrastructure (`SeedData`, `DatabaseHooks`,
   `ScenarioContext`, `CommonResponseSteps`, moving the response-status step out of `HealthSteps`). Run
   `./mvnw verify`: the smoke scenario still passes.
 - [ ] T009 Copy the feature file and enable its traceability:

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Estado** | Vigente. Se actualiza en el mismo PR que cambia una regla (chequeo 17 de la revisión automática). |
-| **Fecha** | 2026-11-22 |
+| **Fecha** | 2026-11-23 |
 | **Documentos relacionados** | [Constitución](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.specify/memory/constitution.md) · [AGENTS.md](https://github.com/WallKsys/cocos-backend-challenge/blob/main/AGENTS.md) · [RFC](rfc.md) · [Análisis funcional](analisis-funcional.md) · [README](https://github.com/WallKsys/cocos-backend-challenge#readme) |
 
 > Índice de las reglas de arquitectura y de desarrollo que guían al agente implementador. Para cada una indica
