@@ -85,9 +85,9 @@ class JdbcOrderRepositoryIT {
         JdbcOrderRepository repository = new JdbcOrderRepository(jdbc);
         RequestFingerprint depositFingerprint = RequestFingerprint.of("CASH_IN|amount=1234.56");
         long depositId = jdbc.sql("""
-                INSERT INTO orders (instrumentid, userid, size, side, status, datetime,
+                INSERT INTO orders (instrumentid, userid, size, price, type, side, status, datetime,
                                     idempotency_key, request_fingerprint)
-                VALUES (66, 1, 1234.56, 'CASH_IN', 'FILLED', CURRENT_TIMESTAMP, 'deposit', :fingerprint)
+                VALUES (66, 1, 1234.56, 1.00, 'MARKET', 'CASH_IN', 'FILLED', CURRENT_TIMESTAMP, 'deposit', :fingerprint)
                 RETURNING id
                 """).param("fingerprint", depositFingerprint.hex()).query(Long.class).single();
 
