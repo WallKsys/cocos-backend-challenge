@@ -41,12 +41,12 @@ half follows the test-first cycle on its own and leaves the suite green:
 
 **Estimated size**: ~150 lines. Added on 2026-11-23 (DEC-29, DEC-30), after 005-b was merged. Domain only: the migration for the new codes is slice 005-c3.
 
-- [ ] T022 Write NEW methods in `OrderEvaluatorTest` (never change existing ones): CU-03.43, CU-03.44, CU-03.45 and
+- [x] T022 Write NEW methods in `OrderEvaluatorTest` (never change existing ones): CU-03.43, CU-03.44, CU-03.45 and
   CU-03.46, plus, without a CU tag, one cent inside and one cent outside each band bound and a SELL by amount with
   `QUANTITY_TOO_LARGE` (plan.md § Order evaluation and § Tests).
-- [ ] T023 Add `PRICE_OUT_OF_RANGE` and `QUANTITY_TOO_LARGE` to `RejectionReason`. Run the unit tests: **the new tests
+- [x] T023 Add `PRICE_OUT_OF_RANGE` and `QUANTITY_TOO_LARGE` to `RejectionReason`. Run the unit tests: **the new tests
   fail**. Record it.
-- [ ] T024 Implement the price band and the maximum quantity in `OrderEvaluator` until green.
+- [x] T024 Implement the price band and the maximum quantity in `OrderEvaluator` until green.
 
 ## Slice 005-c — Persistence (branch `005-order-placement-c`)
 
