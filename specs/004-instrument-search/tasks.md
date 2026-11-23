@@ -27,7 +27,7 @@
 **Estimated size**: ~390 lines. If it exceeds 400, split into 004-b1 (service + its unit test) and 004-b2
 (repository + its IT).
 
-- [ ] T004 [P] Write `SearchInstrumentsServiceTest` with a fake `InstrumentSearchRepository`.
+- [x] T004 [P] Write `SearchInstrumentsServiceTest` with a fake `InstrumentSearchRepository`.
 - [ ] T005 [P] Write `JdbcInstrumentSearchRepositoryIT` (`@IntegrationTest`), one test per row of plan.md § Tests that
   has an integration test, with the exact expected tickers of the feature file.
 - [ ] T006 Create skeletons of `SearchInstrumentsQuery`, `InstrumentSearchRepository`, `SearchInstrumentsService`,
