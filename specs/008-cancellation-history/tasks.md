@@ -22,6 +22,8 @@ half follows the test-first cycle on its own and leaves the suite green:
 
 ## Slice 008-b — Use cases and concurrency (branch `008-cancellation-history-b`)
 
+**Manual review**: required. If the slice is split, both halves get it. Focus: `UPDATE ... WHERE status = 'NEW'` under the user lock, CU-04.08 and 50 simultaneous cancellations.
+
 **Estimated size**: ~380 lines. If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
 half follows the test-first cycle on its own and leaves the suite green:
 - **008-b1:** `GetOrderService`, `GetOrderHistoryService` and their tests.

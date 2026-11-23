@@ -67,7 +67,9 @@ in PR #N, continue" or "Address the review of PR #N". Everything else is in this
   flag.
 - Fill every section of the PR template with real outputs: the red run, `scripts/check-pr-size.sh` and the final
   `./mvnw verify` summary.
-- Open the PR and stop. Do not start the next slice: the owner merges, then asks for the next one.
+- Open the PR and turn on auto-merge: `gh pr merge <number> --auto --squash`. It merges by itself once CI, the
+  automatic review and, for slices marked `**Manual review**: required`, the owner's manual review have passed.
+  Then stop. Do not start the next slice until the owner asks for it.
 
 ### 4. After a stop and report
 
@@ -108,6 +110,9 @@ Integration tests need Docker running (Testcontainers).
 - Never add or upgrade dependencies that the plan does not list.
 - Never edit `.github/claude/`, `.github/workflows/` (except creating `ci.yml` in slice 001-a) or
   `scripts/check-pr-size.sh`: they are the review and verification guardrails.
+- Never merge a PR yourself (only `gh pr merge --auto`), never add or remove PR labels (in particular
+  `manual-review-approved`, which only the owner's reviewer adds), and never change repository settings or branch
+  protection.
 
 ## When to stop and report instead of continuing
 

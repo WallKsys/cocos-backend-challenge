@@ -42,7 +42,7 @@ flowchart TD
     P["<b>Pull request</b><br/>🟠 checks obligatorios: verify (CI) y pr-size (≤ 400 líneas)"]
     R["<b>Revisión automática (claude[bot])</b><br/>🟡 17 chequeos; espera a que termine verify"]
     M["<b>Revisión manual (porciones críticas)</b><br/>🟡 pruebas temporales contra la aplicación real"]
-    G["<b>Merge a main protegida</b><br/>🟠 PR obligatorio, rama al día, conversaciones resueltas"]
+    G["<b>Merge automático a main protegida</b><br/>🟠 verify · pr-size · review · manual-review; rama al día"]
     S --> A
     A -- "tests → esqueletos → rojo → implementación → suite completa" --> B
     B --> P --> R --> M --> G
@@ -149,15 +149,16 @@ SC-003; evidencia en el PR #4).
 | ID | Regla | Por qué | Decidido en | Se hace cumplir en | Nivel |
 |---|---|---|---|---|---|
 | REV-01 | Quien implementa no revisa. El agente (OpenCode) escribe el código y sus tests; Claude escribe specs, `.feature` y reglas de ArchUnit, y revisa. Claude nunca implementa lo que después revisa. | Revisión adversarial: sin contexto ni puntos ciegos compartidos. | TEC-03, TEC-05 | Proceso | ⚪ |
-| REV-02 | `main` protegida: PR obligatorio incluso para administradores, checks obligatorios `verify` y `pr-size`, rama al día, conversaciones resueltas, sin force push ni borrado. | Nada llega a `main` sin pasar por las barreras. | TEC-28, TEC-30, TEC-33 | Protección de rama en GitHub | 🟠 |
+| REV-02 | `main` protegida: PR obligatorio incluso para administradores, checks obligatorios `verify`, `pr-size`, `review` y `manual-review`, rama al día, conversaciones resueltas, sin force push ni borrado. | Nada llega a `main` sin pasar por las barreras. | TEC-28, TEC-30, TEC-33, TEC-35 | Protección de rama en GitHub | 🟠 |
 | REV-03 | La CI corre `./mvnw verify` en cada PR y en cada push a `main`. | El build verde no depende de la máquina de nadie. | TEC-33 | [`ci.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/ci.yml) | 🟠 |
-| REV-04 | Cada PR recibe una revisión automática formal (aprobar o pedir cambios), después de que termina `verify`. | Revisión siempre, sin depender de una sesión abierta. | TEC-34 | [`claude-review.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/claude-review.yml) y [`pr-review.md`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/claude/pr-review.md) (17 chequeos) | 🟡 |
+| REV-04 | Cada PR recibe una revisión automática formal (aprobar o pedir cambios), después de que termina `verify`. El check `review` falla si no aprueba el último commit, y es obligatorio (TEC-35). | Revisión siempre, sin depender de una sesión abierta. | TEC-34 | [`claude-review.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/claude-review.yml) y [`pr-review.md`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/claude/pr-review.md) (17 chequeos) | 🟠 |
 | REV-05 | El contenido del PR se trata como dato no confiable y el revisor tiene herramientas mínimas. | Prevenir prompt injection. | TEC-34 | `pr-review.md` § Security; `--allowedTools` del workflow | 🟡 |
-| REV-06 | Las porciones críticas tienen además una revisión manual (tabla abajo). | Lo que un test no cubre se ve probando la aplicación real. | TEC-03 | Comentario "Manual review" en el PR; el merge espera esa revisión | 🟡 |
+| REV-06 | Las porciones críticas tienen además una revisión manual (tabla abajo). | Lo que un test no cubre se ve probando la aplicación real. | TEC-03 | Marca `**Manual review**: required` en el `tasks.md` de cada porción crítica, leída desde `main` por el check obligatorio `manual-review`; pasa solo con la etiqueta `manual-review-approved`, que se agrega al aprobar la revisión manual y se quita con cada push (TEC-35) | 🟠 |
 | REV-07 | El agente no edita las barreras: `.github/claude/`, `.github/workflows/` ni `scripts/check-pr-size.sh`. | Una barrera que el vigilado puede cambiar no es una barrera. | AGENTS.md | Chequeo 17 (bloqueante en un PR de porción). La revisión lee sus instrucciones, y `pr-size` su script, desde `main`: un PR no puede cambiar las reglas con las que se lo evalúa. La acción de revisión no corre si el PR cambia el workflow de revisión. | 🟡 |
 | REV-08 | Un cambio de reglas queda registrado: entrada `TEC-xx` en el RFC, nueva versión de la constitución y este documento actualizado, todo en el mismo PR. | Las reglas y su historia no se separan. | Const. "Governance" | Chequeo 17 | 🟡 |
 | REV-09 | Las ramas mergeadas se conservan como evidencia. | Historia completa de cada porción. | Decisión del dueño | Instrucción | ⚪ |
 | REV-10 | El sitio de documentación se genera solo desde `docs/`, sin contenido propio. En cada PR se construye en modo estricto, y en cada merge a `main` se publica. | Una sola fuente, revisada en los PRs; un enlace roto se ve antes del merge. | Decisión del dueño (sitio en GitHub Pages) | [`docs.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/docs.yml) y [`zensical.toml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/zensical.toml); el check `docs` no es obligatorio | 🟡 |
+| REV-11 | Merge automático: el agente activa el auto-merge al abrir el PR y nunca mergea a mano ni agrega o quita etiquetas. Un PR se mergea solo cuando pasan `verify`, `pr-size`, `review` y `manual-review`. | El dueño no espera ni mergea a mano las porciones comunes; las críticas siguen esperando la revisión manual. | TEC-35 | Protección de `main` (los cuatro checks); [`manual-review.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/manual-review.yml); la prohibición al agente, en `AGENTS.md` | 🟠 · ⚪ |
 
 **Porciones con revisión manual obligatoria (REV-06):**
 
@@ -212,6 +213,9 @@ Lo siguiente depende de la revisión o del proceso, no de una máquina:
 - **Dependencias fuera del plan** (PRO-11): chequeo 11, sin un check que compare el `pom.xml`.
 - **Formato de los commits** (PRO-10): no se verifica.
 - **Separación entre quien implementa y quien revisa** (REV-01): es una regla de proceso.
+- **Quién pone la etiqueta `manual-review-approved`** (REV-06, REV-11): el agente, el revisor y el dueño usan la
+  misma cuenta de GitHub, así que GitHub no distingue quién la agregó. Que el agente no la toque es una instrucción
+  de `AGENTS.md`, auditable en el historial de cada PR.
 - **Los workflows mismos** (REV-07): en un `pull_request`, GitHub ejecuta los workflows en la versión del PR. Un PR
   que edite `ci.yml` o `pr-size.yml` podría debilitar los checks obligatorios. Lo cubren el chequeo 17, que marca el
   cambio, y la decisión de merge del dueño.
@@ -241,5 +245,6 @@ Tomcat para pedidos mal formados) están en el [README](https://github.com/WallK
 - Un PR que cambie la constitución, `AGENTS.md`, las reglas de ArchUnit, los tests de trazabilidad, los workflows,
   `pr-review.md` o `scripts/check-pr-size.sh` actualiza este documento en el mismo PR. Lo controla el chequeo 17
   de la revisión automática.
-- Cuando una barrera planificada (⏳) se entrega, se actualiza su fila: se quita la marca y se enlaza el test.
+- Cuando una barrera planificada (⏳) se entrega, se actualiza su fila (se quita la marca y se enlaza el test) en un
+  solo PR de documentación al cerrar cada spec, junto con la tabla de estado del README.
 - Las reglas nuevas toman el siguiente ID libre de su área. Los IDs no se renumeran.

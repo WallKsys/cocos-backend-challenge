@@ -1,0 +1,67 @@
+name: Manual review gate
+
+# Slices marked "**Manual review**: required" in their tasks.md need the label manual-review-approved before merging
+# (docs/reglas-y-barreras.md REV-06, RFC TEC-35). The label is added by the owner's reviewer after the manual review;
+# the implementing agent never touches labels. The mark is read from the base branch, so a PR cannot remove it.
+# A new push removes the label: new commits need a new review. PRs that are not slices pass.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: manual-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  manual-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Drop the approval when new commits arrive
+        if: github.event.action == 'synchronize'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: gh pr edit "$PR" --repo "$REPO" --remove-label manual-review-approved || true
+
+      - name: Require the manual review of critical slices
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: |
+          slice=$(printf '%s' "$BRANCH" | sed -nE 's/^([0-9]{3})-[a-z0-9-]+-([a-z][0-9]?)$/\1-\2/p')
+          if [ -z "$slice" ]; then
+            echo "$BRANCH is not a slice branch: no manual review gate."
+            exit 0
+          fi
+          spec_dir=$(git ls-tree -d --name-only "origin/$BASE:specs" | grep "^${slice%%-*}-" | head -n 1)
+          tasks=$(git show "origin/$BASE:specs/$spec_dir/tasks.md" 2>/dev/null || true)
+          section() {
+            printf '%s\n' "$tasks" | awk -v s="Slice $1 " '/^## |^### / { inside = (index($0, s) > 0) } inside'
+          }
+          text=$(section "$slice")
+          if [ -z "$text" ]; then
+            text=$(section "${slice%[0-9]}")
+          fi
+          if ! printf '%s\n' "$text" | grep -q '^\*\*Manual review\*\*: required'; then
+            echo "Slice $slice: no manual review required."
+            exit 0
+          fi
+          if gh api "repos/$REPO/issues/$PR/labels" --jq '.[].name' | grep -qx 'manual-review-approved'; then
+            echo "Slice $slice: manual review approved."
+            exit 0
+          fi
+          echo "::error::Slice $slice requires a manual review: waiting for the label manual-review-approved."
+          exit 1
