@@ -10,6 +10,8 @@
 
 ## Slice 006-a — Domain calculations (branch `006-portfolio-a`)
 
+**Manual review**: required. If the slice is split, both halves get it. Focus: the moving average, the reset at exactly 0 and returns computed from the unrounded average.
+
 **Estimated size**: ~380 lines. If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
 half follows the test-first cycle on its own and leaves the suite green:
 - **006-a1:** `Fill`, `AverageCostCalculator` and `AverageCostCalculatorTest`.

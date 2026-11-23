@@ -10,6 +10,8 @@
 
 ## Slice 007-a — Domain and shared idempotency lookup (branch `007-cash-movements-a`)
 
+**Manual review**: required. If the slice is split, both halves get it. Focus: the `IdempotencyLookup` refactor changes no behavior and modifies no spec 005 test.
+
 **Estimated size**: ~300 lines.
 
 - [ ] T001 [P] Write `CashMovementRequestTest` and `CashMovementEvaluatorTest` (CU tags of plan.md § Tests).

@@ -20,6 +20,8 @@
 
 ## Slice 009-b — Order tools: delete and execute, use cases only (branch `009-internal-tools-volume-b`)
 
+**Manual review**: required. If the slice is split, both halves get it. Focus: the locking protocol of the forced execution.
+
 **Estimated size**: ~330 lines. **No controller in this slice.** `PublishedContractMatchesRoutesIT` requires the
 implemented routes and the published contract to be identical, and the spec 009 contract contains every internal
 tool route. So all the internal controllers of spec 009 arrive together with that contract, in slice 009-c2.
@@ -59,6 +61,8 @@ contract and every internal route land together.
 
 ### Slice 009-c3 — BDD and complete traceability (branch `009-internal-tools-volume-c3`)
 
+**Manual review**: required. If the slice is split, both halves get it. Focus: CU-04.08 switched to the real tool, and the complete traceability scope.
+
 **Estimated size**: ~300 lines (feature copy excluded).
 
 - [ ] T012a Copy the feature; append `CU-I` to `scope.txt`; write `ScopeIsCompleteTest`.
@@ -68,6 +72,8 @@ contract and every internal route land together.
 - [ ] T012c Implement the remaining glue until green (9 CU-I scenarios). Run `./mvnw verify` three times (CU-04.08).
 
 ## Slice 009-d — Volume profile (branch `009-internal-tools-volume-d`)
+
+**Manual review**: required. If the slice is split, both halves get it. Focus: the real dataset, the percentile computation and the latency table in the PR.
 
 **Estimated size**: ~250 lines (the dataset copy is small).
 

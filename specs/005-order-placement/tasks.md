@@ -20,6 +20,8 @@ exceed 400 counted lines. Each: tests → skeletons → confirm failure → impl
 
 ## Slice 005-b — Order evaluation (branch `005-order-placement-b`)
 
+**Manual review**: required. If the slice is split, both halves get it. Focus: quantity rounded DOWN, real amount versus requested amount, the order of the rules, the exact rejection messages and the BMA −10 case.
+
 **Estimated size**: ~380 lines. If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
 half follows the test-first cycle on its own and leaves the suite green:
 - **005-b1:** `Account`, `Instrument`, `CashBalance`, `ShareBalance` and `OrderEvaluator` steps 1, 2, 3 and 5
@@ -35,6 +37,8 @@ half follows the test-first cycle on its own and leaves the suite green:
 
 ## Slice 005-c — Persistence (branch `005-order-placement-c`)
 
+**Manual review**: required. If the slice is split, both halves get it. Focus: the cash and share ledger SQL, the `FOR UPDATE` lock, the lightweight idempotency record lookup (a deposit with cents) and UTC timestamps.
+
 **Estimated size**: ~390 lines. Split into c1 (lock + ledger + instrument + market data) and c2 (order repository +
 V6) if needed.
 
@@ -45,6 +49,8 @@ V6) if needed.
 - [ ] T010 Implement plan.md § Persistence until green.
 
 ## Slice 005-d — Use case (branch `005-order-placement-d`)
+
+**Manual review**: required. If the slice is split, both halves get it. Focus: the flow lock → idempotency → validation → evaluation → save; an invalid request does not consume the key; metrics.
 
 **Estimated size**: ~350 lines. If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
 half follows the test-first cycle on its own and leaves the suite green:
@@ -76,6 +82,8 @@ half follows the test-first cycle on its own and leaves the suite green:
 - [ ] T019 [P] `http/005-order-placement.http`.
 
 ## Slice 005-f — Concurrency and idempotency under load (branch `005-order-placement-f`)
+
+**Manual review**: required. If the slice is split, both halves get it. Focus: real simultaneity, tests that do not pass by chance, stable across three runs.
 
 **Estimated size**: ~250 lines.
 
