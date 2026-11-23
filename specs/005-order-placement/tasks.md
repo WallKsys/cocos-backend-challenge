@@ -30,10 +30,10 @@ half follows the test-first cycle on its own and leaves the suite green:
 - **005-b2:** step 4 (availability: `INSUFFICIENT_FUNDS`, `INSUFFICIENT_SHARES` and their messages, BMA −10) with
   its tests.
 
-- [ ] T004 Write `OrderEvaluatorTest`: one test per CU of plan.md § Tests row 1, with the exact numbers and messages
+- [x] T004 Write `OrderEvaluatorTest`: one test per CU of plan.md § Tests row 1, with the exact numbers and messages
   of the feature file, plus rounding cases (`50000 / 925.85` → 54; `20000 / 950` → 21; amount < price → 0).
-- [ ] T005 Skeletons of `Account`, `Instrument`, `CashBalance`, `ShareBalance`, `OrderEvaluator`. **Fail**. Record.
-- [ ] T006 Implement plan.md § Order evaluation until green.
+- [x] T005 Skeletons of `Account`, `Instrument`, `CashBalance`, `ShareBalance`, `OrderEvaluator`. **Fail**. Record.
+- [x] T006 Implement plan.md § Order evaluation until green.
 
 ## Slice 005-c — Persistence (branch `005-order-placement-c`)
 
