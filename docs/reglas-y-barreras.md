@@ -164,14 +164,15 @@ SC-003; evidencia en el PR #4).
 |---|---|
 | 003-b (b1, b2) | Errores: `1.5` y campos desconocidos rechazados, sin detalles internos en un 500, inglés con `Accept-Language: es` |
 | 003-c (c1, c2) | `X-User-Id` leído en un solo lugar; sin el rol, igual que una ruta inexistente; validación de `Idempotency-Key` |
-| 005-b | `OrderEvaluator`: cantidad redondeada hacia abajo, monto real y pedido, orden de las reglas, mensajes exactos |
+| 003-f | Headers repetidos rechazados de verdad (dos líneas por socket); un desborde numérico nombra el campo |
+| 005-b (b1 y b2 si se divide) | `OrderEvaluator`: cantidad redondeada hacia abajo, monto real y pedido, orden de las reglas, mensajes exactos |
 | 005-c | SQL del libro contable, `FOR UPDATE`, búsqueda liviana de idempotencia, fechas UTC |
-| 005-d | Flujo bloqueo → idempotencia → validación → evaluación → guardado; un pedido inválido no consume la clave |
+| 005-d (d1 y d2 si se divide) | Flujo bloqueo → idempotencia → validación → evaluación → guardado; un pedido inválido no consume la clave |
 | 005-f | Tests de concurrencia y carga: simultaneidad real, estables en 3 corridas |
 | 006-a | Costo promedio móvil, reinicio exacto en 0 |
 | 007-a | Refactor de `IdempotencyLookup` sin cambios de comportamiento ni tests de la 005 modificados |
-| 008-b | Cancelación concurrente: `UPDATE ... WHERE status = 'NEW'` bajo bloqueo, CU-04.08 |
-| 009-b | Ejecución forzada: protocolo de bloqueo; CU-04.08 con la herramienta real |
+| 008-b (b2 si se divide) | Cancelación concurrente: `UPDATE ... WHERE status = 'NEW'` bajo bloqueo, CU-04.08 |
+| 009-b y 009-c3 | Ejecución forzada: protocolo de bloqueo (009-b); CU-04.08 con la herramienta real (009-c3) |
 | 009-d | Volumen: datos reales, cálculo de percentiles, tabla de latencias en el PR |
 
 ---

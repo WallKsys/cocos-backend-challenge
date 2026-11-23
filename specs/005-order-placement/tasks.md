@@ -4,7 +4,8 @@
 
 **Before starting**: specs 001–004 merged. `export SPECIFY_FEATURE_DIRECTORY=specs/005-order-placement`.
 
-**Slices**: six PRs, in order. Each: tests → skeletons → confirm failure → implement → full suite → PR size check.
+**Slices**: six planned slices, in order; 005-b, 005-c, 005-d and 005-e have predefined split points if they
+exceed 400 counted lines. Each: tests → skeletons → confirm failure → implement → full suite → PR size check.
 
 ---
 
@@ -19,7 +20,13 @@
 
 ## Slice 005-b — Order evaluation (branch `005-order-placement-b`)
 
-**Estimated size**: ~380 lines.
+**Estimated size**: ~380 lines. If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
+half follows the test-first cycle on its own and leaves the suite green:
+- **005-b1:** `Account`, `Instrument`, `CashBalance`, `ShareBalance` and `OrderEvaluator` steps 1, 2, 3 and 5
+  (reference price, quantity, total, final status), with the tests whose outcome they decide (`FILLED` / `NEW`
+  by quantity and by amount, `NO_MARKET_PRICE`, `AMOUNT_BELOW_PRICE`).
+- **005-b2:** step 4 (availability: `INSUFFICIENT_FUNDS`, `INSUFFICIENT_SHARES` and their messages, BMA −10) with
+  its tests.
 
 - [ ] T004 Write `OrderEvaluatorTest`: one test per CU of plan.md § Tests row 1, with the exact numbers and messages
   of the feature file, plus rounding cases (`50000 / 925.85` → 54; `20000 / 950` → 21; amount < price → 0).
@@ -39,7 +46,11 @@ V6) if needed.
 
 ## Slice 005-d — Use case (branch `005-order-placement-d`)
 
-**Estimated size**: ~350 lines.
+**Estimated size**: ~350 lines. If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
+half follows the test-first cycle on its own and leaves the suite green:
+- **005-d1:** the flow without the idempotency branch (lock, instrument checks, quote and balances, evaluation,
+  save, metrics) and its tests.
+- **005-d2:** step 2 of plan.md § Application (lightweight idempotency record, replay, conflict) and its tests.
 
 - [ ] T011 Write `PlaceOrderServiceTest` with in-memory fakes of every outbound port and a fixed `Clock`
   (CU-03.20, 03.21, 03.28, 03.31–03.35, 03.41, 03.42; metrics calls of spec FR-005).
@@ -49,7 +60,12 @@ V6) if needed.
 
 ## Slice 005-e — Endpoint, BDD and contract (branch `005-order-placement-e`)
 
-**Estimated size**: ~390 lines (feature and contract copies excluded).
+**Estimated size**: ~390 lines (feature and contract copies excluded). If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
+half follows the test-first cycle on its own and leaves the suite green:
+- **005-e1:** `OrderController`, `PlaceOrderRequestBody`, `OrderResponse`, the contract copy, `OrderControllerIT` and
+  `http/005-order-placement.http`. The contract travels with the controller: `PublishedContractMatchesRoutesIT`
+  needs the implemented routes and the published contract to be identical.
+- **005-e2:** the feature copy, `CU-03` in `scope.txt`, `OrderSteps` and `TestClockConfiguration` (42 scenarios).
 
 - [ ] T014 Copy the feature file and the contract; append `CU-03` to `scope.txt`.
 - [ ] T015 [P] Write `OrderSteps` and `TestClockConfiguration` (plan.md § BDD steps).

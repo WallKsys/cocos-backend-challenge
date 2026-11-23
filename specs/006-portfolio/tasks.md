@@ -4,13 +4,16 @@
 
 **Before starting**: specs 001–005 merged. `export SPECIFY_FEATURE_DIRECTORY=specs/006-portfolio`.
 
-**Slices**: three PRs. Each: tests → skeletons → confirm failure → implement → full suite → PR size check.
+**Slices**: three planned slices, each with a predefined split point if it exceeds 400 counted lines. Each: tests → skeletons → confirm failure → implement → full suite → PR size check.
 
 ---
 
 ## Slice 006-a — Domain calculations (branch `006-portfolio-a`)
 
-**Estimated size**: ~380 lines.
+**Estimated size**: ~380 lines. If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
+half follows the test-first cycle on its own and leaves the suite green:
+- **006-a1:** `Fill`, `AverageCostCalculator` and `AverageCostCalculatorTest`.
+- **006-a2:** `PortfolioWarning`, `PortfolioWarningCode`, `Position`, `Portfolio`, `PositionTest` and `PortfolioTest`.
 
 - [ ] T001 [P] Write `AverageCostCalculatorTest` (CU-01.12, 01.13, 01.14 and the restart rule for a buy with
   quantity ≤ 0).
@@ -22,7 +25,10 @@
 
 ## Slice 006-b — Readers and use case (branch `006-portfolio-b`)
 
-**Estimated size**: ~370 lines.
+**Estimated size**: ~370 lines. If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
+half follows the test-first cycle on its own and leaves the suite green:
+- **006-b1:** the readers (`JdbcAccountReader`, `JdbcPortfolioReader`, `latestQuotes`) and `JdbcPortfolioReaderIT`.
+- **006-b2:** `GetPortfolioService`, `PortfolioConfiguration`, `GetPortfolioServiceTest` and `GetPortfolioServiceIT`.
 
 - [ ] T005 [P] Write `JdbcPortfolioReaderIT` (CU-01.04, 01.05, 01.14) and a test for `latestQuotes`.
 - [ ] T006 [P] Write `GetPortfolioServiceTest` (CU-01.08) and `GetPortfolioServiceIT` (CU-01.01, 01.07, 01.11, FR-003).
@@ -31,7 +37,12 @@
 
 ## Slice 006-c — Endpoints, BDD and contract (branch `006-portfolio-c`)
 
-**Estimated size**: ~360 lines (feature and contract copies excluded).
+**Estimated size**: ~360 lines (feature and contract copies excluded). If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
+half follows the test-first cycle on its own and leaves the suite green:
+- **006-c1:** both controllers, the DTOs, the contract copy, `PortfolioControllerIT`, `InternalPortfolioControllerIT`
+  and `http/006-portfolio.http`.
+- **006-c2:** the feature copy, `CU-01` in `scope.txt`, internal tools enabled in `CucumberSpringConfiguration` and
+  `PortfolioSteps`.
 
 - [ ] T009 Copy the feature and the contract; append `CU-01` to `scope.txt`; enable internal tools in
   `CucumberSpringConfiguration`.

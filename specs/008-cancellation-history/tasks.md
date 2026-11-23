@@ -4,13 +4,16 @@
 
 **Before starting**: specs 001–007 merged. `export SPECIFY_FEATURE_DIRECTORY=specs/008-cancellation-history`.
 
-**Slices**: three PRs. Each: tests → skeletons → confirm failure → implement → full suite → PR size check.
+**Slices**: three planned slices, each with a predefined split point if it exceeds 400 counted lines. Each: tests → skeletons → confirm failure → implement → full suite → PR size check.
 
 ---
 
 ## Slice 008-a — Domain and repository (branch `008-cancellation-history-a`)
 
-**Estimated size**: ~380 lines.
+**Estimated size**: ~380 lines. If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
+half follows the test-first cycle on its own and leaves the suite green:
+- **008-a1:** `OrderRecord`, `HistoryCursor`, `OrderHistoryCriteria`, `OrderHistoryPage` and their unit tests.
+- **008-a2:** `OrderLedgerRepository`, `JdbcOrderLedgerRepository` and `JdbcOrderLedgerRepositoryIT`.
 
 - [ ] T001 [P] Write `OrderRecordTest`, `HistoryCursorTest`, `OrderHistoryCriteriaTest`.
 - [ ] T002 [P] Write `JdbcOrderLedgerRepositoryIT` (CU-04.01–04.03, 04.06–04.07, 07.01, 07.02, 07.07, 07.08).
@@ -19,7 +22,11 @@
 
 ## Slice 008-b — Use cases and concurrency (branch `008-cancellation-history-b`)
 
-**Estimated size**: ~380 lines.
+**Estimated size**: ~380 lines. If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
+half follows the test-first cycle on its own and leaves the suite green:
+- **008-b1:** `GetOrderService`, `GetOrderHistoryService` and their tests.
+- **008-b2:** `CancelOrderService`, `CancelOrderServiceTest`, `ForcedExecutionSimulator`, `CancelVersusExecutionIT`
+  and `CancellationLoadIT` (run `./mvnw verify` three times).
 
 - [ ] T005 [P] Write `CancelOrderServiceTest`, `GetOrderServiceTest`, `GetOrderHistoryServiceTest`.
 - [ ] T006 [P] Write `support/ForcedExecutionSimulator`, `CancelVersusExecutionIT` (CU-04.08) and
@@ -30,7 +37,11 @@
 
 ## Slice 008-c — Endpoints, BDD and contract (branch `008-cancellation-history-c`)
 
-**Estimated size**: ~380 lines (feature and contract copies excluded).
+**Estimated size**: ~380 lines (feature and contract copies excluded). If it exceeds 400 counted lines (measure after the tests and skeletons), split it as follows, in this order; each
+half follows the test-first cycle on its own and leaves the suite green:
+- **008-c1:** both controllers, the DTOs, the contract copy, `OrderQueryControllerIT`,
+  `InternalOrderHistoryControllerIT` and `http/008-cancellation-history.http`.
+- **008-c2:** the two feature copies, `CU-04` and `CU-07` in `scope.txt`, `CancellationSteps` and `OrderHistorySteps`.
 
 - [ ] T009 Copy the two features and the contract; append `CU-04` and `CU-07` to `scope.txt`.
 - [ ] T010 [P] Write `CancellationSteps` and `OrderHistorySteps` (plan.md § BDD steps).
