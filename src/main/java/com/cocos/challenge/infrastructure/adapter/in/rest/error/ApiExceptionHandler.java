@@ -27,6 +27,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.exc.InputCoercionException;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
 
@@ -141,8 +142,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 return validationProblem(List.of(new FieldError(unrecognized.getPropertyName(),
                         "is not a recognized field")), request);
             }
-            if (cause instanceof MismatchedInputException mismatched) {
-                String path = fieldPath(mismatched);
+            if (cause instanceof MismatchedInputException || cause instanceof InputCoercionException) {
+                String path = fieldPath((JacksonException) cause);
                 if (!path.isEmpty()) {
                     return validationProblem(List.of(new FieldError(path, "has an invalid type or format")), request);
                 }
@@ -154,7 +155,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 "Malformed JSON request body.", new HttpHeaders(), request);
     }
 
-    private static String fieldPath(MismatchedInputException exception) {
+    private static String fieldPath(JacksonException exception) {
         return exception.getPath().stream()
                 .map(JacksonException.Reference::getPropertyName)
                 .filter(Objects::nonNull)

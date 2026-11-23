@@ -23,6 +23,10 @@ public class RequesterIdArgumentResolver implements HandlerMethodArgumentResolve
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
             NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+        String[] headers = webRequest.getHeaderValues("X-User-Id");
+        if (headers != null && headers.length > 1) {
+            throw new ApiException(ApiErrorCode.VALIDATION_ERROR, "The 'X-User-Id' header must be sent only once.");
+        }
         String header = webRequest.getHeader("X-User-Id");
         String value = header == null ? "" : header.trim();
         if (value.isBlank()) {
