@@ -10,18 +10,25 @@ import tools.jackson.databind.JsonNode;
 @ScenarioScope
 public class ScenarioContext {
 
+    private int status;
+    private HttpHeaders headers;
+    private JsonNode body;
+
     public void record(EntityExchangeResult<JsonNode> response) {
+        status = response.getStatus().value();
+        headers = response.getResponseHeaders();
+        body = response.getResponseBody();
     }
 
     public int status() {
-        return 0;
+        return status;
     }
 
     public HttpHeaders headers() {
-        return null;
+        return headers;
     }
 
     public JsonNode body() {
-        return null;
+        return body;
     }
 }
