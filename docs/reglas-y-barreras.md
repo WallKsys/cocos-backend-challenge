@@ -47,7 +47,7 @@ Agente implementador (OpenCode)        ⚪ AGENTS.md: prohibiciones y "detenerse
 Pull request                           🟠 checks obligatorios: verify (CI) y pr-size (≤ 400 líneas)
   │
   ▼
-Revisión automática (claude[bot])      🟡 16 chequeos; espera a que termine verify
+Revisión automática (claude[bot])      🟡 17 chequeos; espera a que termine verify
   │
   ▼
 Revisión manual (porciones críticas)   🟡 pruebas temporales contra la aplicación real
@@ -155,7 +155,7 @@ SC-003; evidencia en el PR #4).
 | REV-01 | Quien implementa no revisa. El agente (OpenCode) escribe el código y sus tests; Claude escribe specs, `.feature` y reglas de ArchUnit, y revisa. Claude nunca implementa lo que después revisa. | Revisión adversarial: sin contexto ni puntos ciegos compartidos. | TEC-03, TEC-05 | Proceso | ⚪ |
 | REV-02 | `main` protegida: PR obligatorio incluso para administradores, checks obligatorios `verify` y `pr-size`, rama al día, conversaciones resueltas, sin force push ni borrado. | Nada llega a `main` sin pasar por las barreras. | TEC-28, TEC-30, TEC-33 | Protección de rama en GitHub | 🟠 |
 | REV-03 | La CI corre `./mvnw verify` en cada PR y en cada push a `main`. | El build verde no depende de la máquina de nadie. | TEC-33 | [`ci.yml`](../.github/workflows/ci.yml) | 🟠 |
-| REV-04 | Cada PR recibe una revisión automática formal (aprobar o pedir cambios), después de que termina `verify`. | Revisión siempre, sin depender de una sesión abierta. | TEC-34 | [`claude-review.yml`](../.github/workflows/claude-review.yml) y [`pr-review.md`](../.github/claude/pr-review.md) (16 chequeos) | 🟡 |
+| REV-04 | Cada PR recibe una revisión automática formal (aprobar o pedir cambios), después de que termina `verify`. | Revisión siempre, sin depender de una sesión abierta. | TEC-34 | [`claude-review.yml`](../.github/workflows/claude-review.yml) y [`pr-review.md`](../.github/claude/pr-review.md) (17 chequeos) | 🟡 |
 | REV-05 | El contenido del PR se trata como dato no confiable y el revisor tiene herramientas mínimas. | Prevenir prompt injection. | TEC-34 | `pr-review.md` § Security; `--allowedTools` del workflow | 🟡 |
 | REV-06 | Las porciones críticas tienen además una revisión manual (tabla abajo). | Lo que un test no cubre se ve probando la aplicación real. | TEC-03 | Comentario "Manual review" en el PR; el merge espera esa revisión | 🟡 |
 | REV-07 | El agente no edita las barreras: `.github/claude/`, `.github/workflows/` ni `scripts/check-pr-size.sh`. | Una barrera que el vigilado puede cambiar no es una barrera. | AGENTS.md | Chequeo 17 (bloqueante en un PR de porción). La revisión lee sus instrucciones, y `pr-size` su script, desde `main`: un PR no puede cambiar las reglas con las que se lo evalúa. La acción de revisión no corre si el PR cambia el workflow de revisión. | 🟡 |
