@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
@@ -39,7 +41,8 @@ class InstrumentSearchControllerIT {
                 .jsonPath("$.items[0].type").isEqualTo("ACCIONES")
                 .jsonPath("$.items[0].lastPrice").isEqualTo("925.85")
                 .jsonPath("$.items[0].dailyChangePct").isEqualTo("0.44")
-                .jsonPath("$.nextCursor").value(Object.class, value -> assertThat(value).isNull());
+                .jsonPath("$").value(Map.class, body -> assertThat(body).containsKey("nextCursor"))
+                .jsonPath("$.nextCursor").isEmpty();
     }
 
     @ParameterizedTest
@@ -60,10 +63,12 @@ class InstrumentSearchControllerIT {
 
     @Test
     void treatsBlankParametersAsAbsent() {
-        for (String query : new String[]{"q=", "q=%20%20", "ticker=%20", "name=", "cursor=%20%20"}) {
-            get("/api/v1/instruments?" + query).expectStatus().isOk().expectBody()
-                    .jsonPath("$.items.length()").isEqualTo(20)
-                    .jsonPath("$.items[0].ticker").isEqualTo("AGRO");
+        for (String parameter : new String[]{"q", "ticker", "name", "cursor"}) {
+            for (String value : new String[]{"", "  "}) {
+                getWithParameter(parameter, value).expectStatus().isOk().expectBody()
+                        .jsonPath("$.items.length()").isEqualTo(20)
+                        .jsonPath("$.items[0].ticker").isEqualTo("AGRO");
+            }
         }
     }
 

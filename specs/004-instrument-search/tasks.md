@@ -46,18 +46,18 @@ into 004-c1 (BDD infrastructure, T008–T009) and 004-c2 (endpoint, steps, contr
 - [x] T008 Create the BDD infrastructure of plan.md § BDD infrastructure (`SeedData`, `DatabaseHooks`,
   `ScenarioContext`, `CommonResponseSteps`, moving the response-status step out of `HealthSteps`). Run
   `./mvnw verify`: the smoke scenario still passes.
-- [ ] T009 Copy the feature file and enable its traceability:
+- [x] T009 Copy the feature file and enable its traceability:
   `cp specs/004-instrument-search/features/cu-02-instrument-search.feature src/test/resources/features/`;
   append `CU-02` to `src/test/resources/traceability/scope.txt`; write `traceability/FeaturesMatchSpecsTest`
   (plan.md § Feature files are copied, never written) and confirm it passes with the copied file and fails if one
   byte of the copy is changed (then revert the change).
-- [ ] T010 [P] Write `InstrumentSearchSteps` for `cu-02-instrument-search.feature`.
-- [ ] T011 [P] Write `InstrumentSearchControllerIT` (CU-02.11, CU-02.13 and the spec.md edge cases).
-- [ ] T012 Copy the contract: `cp specs/004-instrument-search/contracts/openapi.yaml src/main/resources/static/openapi/openapi.yaml`.
-- [ ] T013 Create the skeleton of `InstrumentSearchController` and its DTOs. Run `./mvnw verify`: **the CU-02
+- [x] T010 [P] Write `InstrumentSearchSteps` for `cu-02-instrument-search.feature`.
+- [x] T011 [P] Write `InstrumentSearchControllerIT` (CU-02.11, CU-02.13 and the spec.md edge cases).
+- [x] T012 Copy the contract: `cp specs/004-instrument-search/contracts/openapi.yaml src/main/resources/static/openapi/openapi.yaml`.
+- [x] T013 Create the skeleton of `InstrumentSearchController` and its DTOs. Run `./mvnw verify`: **the CU-02
   scenarios, the controller IT and the contract route test fail**. Record it.
-- [ ] T014 Implement plan.md § REST and § Errors until green (BDD 15 scenarios, traceability with `CU-02`, contract).
-- [ ] T015 [P] Create `http/004-instrument-search.http` (plan.md § HTTP examples).
+- [x] T014 Implement plan.md § REST and § Errors until green (BDD 15 scenarios, traceability with `CU-02`, contract).
+- [x] T015 [P] Create `http/004-instrument-search.http` (plan.md § HTTP examples).
 
 **Checkpoint**: open PR `004-c`.
 
