@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Cocos Broker API
-  version: 0.5.0
+  version: 0.6.0
   description: |
     Broker API: portfolio, instrument search and orders (Cocos backend challenge).
 
@@ -19,6 +19,75 @@ servers:
   - url: http://localhost:8080
 
 paths:
+  /api/v1/portfolio:
+    get:
+      operationId: getPortfolio
+      summary: Portfolio of the requesting user
+      description: |
+        Always the portfolio of the `X-User-Id` user (no endpoint accepts another user's id, TEC-18).
+        - `totalValue` = total cash (reserved included) + market value of every priced position (DEC-01.1, DEC-10).
+        - Positions: instruments with quantity ≠ 0, ordered by ticker. Pending orders are not positions; their effect is in `cash.reserved` and `reservedQuantity`.
+        - `averageCost`: moving average of FILLED buys in execution order; a sale does not change it; it restarts when the quantity reaches 0 (DEC-02.1).
+        - `totalReturnPct` = (lastPrice − averageCost) / averageCost × 100; `dailyChangePct` = (close − previousClose) / previousClose × 100 (DEC-02).
+        - Positions without market data: price, value and returns are null and the total excludes them (warning). Negative quantities are shown and flagged (DEC-11).
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: The portfolio.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+              example:
+                totalValue: '889756.00'
+                cash: { total: '753000.00', reserved: '125500.00', available: '627500.00' }
+                positions:
+                  - { instrumentId: 31, ticker: BMA, name: Banco Macro S.A., quantity: -10, reservedQuantity: 0, lastPrice: '1502.80', marketValue: '-15028.00', averageCost: '1540.00', totalReturnPct: '-2.42', dailyChangePct: '-1.15', warnings: [ { code: NEGATIVE_POSITION, message: 'Inconsistent position: the quantity of BMA is negative (-10); the recorded orders sell more shares than were bought.' } ] }
+                  - { instrumentId: 54, ticker: METR, name: MetroGAS S.A., quantity: 500, reservedQuantity: 0, lastPrice: '229.50', marketValue: '114750.00', averageCost: '250.00', totalReturnPct: '-8.20', dailyChangePct: '-1.08', warnings: [] }
+                  - { instrumentId: 47, ticker: PAMP, name: Pampa Holding S.A., quantity: 40, reservedQuantity: 0, lastPrice: '925.85', marketValue: '37034.00', averageCost: '930.00', totalReturnPct: '-0.45', dailyChangePct: '0.44', warnings: [] }
+                warnings: []
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/users/{userId}/portfolio:
+    get:
+      operationId: getPortfolioAsAdministrator
+      summary: "[INTERNAL · demo only] Portfolio of any user"
+      description: |
+        Internal tool (not part of the challenge). Exists only when internal tools are enabled and requires `X-Role: ADMIN`;
+        otherwise it answers 404 exactly like a missing route. Same response as `GET /api/v1/portfolio`.
+      tags: [internal]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: integer, format: int32, minimum: 1 }
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: The portfolio of the user.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
   /api/v1/orders:
     post:
       operationId: placeOrder
@@ -324,6 +393,61 @@ components:
           description: Present only for VALIDATION_ERROR caused by request fields.
           items:
             $ref: '#/components/schemas/FieldError'
+    Warning:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [NEGATIVE_POSITION, MISSING_MARKET_DATA, TOTAL_EXCLUDES_UNPRICED, NEGATIVE_CASH]
+        message:
+          type: string
+    CashSummary:
+      type: object
+      required: [total, reserved, available]
+      properties:
+        total:
+          $ref: '#/components/schemas/Money'
+        reserved:
+          $ref: '#/components/schemas/Money'
+        available:
+          $ref: '#/components/schemas/Money'
+    Position:
+      type: object
+      required: [instrumentId, ticker, name, quantity, reservedQuantity, lastPrice, marketValue, averageCost, totalReturnPct, dailyChangePct, warnings]
+      properties:
+        instrumentId: { type: integer, format: int64 }
+        ticker: { type: string }
+        name: { type: string }
+        quantity: { type: integer, description: 'Whole shares; negative only with inconsistent data (DEC-11).' }
+        reservedQuantity: { type: integer, description: 'Shares reserved by NEW SELL orders.' }
+        lastPrice:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        marketValue:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        averageCost:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        totalReturnPct:
+          oneOf: [ { $ref: '#/components/schemas/Percentage' }, { type: 'null' } ]
+        dailyChangePct:
+          oneOf: [ { $ref: '#/components/schemas/Percentage' }, { type: 'null' } ]
+        warnings:
+          type: array
+          items: { $ref: '#/components/schemas/Warning' }
+    Portfolio:
+      type: object
+      required: [totalValue, cash, positions, warnings]
+      properties:
+        totalValue:
+          $ref: '#/components/schemas/Money'
+        cash:
+          $ref: '#/components/schemas/CashSummary'
+        positions:
+          type: array
+          items: { $ref: '#/components/schemas/Position' }
+        warnings:
+          type: array
+          items: { $ref: '#/components/schemas/Warning' }
     PlaceOrderRequest:
       type: object
       additionalProperties: false
