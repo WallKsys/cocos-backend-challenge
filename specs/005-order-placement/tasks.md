@@ -85,11 +85,11 @@ half follows the test-first cycle on its own and leaves the suite green:
   save, metrics) and its tests.
 - **005-d2:** step 2 of plan.md § Application (lightweight idempotency record, replay, conflict) and its tests.
 
-- [ ] T011 Write `PlaceOrderServiceTest` with in-memory fakes of every outbound port and a fixed `Clock`
+- [x] T011 Write `PlaceOrderServiceTest` with in-memory fakes of every outbound port and a fixed `Clock`
   (CU-03.20, 03.21, 03.28, 03.31–03.35, 03.41, 03.42; metrics calls of spec FR-005).
-- [ ] T012 Skeletons of `PlaceOrderUseCase`, `PlaceOrderCommand`, `PlaceOrderResult`, `NewOrder`,
+- [x] T012 Skeletons of `PlaceOrderUseCase`, `PlaceOrderCommand`, `PlaceOrderResult`, `NewOrder`,
   `PlaceOrderService`, `OrderConfiguration`. **Fail**. Record.
-- [ ] T013 Implement plan.md § Application until green; ArchUnit green (`@Transactional` on `place`).
+- [x] T013 Implement plan.md § Application until green; ArchUnit green (`@Transactional` on `place`).
 
 ## Slice 005-e — Endpoint, BDD and contract (branch `005-order-placement-e`)
 
