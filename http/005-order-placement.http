@@ -1,0 +1,52 @@
+@baseUrl = http://localhost:8080
+@userId = 1
+# Change this value before rerunning the examples as new operations.
+@runKey = order-demo-1
+
+### Market buy by quantity
+POST {{baseUrl}}/api/v1/orders
+X-User-Id: {{userId}}
+Idempotency-Key: {{runKey}}-quantity
+Content-Type: application/json
+
+{"instrumentId":47,"side":"BUY","type":"MARKET","quantity":10}
+
+### Market buy by amount
+POST {{baseUrl}}/api/v1/orders
+X-User-Id: {{userId}}
+Idempotency-Key: {{runKey}}-amount
+Content-Type: application/json
+
+{"instrumentId":47,"side":"BUY","type":"MARKET","amount":"50000.00"}
+
+### Limit sell that reserves shares
+POST {{baseUrl}}/api/v1/orders
+X-User-Id: {{userId}}
+Idempotency-Key: {{runKey}}-limit
+Content-Type: application/json
+
+{"instrumentId":47,"side":"SELL","type":"LIMIT","quantity":30,"price":"950.00"}
+
+### Rejection for insufficient available cash
+POST {{baseUrl}}/api/v1/orders
+X-User-Id: {{userId}}
+Idempotency-Key: {{runKey}}-rejected
+Content-Type: application/json
+
+{"instrumentId":47,"side":"BUY","type":"MARKET","quantity":1000}
+
+### Replay the market buy by amount
+POST {{baseUrl}}/api/v1/orders
+X-User-Id: {{userId}}
+Idempotency-Key: {{runKey}}-amount
+Content-Type: application/json
+
+{"instrumentId":47,"side":"BUY","type":"MARKET","amount":"50000.00"}
+
+### Conflict when reusing that key with a different amount
+POST {{baseUrl}}/api/v1/orders
+X-User-Id: {{userId}}
+Idempotency-Key: {{runKey}}-amount
+Content-Type: application/json
+
+{"instrumentId":47,"side":"BUY","type":"MARKET","amount":"60000.00"}
