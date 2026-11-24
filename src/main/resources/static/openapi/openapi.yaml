@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Cocos Broker API
-  version: 0.6.0
+  version: 0.7.0
   description: |
     Broker API: portfolio, instrument search and orders (Cocos backend challenge).
 
@@ -19,6 +19,102 @@ servers:
   - url: http://localhost:8080
 
 paths:
+  /api/v1/cash/deposits:
+    post:
+      operationId: depositCash
+      summary: Deposit pesos into the requesting user's account
+      description: |
+        A deposit is always executed (`FILLED`).
+        Stored as a `CASH_IN` order on the ARS instrument with `price` 1 and `size` = amount (DEC-04).
+        Resending the same request with the same `Idempotency-Key` returns the original movement with **200** and
+        `Idempotent-Replayed: true`; the key is shared with orders and the other cash operation (DEC-23).
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashMovementRequest'
+      responses:
+        '201':
+          description: Movement processed.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashMovement'
+        '200':
+          description: Replay of an already processed request.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            Idempotent-Replayed:
+              $ref: '#/components/headers/IdempotentReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashMovement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/cash/withdrawals:
+    post:
+      operationId: withdrawCash
+      summary: Withdraw pesos from the requesting user's available cash
+      description: |
+        Validated against the **available** cash (reserved cash cannot be withdrawn). Above it, the withdrawal is stored as `REJECTED` with `INSUFFICIENT_FUNDS` and returned with 201.
+        Stored as a `CASH_OUT` order on the ARS instrument with `price` 1 and `size` = amount (DEC-04).
+        Resending the same request with the same `Idempotency-Key` returns the original movement with **200** and
+        `Idempotent-Replayed: true`; the key is shared with orders and the other cash operation (DEC-23).
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashMovementRequest'
+      responses:
+        '201':
+          description: Movement processed.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashMovement'
+        '200':
+          description: Replay of an already processed request.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            Idempotent-Replayed:
+              $ref: '#/components/headers/IdempotentReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashMovement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalError'
   /api/v1/portfolio:
     get:
       operationId: getPortfolio
@@ -393,6 +489,38 @@ components:
           description: Present only for VALIDATION_ERROR caused by request fields.
           items:
             $ref: '#/components/schemas/FieldError'
+    CashMovementRequest:
+      type: object
+      additionalProperties: false
+      required: [amount]
+      properties:
+        amount:
+          allOf:
+            - $ref: '#/components/schemas/MoneyInput'
+          description: Amount in ARS, greater than 0, at most 2 decimals.
+          example: '100000.00'
+    CashMovement:
+      type: object
+      required: [movementId, type, status, amount, createdAt, rejection]
+      properties:
+        movementId:
+          type: integer
+          format: int64
+          description: Id of the stored order row.
+        type:
+          type: string
+          enum: [CASH_IN, CASH_OUT]
+        status:
+          type: string
+          enum: [FILLED, REJECTED]
+        amount:
+          $ref: '#/components/schemas/Money'
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        rejection:
+          oneOf:
+            - $ref: '#/components/schemas/Rejection'
+            - type: 'null'
     Warning:
       type: object
       required: [code, message]
