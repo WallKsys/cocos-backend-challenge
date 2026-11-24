@@ -6,7 +6,6 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -60,7 +58,7 @@ class TraceabilityTest {
         for (JavaClass javaClass : classes) {
             for (JavaMethod method : javaClass.getMethods()) {
                 if (isTest(method)) {
-                    elements.put(method.getFullName(), tags(method));
+                    elements.put(method.getFullName(), TestTags.of(method));
                 }
             }
         }
@@ -72,21 +70,5 @@ class TraceabilityTest {
                 || method.isAnnotatedWith(ParameterizedTest.class)
                 || method.isAnnotatedWith(RepeatedTest.class)
                 || method.isAnnotatedWith(TestFactory.class);
-    }
-
-    private static Set<String> tags(JavaMethod method) {
-        Set<String> tags = new HashSet<>();
-        method.tryGetAnnotationOfType(Tag.class).ifPresent(tag -> tags.add(tag.value()));
-        method.tryGetAnnotationOfType(Tags.class).ifPresent(container -> addTags(tags, container.value()));
-        JavaClass owner = method.getOwner();
-        owner.tryGetAnnotationOfType(Tag.class).ifPresent(tag -> tags.add(tag.value()));
-        owner.tryGetAnnotationOfType(Tags.class).ifPresent(container -> addTags(tags, container.value()));
-        return tags;
-    }
-
-    private static void addTags(Set<String> tags, Tag[] annotations) {
-        for (Tag tag : annotations) {
-            tags.add(tag.value());
-        }
     }
 }
