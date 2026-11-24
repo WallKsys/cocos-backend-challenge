@@ -129,7 +129,7 @@ feature file; check that the published contract still matches the spec contract.
 
 **Estimated size**: ~250 lines.
 
-- [ ] T020 Write `ConcurrentOrdersIT` (CU-03.36) and `IdempotencyLoadIT` (M-02, M-04, M-05, M-06). They should pass
+- [x] T020 Write `ConcurrentOrdersIT` (CU-03.36) and `IdempotencyLoadIT` (M-02, M-04, M-05, M-06). They should pass
   immediately if slices a–e are correct; **if any fails, that is a bug in the earlier slices: stop and report
   before changing production code**.
 - [ ] T027 Append `CU-03` to `src/test/resources/traceability/scope.txt`. Every `CU-03` ID now has a Gherkin
