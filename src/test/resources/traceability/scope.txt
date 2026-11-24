@@ -2,3 +2,4 @@
 # One group per line: CU-01 ... CU-07, CU-I. Each spec appends its own groups.
 # Spec 001 delivers no CU scenarios: the scope is empty.
 CU-02
+CU-03

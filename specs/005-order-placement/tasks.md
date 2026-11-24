@@ -137,7 +137,7 @@ feature file; check that the published contract still matches the spec contract.
   every CU test carries `unit` or `integration`; the traceability check reads only direct annotations, not
   meta-annotations or inherited ones). This is the only change allowed to those existing files; no test method
   changes. It passes at once; no red run is needed. Say so in the PR.
-- [ ] T027 Append `CU-03` to `src/test/resources/traceability/scope.txt`. Every `CU-03` ID now has a Gherkin
+- [x] T027 Append `CU-03` to `src/test/resources/traceability/scope.txt`. Every `CU-03` ID now has a Gherkin
   scenario and a JUnit test, so traceability passes at once.
 - [ ] T021 Run `./mvnw verify` three times in a row: the concurrency tests must be stable (no flakiness).
 
