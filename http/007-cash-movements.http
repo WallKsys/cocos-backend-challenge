@@ -1,0 +1,39 @@
+### Deposit pesos for user 2
+POST http://localhost:8080/api/v1/cash/deposits
+Content-Type: application/json
+X-User-Id: 2
+Idempotency-Key: example-deposit
+
+{"amount":"100000.00"}
+
+### Replay the same deposit
+POST http://localhost:8080/api/v1/cash/deposits
+Content-Type: application/json
+X-User-Id: 2
+Idempotency-Key: example-deposit
+
+{"amount":"100000.00"}
+
+### Withdraw pesos from available cash
+POST http://localhost:8080/api/v1/cash/withdrawals
+Content-Type: application/json
+X-User-Id: 2
+Idempotency-Key: example-withdrawal
+
+{"amount":"1000.00"}
+
+### Reject a withdrawal above available cash
+POST http://localhost:8080/api/v1/cash/withdrawals
+Content-Type: application/json
+X-User-Id: 1
+Idempotency-Key: example-rejected-withdrawal
+
+{"amount":"700000.00"}
+
+### Reject reuse of the deposit key for a withdrawal
+POST http://localhost:8080/api/v1/cash/withdrawals
+Content-Type: application/json
+X-User-Id: 2
+Idempotency-Key: example-deposit
+
+{"amount":"100000.00"}

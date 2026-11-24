@@ -54,10 +54,10 @@ half follows the test-first cycle on its own and leaves the suite green:
   compare with zero (seeded database) or with the count before an earlier `user N placed an order:`.
   These are the only changes allowed to those two existing files; no step text and no other method changes. The
   CU-03 scenarios pass at once with it; no red run is needed for this task. Say so in the PR.
-- [ ] T012 [P] Write `CashMovementControllerIT` and `CashIdempotencyIT`.
+- [x] T012 [P] Write `CashMovementControllerIT` and `CashIdempotencyIT`.
 - [ ] T013 Skeletons of the controller and DTOs. Run `./mvnw verify`: **CU-05/CU-06 scenarios fail**. Record.
 - [ ] T014 Implement plan.md § REST until green (17 scenarios).
-- [ ] T015 [P] `http/007-cash-movements.http`.
+- [x] T015 [P] `http/007-cash-movements.http`.
 
 ---
 
