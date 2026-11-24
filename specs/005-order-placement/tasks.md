@@ -106,14 +106,14 @@ half follows the test-first cycle on its own and leaves the suite green:
 005-e1 delivers the controller, published contract and HTTP examples. T014 and T018 close in 005-e2 with the
 feature copy and verification of all 46 scenarios.
 
-- [ ] T014 Copy the feature file and the contract.
-- [ ] T015 [P] Write `OrderSteps` and `TestClockConfiguration` (plan.md § BDD steps).
+- [x] T014 Copy the feature file and the contract.
+- [x] T015 [P] Write `OrderSteps` and `TestClockConfiguration` (plan.md § BDD steps).
 - [x] T016 [P] Write `OrderControllerIT` (CU-03.23, 03.29, 03.30, replay 200 + header, response shape).
 - [x] T017 Skeleton of `OrderController`, `PlaceOrderRequestBody`, `OrderResponse`. Run `./mvnw verify`: **CU-03
   scenarios and controller IT fail**. Record.
-- [ ] T018 Implement plan.md § REST until green (46 scenarios).
+- [x] T018 Implement plan.md § REST until green (46 scenarios).
 - [x] T019 [P] `http/005-order-placement.http`.
-- [ ] T028 [P] Add a NEW method to `OrderControllerIT` (no `@Tag`; do not change the existing ones): user 1 places
+- [x] T028 [P] Add a NEW method to `OrderControllerIT` (no `@Tag`; do not change the existing ones): user 1 places
   `LIMIT BUY` of 2 `PGR` (no market data, so no price band) at `"9000000000000000.00"` → 201, `status` `REJECTED`,
   `rejection.code` `INSUFFICIENT_FUNDS`, `quantity` 2, `price` `"9000000000000000.00"`, `totalAmount`
   `"18000000000000000.00"` (17 integer digits, contract schema `MoneyTotal`, DEC-31). It passes at once: the
