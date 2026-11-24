@@ -102,6 +102,9 @@ Integration tests need Docker running (Testcontainers).
 
 - Never modify, disable, skip or weaken an existing test or a `.feature` file to make the build pass. The only
   exception is a change that the slice's `tasks.md` prescribes for a named test file (Constitution III).
+- Never edit anything under `specs/`. The only allowed change is checking off the tasks of your slice in its
+  `tasks.md` (`- [ ]` → `- [x]`): no notes, no rewording, no other checkboxes. Anything you want to explain goes in
+  the PR description; if the spec itself looks wrong, stop and report.
 - Never use JPA, Hibernate, Spring Data JPA or any ORM. All SQL is hand-written with `JdbcClient` in
   `infrastructure.adapter.out.persistence`.
 - Never use `double` or `float` for money.
