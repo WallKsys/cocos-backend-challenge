@@ -33,7 +33,8 @@ half follows the test-first cycle on its own and leaves the suite green:
 - **006-b2:** `GetPortfolioService`, `PortfolioConfiguration`, `GetPortfolioServiceTest` and `GetPortfolioServiceIT`.
 
 - [ ] T005 [P] Write `JdbcPortfolioReaderIT` (CU-01.04, 01.05, 01.14) and a test for `latestQuotes`.
-- [ ] T006 [P] Write `GetPortfolioServiceTest` (CU-01.08) and `GetPortfolioServiceIT` (CU-01.01, 01.07, 01.11, FR-003).
+- [ ] T006 [P] Write `GetPortfolioServiceTest` (CU-01.08; also checks by reflection that `get` is read-only with
+  `Isolation.REPEATABLE_READ`, plan.md § Application) and `GetPortfolioServiceIT` (CU-01.01, 01.07, 01.11, FR-003).
 - [ ] T007 Skeletons of the ports, adapters, `GetPortfolioService`, `PortfolioConfiguration`. **Fail**. Record.
 - [ ] T008 Implement plan.md § Application and § Persistence until green; ArchUnit green.
 
