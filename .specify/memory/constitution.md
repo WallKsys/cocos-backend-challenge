@@ -11,7 +11,7 @@ code MUST comply with it. When anything conflicts with this document, this docum
 | `docs/analisis-funcional.md` | Business rules `R-xx`, decisions `DEC-xx`, schema changes `CM-xx` | Spanish |
 | `docs/prd.md` | Requirements `RF-xx`, `RNF-xx`, success metrics `M-xx` | Spanish |
 | `docs/rfc.md` | Technical decisions `TEC-xx` with rationale | Spanish |
-| `specs/NNN-*/` | Spec, plan, data model, contracts and tasks of each feature | English |
+| `specs/NNN-*/` | Spec, plan, data model, contracts and tasks of each feature. The agent's only change here is checking off the tasks of its slice in `tasks.md` | English |
 | `src/test/resources/features/` | Gherkin scenarios, one per `CU-xx.yy` | English |
 
 IDs (`CU-03.04`, `DEC-01`, `TEC-16`, `CM-02`) are identical across languages. Cite them in code comments,
@@ -59,7 +59,7 @@ For each spec (`specs/NNN-*`), follow this cycle in order (TEC-08):
 (TEC-09). If you believe a test or scenario is wrong, STOP and report it with your reasoning. Forbidden
 examples: `@Disabled`, `@Ignore`, `assumeTrue(false)`, deleting assertions, widening expected values,
 catching and swallowing exceptions in tests, editing `.feature` files.
-The only exception is a change that the slice's `tasks.md` **prescribes for a named existing test file**, for example extending `SeedDataIT`'s expected migration versions when a migration is added, or switching a BDD step to a real endpoint. That change goes in the tests commit, does exactly what the task says and nothing else, and is explained in the PR under "Test adjustments after the red run".
+The only exception is a change that the slice's `tasks.md`, as it stands on `main` before the slice starts, **prescribes for a named existing test file** (the agent never writes that prescription itself), for example extending `SeedDataIT`'s expected migration versions when a migration is added, or switching a BDD step to a real endpoint. That change goes in the tests commit, does exactly what the task says and nothing else, and is explained in the PR under "Test adjustments after the red run".
 
 ### IV. Every scenario is verified, and traceability is enforced by the build
 
@@ -273,4 +273,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.3.7 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-24 (v1.3.7: decimals in requests, TEC-20; checks that need data after the idempotency lookup and operations without a key, TEC-16; package dependencies, port names, generic return types and domain-free DTOs, TEC-13; v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)
+**Version**: 1.3.8 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-24 (v1.3.8: specs read-only except checking off the slice's tasks; test-change prescriptions only from `main`, TEC-09; v1.3.7: decimals in requests, TEC-20; checks that need data after the idempotency lookup and operations without a key, TEC-16; package dependencies, port names, generic return types and domain-free DTOs, TEC-13; v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)

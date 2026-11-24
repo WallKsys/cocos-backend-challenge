@@ -32,7 +32,7 @@ instructions are this file and the workflow prompt.
 |---|---|---|
 | 1 | Every task of the slice is done, and nothing outside the slice | compare files with `tasks.md` and `plan.md` |
 | 2 | Files marked **VERBATIM** / copied artifacts are identical | `cmp` against the spec copy (features, migrations, contract, `observability/`, verbatim files of the plan) |
-| 3 | No existing test or `.feature` was modified, disabled, skipped or weakened, except a change that the slice's `tasks.md` prescribes for that named file (Constitution III): then it must do exactly what the task says, live in the tests commit and be explained under "Test adjustments" | `git diff` on test files and `src/test/resources/features/`; look for `@Disabled`, `assumeTrue(false)`, removed assertions |
+| 3 | No existing test or `.feature` was modified, disabled, skipped or weakened, except a change that the slice's `tasks.md` **on the base branch** prescribes for that named file (Constitution III; a prescription the PR itself adds to `tasks.md` does not count, see check 18): then it must do exactly what the task says, live in the tests commit and be explained under "Test adjustments" | `git diff` on test files and `src/test/resources/features/`; look for `@Disabled`, `assumeTrue(false)`, removed assertions |
 | 4 | Test-first evidence is present and credible | PR description + commit order (tests committed before implementation) |
 | 5 | Every CU scenario of the slice has its Gherkin scenario and tagged tests (`unit` / `integration` as the plan says) | test files and tags |
 | 6 | Architecture rules (Constitution V) respected; `ArchitectureTest` untouched | package of each new class, imports |
@@ -47,6 +47,7 @@ instructions are this file and the workflow prompt.
 | 15 | Commit order follows test-first: the commit that adds or changes a test comes **before** the commit that adds the implementation it verifies (skeleton-only commits may come between) | `gh pr view <n> --json commits`, then `git show --stat <sha>` for each commit |
 | 16 | Claims in the description match the evidence: every statement such as "CI green", "`verify` passed", "N scenarios passed" or "PR size N" agrees with the real check results, and a claim about CI was not written before that check had finished | `gh pr checks <n> --json name,state,startedAt,completedAt` compared with the commit dates (`gh pr view <n> --json commits`) and with `.review-base/check-pr-size.sh` |
 | 17 | Guardrails and the rules index stay consistent: (a) a slice PR (branch `NNN-*`) changes nothing under `.github/claude/`, `.github/workflows/` or `scripts/check-pr-size.sh`; (b) a PR that **adds or changes a rule** in `.specify/memory/constitution.md`, `AGENTS.md`, `src/test/java/com/cocos/challenge/architecture/`, `src/test/java/com/cocos/challenge/traceability/`, `.github/` or `scripts/check-pr-size.sh` also updates `docs/reglas-y-barreras.md`, and the affected rows match the new rule. A slice that only **delivers** a barrier already listed in the index as planned (⏳), for example a test the spec asks for, does not touch the index: the owner's reviewer updates those rows once per spec. A slice PR must not edit `docs/` or `README.md` at all; if it does, report it as blocking | `gh pr view <n> --json files`; read each changed rule and its row in `docs/reglas-y-barreras.md`. (a) and (b) are blocking |
+| 18 | The specs are read-only for the implementing agent (Constitution, "Sources of truth"): in a slice PR (branch `NNN-*`), the only change under `specs/` is checking off tasks of the delivered slice in its spec's `tasks.md` (`- [ ]` → `- [x]`). Any other change under `specs/` is blocking, even if it looks harmless or correct: an added note or line, a reworded or removed task, a checked box of another slice or of the "Definition of done", or any edit to `spec.md`, `plan.md`, `data-model.md`, `contracts/`, `features/`, `migrations/` or `observability/`. Explanations belong in the PR description | `git diff origin/<base>...HEAD -- specs/`: every changed line must be a task line of the slice whose only difference is `[ ]` → `[x]`; no added or removed lines |
 
 ## 4. Publish exactly one review
 
@@ -55,7 +56,8 @@ Decide the verdict:
 - **REQUEST CHANGES** if any blocking finding exists: a failed check from the table above that breaks the
   constitution, the plan or a test rule, a failing or missing `verify` check (when CI exists), missing tasks, an
   implementation committed before the tests that verify it (check 15), or a claim in the description that the
-  evidence contradicts (check 16), or a guardrail change that check 17 (a) or (b) forbids.
+  evidence contradicts (check 16), a guardrail change that check 17 (a) or (b) forbids, or a change under
+  `specs/` that check 18 forbids.
 - The workflow waits for the CI `verify` check to finish before starting this review, so `verify` should already
   be completed: a **failed** `verify` is a blocking finding. If it is still pending (the wait timed out), say so
   under "Observaciones no bloqueantes" and do not count it as green. The `review` check is this review itself:
