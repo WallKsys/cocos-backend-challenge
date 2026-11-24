@@ -116,8 +116,10 @@ after the query, for example `CASH_BALANCE_SQL`). The plan guard of spec 009 (`P
 - `the cash movement is created with status "<S>"`, `the cash movement type is "<T>" and its amount is "<A>"`,
   `the cash movement rejection is "<code>" with message "<msg>"`.
 - `the stored row of the cash movement has side "<S>", size "<N>" and price "<P>"`: SQL on the row of `movementId`.
-- Reuse from spec 005: `the available cash of user N is`, `no order is stored`, `user N placed an order:`. In the
-  Scenario Outline of CU-05.07, `<operation>` is `deposits` or `withdraws`, matching the step texts above.
+- Reuse from spec 005: `the available cash of user N is`, `no order is stored` (its baseline lives in
+  `ScenarioContext` and every request step of `OrderSteps` and `CashMovementSteps` sets it, tasks.md T016),
+  `user N placed an order:`. In the Scenario Outline of CU-05.07, `<operation>` is `deposits` or `withdraws`,
+  matching the step texts above.
 
 ## Tests
 
