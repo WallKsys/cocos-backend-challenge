@@ -90,7 +90,8 @@ details, checked **in this order**:
 | 8 | MARKET has no `price` | `Request validation failed: 'price' must not be sent for MARKET orders.` |
 
 Body record `PlaceOrderRequestBody(@NotNull @Positive Long instrumentId, @NotNull String side, @NotNull String type,
-Integer quantity, @DecimalString String amount, @DecimalString String price)`. `side` and `type` are `String` (not
+Integer quantity, @DecimalString String amount, @DecimalString String price)`. `@DecimalString` (spec 003) accepts up to
+2 decimals, which is the contract's `MoneyInput` schema (TEC-20); responses always format exactly 2 decimals. `side` and `type` are `String` (not
 enums) so the messages above are ours, not Jackson's. Missing `instrumentId`, `side` or `type` → Bean Validation
 `VALIDATION_ERROR` (spec 003 format). A non-integer `quantity` (`1.5`) → `Request validation failed: 'quantity' has
 an invalid type or format.` (spec 003). A `quantity` out of the
