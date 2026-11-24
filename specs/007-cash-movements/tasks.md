@@ -30,9 +30,9 @@ half follows the test-first cycle on its own and leaves the suite green:
 - **007-b2:** `CashMovementService`, its configuration and `CashMovementServiceTest`.
 
 - [x] T006 [P] Write `JdbcCashMovementRepositoryIT` (CU-05.01, 05.02).
-- [ ] T007 [P] Write `CashMovementServiceTest` with fakes (CU-05.05, 05.07, 06.04, 06.06, metrics).
-- [ ] T008 Skeletons of the ports, `JdbcCashMovementRepository`, `CashMovementService`, configuration. **Fail**. Record.
-- [ ] T009 Implement plan.md § Application and § Persistence until green; ArchUnit green.
+- [x] T007 [P] Write `CashMovementServiceTest` with fakes (CU-05.05, 05.07, 06.04, 06.06, metrics).
+- [x] T008 Skeletons of the ports, `JdbcCashMovementRepository`, `CashMovementService`, configuration. **Fail**. Record.
+- [x] T009 Implement plan.md § Application and § Persistence until green; ArchUnit green.
 
 ## Slice 007-c — Endpoints, BDD and contract (branch `007-cash-movements-c`)
 
