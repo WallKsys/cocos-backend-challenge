@@ -1,0 +1,18 @@
+### Portfolio of user 1
+GET http://localhost:8080/api/v1/portfolio
+X-User-Id: 1
+
+### Empty portfolio of user 2
+GET http://localhost:8080/api/v1/portfolio
+X-User-Id: 2
+
+### Unknown user
+GET http://localhost:8080/api/v1/portfolio
+X-User-Id: 999
+
+### Administrator portfolio lookup (demo)
+GET http://localhost:8080/api/internal/users/1/portfolio
+X-Role: ADMIN
+
+### The same internal route without the administrator role
+GET http://localhost:8080/api/internal/users/1/portfolio
