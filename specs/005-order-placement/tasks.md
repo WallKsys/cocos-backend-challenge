@@ -98,14 +98,17 @@ half follows the test-first cycle on its own and leaves the suite green:
 - **005-e1:** `OrderController`, `PlaceOrderRequestBody`, `OrderResponse`, the contract copy, `OrderControllerIT` and
   `http/005-order-placement.http`. The contract travels with the controller: `PublishedContractMatchesRoutesIT`
   needs the implemented routes and the published contract to be identical.
-- **005-e2:** the feature copy, `CU-03` in `scope.txt`, `OrderSteps` and `TestClockConfiguration` (42 scenarios).
+- **005-e2:** the feature copy, `OrderSteps` and `TestClockConfiguration` (46 scenarios).
 
-- [ ] T014 Copy the feature file and the contract; append `CU-03` to `scope.txt`.
+`CU-03` is **not** added to `scope.txt` in this slice: `CU-03.36` has no JUnit test until `ConcurrentOrdersIT`
+(005-f), and traceability rule 8 would fail the build. Cucumber runs the 46 scenarios regardless of the scope.
+
+- [ ] T014 Copy the feature file and the contract.
 - [ ] T015 [P] Write `OrderSteps` and `TestClockConfiguration` (plan.md § BDD steps).
 - [ ] T016 [P] Write `OrderControllerIT` (CU-03.23, 03.29, 03.30, replay 200 + header, response shape).
 - [ ] T017 Skeleton of `OrderController`, `PlaceOrderRequestBody`, `OrderResponse`. Run `./mvnw verify`: **CU-03
   scenarios and controller IT fail**. Record.
-- [ ] T018 Implement plan.md § REST until green (42 scenarios).
+- [ ] T018 Implement plan.md § REST until green (46 scenarios).
 - [ ] T019 [P] `http/005-order-placement.http`.
 
 ## Slice 005-f — Concurrency and idempotency under load (branch `005-order-placement-f`)
@@ -117,6 +120,8 @@ half follows the test-first cycle on its own and leaves the suite green:
 - [ ] T020 Write `ConcurrentOrdersIT` (CU-03.36) and `IdempotencyLoadIT` (M-02, M-04, M-05, M-06). They should pass
   immediately if slices a–e are correct; **if any fails, that is a bug in the earlier slices: stop and report
   before changing production code**.
+- [ ] T027 Append `CU-03` to `src/test/resources/traceability/scope.txt`. Every `CU-03` ID now has a Gherkin
+  scenario and a JUnit test, so traceability passes at once.
 - [ ] T021 Run `./mvnw verify` three times in a row: the concurrency tests must be stable (no flakiness).
 
 ---
@@ -124,5 +129,5 @@ half follows the test-first cycle on its own and leaves the suite green:
 ## Definition of done (spec 005)
 
 - [ ] Slices merged; `./mvnw verify` green on `main`.
-- [ ] 42 CU-03 scenarios passing; `CU-03` in scope.
+- [ ] 46 CU-03 scenarios passing; `CU-03` in scope.
 - [ ] M-02, M-04, M-05, M-06 green and stable.

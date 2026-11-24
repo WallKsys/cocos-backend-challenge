@@ -4,7 +4,7 @@
 ./mvnw verify
 ```
 
-Expected: `BUILD SUCCESS`; Cucumber shows the 42 CU-03 scenarios passing; `ConcurrentOrdersIT` and
+Expected: `BUILD SUCCESS`; Cucumber shows the 46 CU-03 scenarios passing; `ConcurrentOrdersIT` and
 `IdempotencyLoadIT` green.
 
 ```bash

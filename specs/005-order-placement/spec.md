@@ -8,8 +8,8 @@
 
 **Input**: Challenge requirement "Enviar una orden al mercado"; R-04 to R-09, R-12, R-17; DEC-01, DEC-05, DEC-06,
 DEC-07, DEC-09, DEC-12, DEC-14, DEC-17, DEC-18, DEC-22, DEC-23, DEC-24; RFC TEC-14, TEC-16, TEC-17, TEC-19, TEC-20,
-TEC-31; acceptance scenarios **CU-03.01 to CU-03.42**; Gherkin
-`specs/005-order-placement/features/cu-03-order-placement.feature` (42 scenarios, already written).
+TEC-31; acceptance scenarios **CU-03.01 to CU-03.46**; Gherkin
+`specs/005-order-placement/features/cu-03-order-placement.feature` (46 scenarios, already written).
 
 ## Context
 
@@ -70,7 +70,7 @@ quantity, DEC-29 and DEC-30).
 
 ## Success Criteria *(mandatory)*
 
-- **SC-001**: The 42 scenarios of the feature file pass.
+- **SC-001**: The 46 scenarios of the feature file pass.
 - **SC-002**: PRD M-02, M-04, M-05 and M-06 are verified by integration tests (§ Tests in plan.md).
 - **SC-003**: `CU-03` is in the traceability scope; the published contract matches the routes.
 
