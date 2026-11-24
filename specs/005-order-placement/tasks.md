@@ -139,7 +139,7 @@ feature file; check that the published contract still matches the spec contract.
   changes. It passes at once; no red run is needed. Say so in the PR.
 - [x] T027 Append `CU-03` to `src/test/resources/traceability/scope.txt`. Every `CU-03` ID now has a Gherkin
   scenario and a JUnit test, so traceability passes at once.
-- [ ] T021 Run `./mvnw verify` three times in a row: the concurrency tests must be stable (no flakiness).
+- [x] T021 Run `./mvnw verify` three times in a row: the concurrency tests must be stable (no flakiness).
 
 ---
 
