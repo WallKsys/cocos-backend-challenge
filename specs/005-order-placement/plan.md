@@ -21,7 +21,7 @@ persistence adapters run hand-written SQL; the REST adapter maps requests and re
 | Principle | How this spec complies |
 |---|---|
 | I Ledger | Balances computed from `orders`; validations against **available** amounts; whole shares |
-| III / IV | 42 Gherkin scenarios + unit/integration tests per CU (§ Tests); `CU-03` added to scope |
+| III / IV | 46 Gherkin scenarios + unit/integration tests per CU (§ Tests); `CU-03` added to scope |
 | V Hexagonal | Rules in `domain.service.OrderEvaluator`; flow in `application.service.PlaceOrderService`; SQL in persistence |
 | VII Concurrency / idempotency | Lock of `users` row first; key + fingerprint lookup; unique constraint as safety net |
 | VIII Money | `Money` everywhere; `BigDecimal` division with explicit rounding |
@@ -66,7 +66,7 @@ src/main/java/com/cocos/challenge/
 src/main/resources/db/migration/V6__orders_requested_amount.sql   (copy of specs/005-order-placement/migrations/)
 src/main/resources/static/openapi/openapi.yaml                     (copy of this spec's contract)
 src/test/resources/features/cu-03-order-placement.feature          (copy of this spec's feature)
-src/test/resources/traceability/scope.txt                          (append CU-03)
+src/test/resources/traceability/scope.txt                          (append CU-03, in slice 005-f)
 ```
 
 `NewOrder` (in `application.port.out`) is the record the service hands to `OrderRepository.save`: all fields of
