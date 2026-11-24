@@ -13,6 +13,7 @@ public class ScenarioContext {
     private int status;
     private HttpHeaders headers;
     private JsonNode body;
+    private long ordersBeforeRequest;
 
     public void record(EntityExchangeResult<JsonNode> response) {
         status = response.getStatus().value();
@@ -30,5 +31,13 @@ public class ScenarioContext {
 
     public JsonNode body() {
         return body;
+    }
+
+    public void setOrdersBeforeRequest(long ordersBeforeRequest) {
+        this.ordersBeforeRequest = ordersBeforeRequest;
+    }
+
+    public long ordersBeforeRequest() {
+        return ordersBeforeRequest;
     }
 }
