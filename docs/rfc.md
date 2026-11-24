@@ -99,7 +99,7 @@ src/test/resources/features/        un .feature por caso de uso
 - **Permitida solo esa:** cualquier otra dependencia de Spring en `application` rompe el build.
 - **Obligatoria:** todo método público de un caso de uso que **modifica datos** (enviar orden, cancelar, depositar, retirar y las herramientas internas) debe tenerla. Si falta, el build falla.
 
-Las consultas (portfolio, búsqueda, historial) usan `@Transactional(readOnly = true)` para leer efectivo, reservas y posiciones de un mismo estado consistente.
+Las consultas (portfolio, búsqueda, historial) usan `@Transactional(readOnly = true)`. Eso **no** alcanza para leer una foto única: con el aislamiento por defecto de PostgreSQL (READ COMMITTED) cada sentencia ve su propia foto. Por eso la consulta que combina varias lecturas de datos que cambian juntos (el portfolio: efectivo, posiciones y precios) agrega `isolation = Isolation.REPEATABLE_READ`, y así todas sus sentencias ven el mismo estado. En una transacción de solo lectura ese nivel no produce errores de serialización ni requiere reintentos. Las demás consultas no lo necesitan: la búsqueda es una sola sentencia, y el historial y el detalle de una orden solo agregan la verificación de que el usuario existe, que nunca se borra.
 
 **Justificación.** El límite correcto de la transacción es el caso de uso: ahí se valida el disponible, se bloquea la cuenta y se guarda la orden, y todo eso debe ser atómico. Con la anotación, ese límite se ve en el mismo método, todos los modelos la conocen y su ausencia se detecta automáticamente. El costo es una dependencia acotada de `application` hacia una anotación de Spring, aceptado a cambio de una garantía verificable.
 

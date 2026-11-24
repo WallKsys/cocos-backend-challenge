@@ -44,7 +44,7 @@ src/main/java/com/cocos/challenge/
 │   ├── PortfolioReader.java      List<OpenPosition> openPositions(UserId); Map<InstrumentId, List<Fill>> fills(UserId, Set<InstrumentId>)
 │   ├── OpenPosition.java         record (InstrumentId id, String ticker, String name, long quantity, long reservedQuantity)
 │   └── MarketDataRepository.java add Map<InstrumentId, MarketQuote> latestQuotes(Set<InstrumentId>)
-├── application/service/GetPortfolioService.java        @Transactional(readOnly = true)
+├── application/service/GetPortfolioService.java        @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
 └── infrastructure/
     ├── adapter/out/persistence/{JdbcAccountReader, JdbcPortfolioReader}.java (+ latestQuotes in JdbcMarketDataRepository)
     ├── adapter/in/rest/portfolio/{PortfolioController, PortfolioResponse, PositionResponse, CashResponse, WarningResponse}.java
@@ -91,7 +91,11 @@ src/main/java/com/cocos/challenge/
 
 ## Application
 
-`GetPortfolioService.get(UserId)` — `@Transactional(readOnly = true)`, so all reads see one snapshot:
+`GetPortfolioService.get(UserId)` — `@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)`, so
+all reads see one snapshot. `readOnly` alone is not enough: under PostgreSQL's default READ COMMITTED every statement
+takes its own snapshot, and an order committed between steps 2 and 3 would mix the cash from before it with the
+positions from after it. A read-only REPEATABLE READ transaction never fails with a serialization error, so no retry
+is needed. Steps:
 1. `accountReader.find(userId)` or `NotFoundException("User <id> was not found.")`.
 2. `cash = ledgerReader.cashBalance(userId)` (spec 005).
 3. `open = portfolioReader.openPositions(userId)`; `ids` = their instrument ids.
@@ -179,7 +183,7 @@ ORDER BY instrumentid, date DESC
 | 01.05 | — | `JdbcPortfolioReaderIT` (quantity 0 excluded) |
 | 01.06 | `PortfolioTest` (no quote: nulls, excluded from total, both warnings) | — |
 | 01.07 | `PortfolioTest` (empty) | `GetPortfolioServiceIT` (user 2) |
-| 01.08 | `GetPortfolioServiceTest` (unknown user → `NotFoundException`) | — |
+| 01.08 | `GetPortfolioServiceTest` (unknown user → `NotFoundException`; `get` is annotated `@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)`, checked by reflection) | — |
 | 01.09 | — | `PortfolioControllerIT` (`/api/v1/users/1/portfolio` → 404; user 2 gets their own) |
 | 01.10 | — | `InternalPortfolioControllerIT` (admin 200; without role 404; also, without CU tag, `userId` 0 → 400 DEC-26) |
 | 01.11 | — | `GetPortfolioServiceIT` (after placing an order through `PlaceOrderUseCase`) |
