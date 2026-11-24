@@ -39,7 +39,6 @@ public class OrderSteps {
     private final TestClock clock;
     private Request lastRequest;
     private JsonNode originalOrder;
-    private long ordersBeforeRequest;
     private final List<EntityExchangeResult<JsonNode>> concurrentResponses = new ArrayList<>();
 
     public OrderSteps(RestTestClient client, ScenarioContext context, JdbcClient jdbc, LedgerReader ledger,
@@ -195,7 +194,7 @@ public class OrderSteps {
 
     @Then("no order is stored")
     public void noOrderStored() {
-        assertThat(orderCount()).isEqualTo(ordersBeforeRequest);
+        assertThat(orderCount()).isEqualTo(context.ordersBeforeRequest());
     }
 
     @Then("the response is a replay of the original order")
@@ -251,7 +250,7 @@ public class OrderSteps {
 
     private void send(Request request) {
         lastRequest = request;
-        ordersBeforeRequest = orderCount();
+        context.setOrdersBeforeRequest(orderCount());
         context.record(exchange(request));
     }
 
