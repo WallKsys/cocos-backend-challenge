@@ -7,6 +7,7 @@ import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.application.port.out.OrderRepository;
+import com.cocos.challenge.application.service.IdempotencyLookup;
 import com.cocos.challenge.application.service.PlaceOrderService;
 import com.cocos.challenge.domain.service.OrderEvaluator;
 import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcAccountLock;
@@ -49,10 +50,15 @@ public class OrderConfiguration {
     }
 
     @Bean
+    IdempotencyLookup idempotencyLookup(OrderRepository orders, BusinessMetrics metrics) {
+        return new IdempotencyLookup(orders, metrics);
+    }
+
+    @Bean
     PlaceOrderUseCase placeOrderUseCase(AccountLock accountLock, OrderRepository orders,
             InstrumentRepository instruments, MarketDataRepository marketData, LedgerReader ledger,
-            BusinessMetrics metrics, Clock clock) {
+            BusinessMetrics metrics, Clock clock, IdempotencyLookup idempotencyLookup) {
         return new PlaceOrderService(accountLock, orders, instruments, marketData, ledger,
-                new OrderEvaluator(), metrics, clock);
+                new OrderEvaluator(), metrics, clock, idempotencyLookup);
     }
 }
