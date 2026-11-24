@@ -47,19 +47,19 @@ half follows the test-first cycle on its own and leaves the suite green:
 - **006-c2:** the feature copy, `CU-01` in `scope.txt`, internal tools enabled in `CucumberSpringConfiguration`,
   `PortfolioSteps` and T015.
 
-- [ ] T009 Copy the feature and the contract; append `CU-01` to `scope.txt`; enable internal tools in
+- [x] T009 Copy the feature and the contract; append `CU-01` to `scope.txt`; enable internal tools in
   `CucumberSpringConfiguration`.
-- [ ] T010 [P] Write `PortfolioSteps` (plan.md § BDD).
-- [ ] T011 [P] Write `PortfolioControllerIT` (CU-01.09) and `InternalPortfolioControllerIT` (CU-01.10). Each one
+- [x] T010 [P] Write `PortfolioSteps` (plan.md § BDD).
+- [x] T011 [P] Write `PortfolioControllerIT` (CU-01.09) and `InternalPortfolioControllerIT` (CU-01.10). Each one
   carries a class-level `@Tag("integration")` next to `@IntegrationTest` (see T015).
-- [ ] T015 Add a class-level `@Tag("integration")` to the existing `GetPortfolioServiceIT`, next to its
+- [x] T015 Add a class-level `@Tag("integration")` to the existing `GetPortfolioServiceIT`, next to its
   `@IntegrationTest` (plan.md § Tests: every CU test carries `unit` or `integration`; the traceability check reads
   only direct annotations, not meta-annotations or inherited ones, so CU-01.11 fails rule 9 once `CU-01` enters
   `scope.txt`). This is the only change allowed to that existing file; no test method changes. It passes at once;
   no red run is needed. Say so in the PR.
-- [ ] T012 Skeletons of the controllers and DTOs. Run `./mvnw verify`: **CU-01 scenarios fail**. Record.
-- [ ] T013 Implement plan.md § REST until green (14 scenarios; contract route test with the new routes).
-- [ ] T014 [P] `http/006-portfolio.http`.
+- [x] T012 Skeletons of the controllers and DTOs. Run `./mvnw verify`: **CU-01 scenarios fail**. Record.
+- [x] T013 Implement plan.md § REST until green (14 scenarios; contract route test with the new routes).
+- [x] T014 [P] `http/006-portfolio.http`.
 
 ---
 
