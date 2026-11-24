@@ -40,10 +40,20 @@ half follows the test-first cycle on its own and leaves the suite green:
 half follows the test-first cycle on its own and leaves the suite green:
 - **007-c1:** the controller, the DTOs, the contract copy, `CashMovementControllerIT`, `CashIdempotencyIT` and
   `http/007-cash-movements.http`.
-- **007-c2:** the two feature copies, `CU-05` and `CU-06` in `scope.txt`, and `CashMovementSteps`.
+- **007-c2:** the two feature copies, `CU-05` and `CU-06` in `scope.txt`, `CashMovementSteps` and T016.
 
 - [ ] T010 Copy the two features and the contract; append `CU-05` and `CU-06` to `scope.txt`.
-- [ ] T011 [P] Write `CashMovementSteps` (plan.md § BDD steps).
+- [ ] T011 [P] Write `CashMovementSteps` (plan.md § BDD steps). Every request it sends first stores the current
+  row count of `orders` as the shared baseline (see T016), so the reused `no order is stored` step checks the cash
+  request.
+- [ ] T016 Move the baseline of `no order is stored` to `ScenarioContext`, shared by both request helpers. In the
+  existing `ScenarioContext`, add a `long` with a setter and a getter for the row count of `orders` before the last
+  request. In the existing `OrderSteps`, `send` stores `orderCount()` there instead of in the private
+  `ordersBeforeRequest` field (remove that field), and `noOrderStored` compares with the value in `ScenarioContext`.
+  Reason: the baseline is captured only when `OrderSteps` sends a request, so after a cash request the step would
+  compare with zero (seeded database) or with the count before an earlier `user N placed an order:`.
+  These are the only changes allowed to those two existing files; no step text and no other method changes. The
+  CU-03 scenarios pass at once with it; no red run is needed for this task. Say so in the PR.
 - [ ] T012 [P] Write `CashMovementControllerIT` and `CashIdempotencyIT`.
 - [ ] T013 Skeletons of the controller and DTOs. Run `./mvnw verify`: **CU-05/CU-06 scenarios fail**. Record.
 - [ ] T014 Implement plan.md § REST until green (17 scenarios).
