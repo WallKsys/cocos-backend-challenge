@@ -20,7 +20,7 @@
 - [x] T003 Skeletons of `CashMovementRequest`, `CashMovement`, `CashMovementEvaluator`, `IdempotencyLookup`. **Fail**.
   Record.
 - [x] T004 Implement until green.
-- [ ] T005 Refactor `PlaceOrderService` to use `IdempotencyLookup`. **All spec 005 tests must pass unmodified.**
+- [x] T005 Refactor `PlaceOrderService` to use `IdempotencyLookup`. **All spec 005 tests must pass unmodified.**
 
 ## Slice 007-b — Persistence and use cases (branch `007-cash-movements-b`)
 

@@ -5,13 +5,11 @@ import com.cocos.challenge.application.port.in.PlaceOrderResult;
 import com.cocos.challenge.application.port.in.PlaceOrderUseCase;
 import com.cocos.challenge.application.port.out.AccountLock;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
-import com.cocos.challenge.application.port.out.IdempotencyRecord;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.application.port.out.NewOrder;
 import com.cocos.challenge.application.port.out.OrderRepository;
-import com.cocos.challenge.domain.exception.IdempotencyConflictException;
 import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
@@ -33,11 +31,13 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.OptionalLong;
 
 public class PlaceOrderService implements PlaceOrderUseCase {
 
     private final AccountLock accountLock;
     private final OrderRepository orders;
+    private final IdempotencyLookup idempotencyLookup;
     private final InstrumentRepository instruments;
     private final MarketDataRepository marketData;
     private final LedgerReader ledger;
@@ -48,8 +48,16 @@ public class PlaceOrderService implements PlaceOrderUseCase {
     public PlaceOrderService(AccountLock accountLock, OrderRepository orders, InstrumentRepository instruments,
             MarketDataRepository marketData, LedgerReader ledger, OrderEvaluator evaluator,
             BusinessMetrics metrics, Clock clock) {
+        this(accountLock, orders, instruments, marketData, ledger, evaluator, metrics, clock,
+                new IdempotencyLookup(orders, metrics));
+    }
+
+    public PlaceOrderService(AccountLock accountLock, OrderRepository orders, InstrumentRepository instruments,
+            MarketDataRepository marketData, LedgerReader ledger, OrderEvaluator evaluator,
+            BusinessMetrics metrics, Clock clock, IdempotencyLookup idempotencyLookup) {
         this.accountLock = accountLock;
         this.orders = orders;
+        this.idempotencyLookup = idempotencyLookup;
         this.instruments = instruments;
         this.marketData = marketData;
         this.ledger = ledger;
@@ -70,15 +78,9 @@ public class PlaceOrderService implements PlaceOrderUseCase {
         OrderRequest request = command.request();
         String key = command.idempotencyKey();
         RequestFingerprint fingerprint = request.fingerprint();
-        Optional<IdempotencyRecord> existing = orders.findIdempotencyRecord(user, key);
+        OptionalLong existing = idempotencyLookup.find(user, key, fingerprint);
         if (existing.isPresent()) {
-            IdempotencyRecord record = existing.get();
-            if (!record.fingerprint().equals(fingerprint)) {
-                metrics.idempotencyConflict();
-                throw new IdempotencyConflictException(key);
-            }
-            metrics.idempotentReplay(record.side());
-            return new PlaceOrderResult(orders.findById(record.orderId()), true);
+            return new PlaceOrderResult(orders.findById(existing.getAsLong()), true);
         }
 
         Instrument instrument = instruments.findById(request.instrumentId()).orElseThrow(() ->
