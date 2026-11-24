@@ -9,6 +9,10 @@ import java.util.Optional;
 
 public class JdbcAccountReader implements AccountReader {
 
+    static final String FIND_ACCOUNT_SQL = """
+            SELECT id, accountnumber FROM users WHERE id = :userId
+            """;
+
     private final JdbcClient jdbc;
 
     public JdbcAccountReader(JdbcClient jdbc) {
@@ -17,6 +21,8 @@ public class JdbcAccountReader implements AccountReader {
 
     @Override
     public Optional<Account> find(UserId userId) {
-        throw new UnsupportedOperationException();
+        return jdbc.sql(FIND_ACCOUNT_SQL).param("userId", userId.value())
+                .query((rs, rowNum) -> new Account(new UserId(rs.getLong("id")), rs.getString("accountnumber")))
+                .optional();
     }
 }
