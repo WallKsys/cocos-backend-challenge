@@ -17,13 +17,13 @@ half follows the test-first cycle on its own and leaves the suite green:
 - **006-a1:** `Fill`, `AverageCostCalculator` and `AverageCostCalculatorTest`.
 - **006-a2:** `PortfolioWarning`, `PortfolioWarningCode`, `Position`, `Portfolio`, `PositionTest` and `PortfolioTest`.
 
-- [ ] T001 [P] Write `AverageCostCalculatorTest` (CU-01.12, 01.13, 01.14 and the restart rule for a buy with
+- [x] T001 [P] Write `AverageCostCalculatorTest` (CU-01.12, 01.13, 01.14 and the restart rule for a buy with
   quantity ≤ 0).
-- [ ] T002 [P] Write `PositionTest` (CU-01.02, 01.03, rounding from the unrounded average) and `PortfolioTest`
+- [x] T002 [P] Write `PositionTest` (CU-01.02, 01.03, rounding from the unrounded average) and `PortfolioTest`
   (CU-01.01, 01.06, 01.07, `NEGATIVE_CASH`), with the exact warning messages of plan.md.
-- [ ] T003 Skeletons of `Fill`, `PortfolioWarning`, `PortfolioWarningCode`, `Position`, `Portfolio`,
+- [x] T003 Skeletons of `Fill`, `PortfolioWarning`, `PortfolioWarningCode`, `Position`, `Portfolio`,
   `AverageCostCalculator`. **Fail**. Record.
-- [ ] T004 Implement plan.md § Portfolio rules until green.
+- [x] T004 Implement plan.md § Portfolio rules until green.
 
 ## Slice 006-b — Readers and use case (branch `006-portfolio-b`)
 
