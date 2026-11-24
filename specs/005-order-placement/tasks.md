@@ -113,6 +113,15 @@ feature copy and verification of all 46 scenarios.
   scenarios and controller IT fail**. Record.
 - [ ] T018 Implement plan.md § REST until green (46 scenarios).
 - [x] T019 [P] `http/005-order-placement.http`.
+- [ ] T028 [P] Add a NEW method to `OrderControllerIT` (no `@Tag`; do not change the existing ones): user 1 places
+  `LIMIT BUY` of 2 `PGR` (no market data, so no price band) at `"9000000000000000.00"` → 201, `status` `REJECTED`,
+  `rejection.code` `INSUFFICIENT_FUNDS`, `quantity` 2, `price` `"9000000000000000.00"`, `totalAmount`
+  `"18000000000000000.00"` (17 integer digits, contract schema `MoneyTotal`, DEC-31). It passes at once: the
+  evaluator and `ApiDecimals.format` already have no upper limit. Say so in the PR; no red run is needed.
+
+The contract change of DEC-31 (`MoneyTotal` for `totalAmount`) is already on `main`, in the spec contract and in the
+published copy `src/main/resources/static/openapi/openapi.yaml` (they must stay byte-identical). T014 only copies the
+feature file; check that the published contract still matches the spec contract.
 
 ## Slice 005-f — Concurrency and idempotency under load (branch `005-order-placement-f`)
 

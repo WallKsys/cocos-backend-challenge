@@ -136,7 +136,9 @@ CashBalance cash, ShareBalance shares)` → `OrderEvaluation`. Pure Java, no I/O
    (`BigDecimal.divide(price, 0, RoundingMode.DOWN)`). If it is greater than 2147483647 → `REJECTED`, reason
    `QUANTITY_TOO_LARGE`, quantity 0, price = reference price (DEC-30). If it is 0 → `REJECTED`, reason
    `AMOUNT_BELOW_PRICE`, quantity 0, price = reference price.
-3. **Total** = `quantity × price` (`Money.times`).
+3. **Total** = `quantity × price` (`Money.times`), with no upper limit: a rejected order may have a total of up to 26
+   integer digits (2 × `9000000000000000.00` = `18000000000000000.00`). It is never stored; the response formats it with
+   `ApiDecimals.format`, which is the contract schema `MoneyTotal` (DEC-31). Do not add a range check.
 4. **Availability**: BUY → total must be ≤ `cash.available()`, otherwise `INSUFFICIENT_FUNDS`. SELL → quantity must
    be ≤ `shares.available()`, otherwise `INSUFFICIENT_SHARES`. Rejected orders keep the computed quantity and price.
 5. Otherwise: MARKET → `FILLED`; LIMIT → `NEW`.
