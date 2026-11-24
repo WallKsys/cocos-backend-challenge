@@ -37,6 +37,26 @@ class PositionTest {
         assertThat(position.totalReturnPct()).contains(percentage("-0.04"));
     }
 
+    @Test
+    @Tag("CU-01.14")
+    void roundsTotalReturnHalfUpAtAnExactTie() {
+        Position position = position("PAMP", 5, "925.85", "921.80", "200");
+        assertThat(position.totalReturnPct()).contains(percentage("362.93"));
+    }
+
+    @Test
+    void roundsPositiveTotalReturnDownWhenBelowHalf() {
+        Position position = position("PAMP", 1, "10.00", "10.00", "9.97");
+        assertThat(position.totalReturnPct()).contains(percentage("0.30"));
+    }
+
+    @Test
+    void showsZeroAverageCostWithoutTotalReturn() {
+        Position position = position("PAMP", 1, "10.00", "10.00", "0");
+        assertThat(position.averageCost()).contains(Money.of("0.00"));
+        assertThat(position.totalReturnPct()).isEmpty();
+    }
+
     private static Position position(String ticker, long quantity, String close, String previousClose, String average) {
         return Position.from(new InstrumentId(1), ticker, ticker, quantity, 0,
                 Optional.of(new MarketQuote(Money.of(close), Money.of(previousClose))),
