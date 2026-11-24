@@ -5,11 +5,13 @@ import com.cocos.challenge.application.port.in.PlaceOrderResult;
 import com.cocos.challenge.application.port.in.PlaceOrderUseCase;
 import com.cocos.challenge.application.port.out.AccountLock;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
+import com.cocos.challenge.application.port.out.IdempotencyRecord;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.application.port.out.NewOrder;
 import com.cocos.challenge.application.port.out.OrderRepository;
+import com.cocos.challenge.domain.exception.IdempotencyConflictException;
 import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
@@ -21,6 +23,7 @@ import com.cocos.challenge.domain.model.Order;
 import com.cocos.challenge.domain.model.OrderEvaluation;
 import com.cocos.challenge.domain.model.OrderRequest;
 import com.cocos.challenge.domain.model.Rejection;
+import com.cocos.challenge.domain.model.RequestFingerprint;
 import com.cocos.challenge.domain.model.ShareBalance;
 import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.domain.service.OrderEvaluator;
@@ -65,6 +68,19 @@ public class PlaceOrderService implements PlaceOrderUseCase {
         metrics.accountLockWaited(Duration.ofNanos(System.nanoTime() - start));
 
         OrderRequest request = command.request();
+        String key = command.idempotencyKey();
+        RequestFingerprint fingerprint = request.fingerprint();
+        Optional<IdempotencyRecord> existing = orders.findIdempotencyRecord(user, key);
+        if (existing.isPresent()) {
+            IdempotencyRecord record = existing.get();
+            if (!record.fingerprint().equals(fingerprint)) {
+                metrics.idempotencyConflict();
+                throw new IdempotencyConflictException(key);
+            }
+            metrics.idempotentReplay(record.side());
+            return new PlaceOrderResult(orders.findById(record.orderId()), true);
+        }
+
         Instrument instrument = instruments.findById(request.instrumentId()).orElseThrow(() ->
                 new InvalidRequestException(
                         "Request validation failed: 'instrumentId' does not reference an existing instrument."));
@@ -80,8 +96,7 @@ public class PlaceOrderService implements PlaceOrderUseCase {
         Rejection rejection = evaluation.rejection();
         Order saved = orders.save(new NewOrder(user, instrument.id(), instrument.ticker(), request.side(),
                 request.type(), evaluation.status(), evaluation.quantity(), evaluation.price(), request.amount(),
-                rejection, clock.instant().truncatedTo(ChronoUnit.MICROS), command.idempotencyKey(),
-                request.fingerprint()));
+                rejection, clock.instant().truncatedTo(ChronoUnit.MICROS), key, fingerprint));
         metrics.orderProcessed(request.side(), request.type(), evaluation.status(),
                 rejection == null ? null : rejection.reason());
         return new PlaceOrderResult(saved, false);
