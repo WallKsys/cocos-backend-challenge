@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.client.EntityExchangeResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
+@Tag("integration")
 class ConcurrentOrdersIT extends OrderLoadSupport {
 
     @Test

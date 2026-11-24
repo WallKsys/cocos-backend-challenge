@@ -132,7 +132,7 @@ feature file; check that the published contract still matches the spec contract.
 - [x] T020 Write `ConcurrentOrdersIT` (CU-03.36) and `IdempotencyLoadIT` (M-02, M-04, M-05, M-06). They should pass
   immediately if slices a–e are correct; **if any fails, that is a bug in the earlier slices: stop and report
   before changing production code**.
-- [ ] T029 Add a class-level `@Tag("integration")` to `OrderControllerIT`, `JdbcOrderRepositoryIT` and
+- [x] T029 Add a class-level `@Tag("integration")` to `OrderControllerIT`, `JdbcOrderRepositoryIT` and
   `ConcurrentOrdersIT`, next to their `@IntegrationTest` or the base class that carries it (plan.md § Tests:
   every CU test carries `unit` or `integration`; the traceability check reads only direct annotations, not
   meta-annotations or inherited ones). This is the only change allowed to those existing files; no test method

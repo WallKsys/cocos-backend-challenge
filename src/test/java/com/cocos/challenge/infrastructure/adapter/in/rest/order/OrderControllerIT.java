@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
+@Tag("integration")
 class OrderControllerIT {
 
     private static final String MARKET_BUY =
