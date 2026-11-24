@@ -1,0 +1,15 @@
+package com.cocos.challenge.application.port.out;
+
+import com.cocos.challenge.domain.model.CashMovement;
+import com.cocos.challenge.domain.model.InstrumentId;
+
+import java.util.Optional;
+
+public interface CashMovementRepository {
+
+    CashMovement findById(long id);
+
+    CashMovement save(NewCashMovement movement);
+
+    Optional<InstrumentId> findCashInstrument();
+}
