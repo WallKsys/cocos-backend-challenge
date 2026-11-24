@@ -103,13 +103,16 @@ half follows the test-first cycle on its own and leaves the suite green:
 `CU-03` is **not** added to `scope.txt` in this slice: `CU-03.36` has no JUnit test until `ConcurrentOrdersIT`
 (005-f), and traceability rule 8 would fail the build. Cucumber runs the 46 scenarios regardless of the scope.
 
+005-e1 delivers the controller, published contract and HTTP examples. T014 and T018 close in 005-e2 with the
+feature copy and verification of all 46 scenarios.
+
 - [ ] T014 Copy the feature file and the contract.
 - [ ] T015 [P] Write `OrderSteps` and `TestClockConfiguration` (plan.md § BDD steps).
-- [ ] T016 [P] Write `OrderControllerIT` (CU-03.23, 03.29, 03.30, replay 200 + header, response shape).
-- [ ] T017 Skeleton of `OrderController`, `PlaceOrderRequestBody`, `OrderResponse`. Run `./mvnw verify`: **CU-03
+- [x] T016 [P] Write `OrderControllerIT` (CU-03.23, 03.29, 03.30, replay 200 + header, response shape).
+- [x] T017 Skeleton of `OrderController`, `PlaceOrderRequestBody`, `OrderResponse`. Run `./mvnw verify`: **CU-03
   scenarios and controller IT fail**. Record.
 - [ ] T018 Implement plan.md § REST until green (46 scenarios).
-- [ ] T019 [P] `http/005-order-placement.http`.
+- [x] T019 [P] `http/005-order-placement.http`.
 
 ## Slice 005-f — Concurrency and idempotency under load (branch `005-order-placement-f`)
 
