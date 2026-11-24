@@ -112,7 +112,8 @@ Rules (each one is enforced by ArchUnit tests in `src/test/java/com/cocos/challe
 5. Controllers depend only on `application.port.in` (never on `application.service` or outbound ports).
 6. REST DTOs never leave `infrastructure.adapter.in.rest`. Domain objects are never serialized directly
    into a response: a controller's return type never involves a domain type, not even inside generics
-   (`ResponseEntity<Order>`).
+   (`ResponseEntity<Order>`), and a REST DTO (a record of the REST adapter, request or response) never holds
+   one, **not even an enum**: DTOs carry JDK types (`String`, numbers, `boolean`, `Instant`) and other DTOs (`side.name()`, `ApiDecimals.format(money)`).
 7. No cycles between the layers `domain`, `application` and `infrastructure`.
 8. Monetary values are never `double`, `float`, `Double` or `Float` (see Principle VIII).
 9. Only `infrastructure` uses Micrometer or OpenTelemetry. `application` records business facts only through
@@ -272,4 +273,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.3.7 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-23 (v1.3.7: decimals in requests, TEC-20; checks that need data after the idempotency lookup and operations without a key, TEC-16; package dependencies, port names and generic return types, TEC-13; v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)
+**Version**: 1.3.7 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-24 (v1.3.7: decimals in requests, TEC-20; checks that need data after the idempotency lookup and operations without a key, TEC-16; package dependencies, port names, generic return types and domain-free DTOs, TEC-13; v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)

@@ -159,7 +159,7 @@ cumplen ambas condiciones, responden `404` igual que una ruta inexistente.
 | Tema | Convención |
 |---|---|
 | Identidad | Header `X-User-Id` (no hay autenticación en el alcance del challenge; ver [limitaciones](#supuestos-y-limitaciones)) |
-| Idempotencia | Header `Idempotency-Key` obligatorio en operaciones con efecto. El mismo pedido con la misma clave devuelve el resultado original (`200` + `Idempotent-Replayed: true`); la misma clave con otro contenido, `422 IDEMPOTENCY_CONFLICT` |
+| Idempotencia | Header `Idempotency-Key` obligatorio en órdenes, depósitos y retiros (la cancelación es idempotente por naturaleza y no lo lleva). El mismo pedido con la misma clave devuelve el resultado original (`200` + `Idempotent-Replayed: true`); la misma clave con otro contenido, `422 IDEMPOTENCY_CONFLICT` |
 | Montos y precios | Texto decimal: las respuestas llevan exactamente 2 decimales (`"925.85"`) y los pedidos aceptan hasta 2 (`"925.8"`); las cantidades de acciones son enteros. Nunca punto flotante |
 | Fechas | ISO 8601 en UTC (`2026-11-21T14:36:00Z`); la conversión a hora local es responsabilidad del consumidor |
 | Errores | [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) (Problem Details) con un `code` estable y un mensaje en inglés con valores concretos |

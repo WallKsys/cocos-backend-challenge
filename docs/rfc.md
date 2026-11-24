@@ -91,7 +91,7 @@ src/test/resources/features/        un .feature por caso de uso
 2. `application` depende solo de `domain`. Sus clases no llevan `@Service` ni `@Component`: se registran desde `infrastructure/config`. La única anotación de Spring permitida es `@Transactional` (TEC-14). Los puertos de entrada se llaman `*UseCase` (modifican datos) o `*Query` (solo lectura): así ArchUnit encuentra cada caso de uso y exige su `@Transactional`.
 3. Solo `infrastructure/adapter/out/persistence` usa `JdbcClient` o SQL.
 4. Los controllers solo invocan puertos de entrada (`port/in`), nunca servicios ni repositorios. El adaptador REST puede usar `domain.model` y `domain.exception` (para traducir excepciones de negocio a errores HTTP).
-5. Los DTOs de la API no salen de `adapter/in/rest`; el dominio nunca se serializa directamente en una respuesta: el tipo de retorno de un controller no incluye tipos del dominio, ni siquiera dentro de genéricos (`ResponseEntity<Order>`).
+5. Los DTOs de la API no salen de `adapter/in/rest`; el dominio nunca se serializa directamente en una respuesta: el tipo de retorno de un controller no incluye tipos del dominio, ni siquiera dentro de genéricos (`ResponseEntity<Order>`), y un DTO (record del adaptador REST, de pedido o de respuesta) no tiene campos con tipos del dominio, **ni siquiera enums**: lleva tipos del JDK (textos, números, `boolean`, `Instant`) y otros DTOs (`side.name()`, `ApiDecimals.format(money)`). Así, renombrar algo del dominio nunca cambia el contrato en silencio, y los errores de un pedido salen del catálogo y no de Jackson.
 
 ### TEC-14 · Límite transaccional: `@Transactional` en los servicios de `application`
 

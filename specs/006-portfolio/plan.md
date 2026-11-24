@@ -149,7 +149,8 @@ ORDER BY instrumentid, date DESC
   than 0.` (DEC-26, Bean Validation on the path variable); not an integer or out of the `int` range →
   `Request validation failed: 'userId' has an invalid type or format.` (DEC-25). Same response mapping as the user
   endpoint.
-- Response DTOs follow the contract schema `Portfolio`; money and percentages via `ApiDecimals.format`; `warnings` is
+- Response DTOs follow the contract schema `Portfolio` and hold only JDK types (`String`, numbers, `boolean`, `Instant`) and other DTOs, never domain types (enums
+  via `name()`; Constitution V.6); money and percentages via `ApiDecimals.format`; `warnings` is
   always an array (empty when none).
 
 ## BDD

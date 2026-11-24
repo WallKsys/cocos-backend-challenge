@@ -240,6 +240,8 @@ Convert the `NUMERIC` results with `Money.of(BigDecimal)` (scale 4 → 2) and sh
 `@Valid @RequestBody PlaceOrderRequestBody`. Builds `OrderRequest.of(...)`, calls `PlaceOrderUseCase`, returns
 `IdempotentResponses.replayed(dto)` when `replayed`, otherwise `IdempotentResponses.created(dto)`.
 `OrderResponse` fields and nullability are those of the contract schema `Order`; money via `ApiDecimals.format`.
+`OrderResponse` and `RejectionResponse` hold only JDK types (`String`, numbers, `boolean`, `Instant`) and other DTOs, never domain types: enums via `name()`
+(`side`, `type`, `status`, `rejection.code`), ids as `long` (Constitution V.6; `ArchitectureGuardsTest`).
 
 ## BDD steps (`bdd/steps/OrderSteps.java`)
 
