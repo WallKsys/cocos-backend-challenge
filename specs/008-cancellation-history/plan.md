@@ -122,7 +122,8 @@ UTC. `rejection` is built only when `rejection_code` is not null (seed `REJECTED
   and `InternalOrderHistoryControllerIT` for `GET /api/internal/users/0/orders` (with `X-Role: ADMIN`).
 - `InternalOrderHistoryController` (`rest.internal`, `@ConditionalOnProperty`): `GET
   /api/internal/users/{userId}/orders`, same parameters and response as the user history.
-- `OrderRecordResponse` follows the contract schema `OrderRecord`: `quantity` null for cash movements; `amount` =
+- `OrderRecordResponse` (like every DTO of this spec) holds only JDK types (`String`, numbers, `boolean`, `Instant`) and other DTOs, never domain types (enums via
+  `name()`; Constitution V.6). It follows the contract schema `OrderRecord`: `quantity` null for cash movements; `amount` =
   quantity × price (null without price) for trades, size for cash movements.
 
 ## CU-04.08: cancellation versus forced execution

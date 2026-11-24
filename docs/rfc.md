@@ -87,11 +87,11 @@ src/test/resources/features/        un .feature por caso de uso
 ```
 
 **Reglas de dependencia** (se imponen con ArchUnit):
-1. `domain` no depende de nada fuera de `domain` y del JDK.
-2. `application` depende solo de `domain`. Sus clases no llevan `@Service` ni `@Component`: se registran desde `infrastructure/config`. La única anotación de Spring permitida es `@Transactional` (TEC-14).
+1. `domain` no depende de nada fuera de `domain` y del JDK. Dentro de `domain`, `model` y `exception` pueden referirse entre sí (una excepción lleva el dato que la causó). No hay ciclos entre las capas `domain`, `application` e `infrastructure`.
+2. `application` depende solo de `domain`. Sus clases no llevan `@Service` ni `@Component`: se registran desde `infrastructure/config`. La única anotación de Spring permitida es `@Transactional` (TEC-14). Los puertos de entrada se llaman `*UseCase` (modifican datos) o `*Query` (solo lectura): así ArchUnit encuentra cada caso de uso y exige su `@Transactional`.
 3. Solo `infrastructure/adapter/out/persistence` usa `JdbcClient` o SQL.
-4. Los controllers solo invocan puertos de entrada (`port/in`), nunca servicios ni repositorios.
-5. Los DTOs de la API no salen de `adapter/in/rest`; el dominio nunca se serializa directamente en una respuesta.
+4. Los controllers solo invocan puertos de entrada (`port/in`), nunca servicios ni repositorios. El adaptador REST puede usar `domain.model` y `domain.exception` (para traducir excepciones de negocio a errores HTTP).
+5. Los DTOs de la API no salen de `adapter/in/rest`; el dominio nunca se serializa directamente en una respuesta: el tipo de retorno de un controller no incluye tipos del dominio, ni siquiera dentro de genéricos (`ResponseEntity<Order>`), y un DTO (record del adaptador REST, de pedido o de respuesta) no tiene campos con tipos del dominio, **ni siquiera enums**: lleva tipos del JDK (textos, números, `boolean`, `Instant`) y otros DTOs (`side.name()`, `ApiDecimals.format(money)`). Así, renombrar algo del dominio nunca cambia el contrato en silencio, y los errores de un pedido salen del catálogo y no de Jackson.
 
 ### TEC-14 · Límite transaccional: `@Transactional` en los servicios de `application`
 
@@ -141,7 +141,7 @@ Si el usuario no existe, la operación termina con "no encontrado" (DEC-05, DEC-
 **Flujo de una operación con efecto** (orden, depósito o retiro):
 1. **Validación del pedido** (formato, campos obligatorios, clave de idempotencia presente). Si es inválido → error, sin abrir la transacción ni consumir la clave (DEC-05, DEC-07).
 2. Abrir la transacción y **bloquear la fila del usuario**.
-3. **Buscar la clave de idempotencia** del usuario. Si existe: comparar la huella del pedido (ver abajo). Si es idéntica → devolver la operación original como reintento (DEC-09). Si difiere → error de conflicto (DEC-09, DEC-23). En ambos casos, fin.
+3. **Buscar la clave de idempotencia** del usuario. Si existe: comparar la huella del pedido (ver abajo). Si es idéntica → devolver la operación original como reintento (DEC-09). Si difiere → error de conflicto (DEC-09, DEC-23). En ambos casos, fin. Las validaciones que necesitan datos (por ejemplo, que el instrumento exista y se pueda operar) van **después** de este paso: un reintento devuelve el resultado original aunque esos datos hayan cambiado. Si una falla → error, no se guarda nada y la clave no se consume. Las operaciones sin clave saltean este paso: la cancelación, idempotente por naturaleza (DEC-15), y las herramientas internas.
 4. Calcular disponibles (efectivo y acciones, descontando reservas: DEC-01) desde `orders`.
 5. Aplicar las reglas de negocio (dominio) y decidir el estado: `FILLED`, `NEW` o `REJECTED` con motivo.
 6. Guardar la orden con su clave y su huella, y confirmar la transacción.

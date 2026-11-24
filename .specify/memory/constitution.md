@@ -85,19 +85,19 @@ Base package: `com.cocos.challenge` (TEC-10, TEC-13).
 
 | Package | Contains | May depend on |
 |---|---|---|
-| `domain.model` | Entities and value objects (immutable; `record` where suitable) | JDK only |
+| `domain.model` | Entities and value objects (immutable; `record` where suitable) | `domain.exception`, JDK |
 | `domain.service` | Pure business rules (availability, reservations, validation, average cost, quantity from amount) | `domain.*`, JDK |
 | `domain.exception` | Business exceptions | `domain.*`, JDK |
 | `application.port.in` | Use case interfaces, commands and results (`record`) | `domain.*`, JDK |
-| `application.port.out` | Outbound interfaces (repositories, account lock, clock) | `domain.*`, JDK |
+| `application.port.out` | Outbound interfaces (repositories, account lock, metrics); the clock is the JDK's `java.time.Clock` | `domain.*`, JDK |
 | `application.service` | Use case implementations | `domain.*`, `application.port.*`, JDK, and **only** `org.springframework.transaction.annotation.Transactional` (plus its member enums `Propagation` and `Isolation`) |
-| `infrastructure.adapter.in.rest` | Controllers, request/response DTOs, error handling | `application.port.in`, `domain.model`, Spring, Jackson |
+| `infrastructure.adapter.in.rest` | Controllers, request/response DTOs, error handling | `application.port.in`, `domain.model`, `domain.exception` (error handling), Spring, Jackson |
 | `infrastructure.adapter.in.rest.internal` | Internal (admin/demo) endpoints | same as above |
 | `infrastructure.adapter.out.persistence` | `Jdbc*` implementations of outbound ports. **All SQL lives here.** | `application.port.out`, `domain.*`, Spring JDBC |
 | `infrastructure.adapter.out.metrics` | Micrometer implementation of the `BusinessMetrics` port | `application.port.out`, `domain.*`, Micrometer |
 | `infrastructure.config` | Bean wiring, clock, configuration | everything |
 
-Rules (each one is an ArchUnit test in `src/test/java/com/cocos/challenge/architecture/`):
+Rules (each one is enforced by ArchUnit tests in `src/test/java/com/cocos/challenge/architecture/`):
 
 1. `domain` depends only on `domain` and the JDK (no Spring, no Jackson, no `java.sql`, no `jakarta.*`).
 2. `application` depends only on `domain`, `application` and the JDK, except
@@ -105,12 +105,16 @@ Rules (each one is an ArchUnit test in `src/test/java/com/cocos/challenge/archit
    annotated with `@Service`, `@Component` or similar: they are registered as beans in
    `infrastructure.config`.
 3. Every public method of a use case that **changes data** is annotated with `@Transactional`; every
-   query use case method is annotated with `@Transactional(readOnly = true)` (TEC-14).
+   query use case method is annotated with `@Transactional(readOnly = true)` (TEC-14). The rule finds use cases
+   by their inbound port, so every interface in `application.port.in` is named `*UseCase` (changes data) or
+   `*Query` (read only).
 4. Only `infrastructure.adapter.out.persistence` uses `JdbcClient`, `JdbcTemplate`, `java.sql` or SQL text.
 5. Controllers depend only on `application.port.in` (never on `application.service` or outbound ports).
 6. REST DTOs never leave `infrastructure.adapter.in.rest`. Domain objects are never serialized directly
-   into a response.
-7. No cycles between packages.
+   into a response: a controller's return type never involves a domain type, not even inside generics
+   (`ResponseEntity<Order>`), and a REST DTO (a record of the REST adapter, request or response) never holds
+   one, **not even an enum**: DTOs carry JDK types (`String`, numbers, `boolean`, `Instant`) and other DTOs (`side.name()`, `ApiDecimals.format(money)`).
+7. No cycles between the layers `domain`, `application` and `infrastructure`.
 8. Monetary values are never `double`, `float`, `Double` or `Float` (see Principle VIII).
 9. Only `infrastructure` uses Micrometer or OpenTelemetry. `application` records business facts only through
    the `BusinessMetrics` outbound port (TEC-31).
@@ -130,16 +134,22 @@ Rules (each one is an ArchUnit test in `src/test/java/com/cocos/challenge/archit
 
 Every operation that changes a user's data follows this flow (TEC-16):
 
-1. Validate the request. If invalid → error, no transaction, nothing stored, idempotency key not consumed.
+1. Validate the request in everything that needs no data: format, required fields, value ranges, idempotency
+   key present. If invalid → error, no transaction, nothing stored, idempotency key not consumed.
 2. Open the transaction (use case method) and lock the user row:
    `SELECT id FROM users WHERE id = :userId FOR UPDATE`. Unknown user → `NOT_FOUND`.
 3. Look up `(userId, idempotencyKey)`. If found: same request fingerprint → return the original operation
    (`200`, header `Idempotent-Replayed: true`); different fingerprint → `IDEMPOTENCY_CONFLICT` (`422`).
+   Checks that need data (for example, the instrument exists and can be traded) run **after** this step, so a
+   replay returns the original result even if that data changed since. If one fails → error, nothing stored,
+   idempotency key not consumed. Operations without a key skip this step: cancellation, which is idempotent by
+   nature (DEC-15), and the internal tools.
 4. Compute available cash and shares from `orders`.
 5. Apply the domain rules and decide the status (`FILLED`, `NEW` or `REJECTED` with reason).
 6. Store the operation with its key and fingerprint; commit.
 
-- One idempotency key per user across **all** operation types (orders, deposits, withdrawals) (DEC-23).
+- One idempotency key per user across **all** operation types that take one (orders, deposits, withdrawals)
+  (DEC-23).
 - The unique constraint on `(userid, idempotency_key)` stays in the database as a safety net.
 - Each transaction locks **exactly one** user row, always as its first step. Never lock in another order.
 - Query operations never lock.
@@ -148,8 +158,9 @@ Every operation that changes a user's data follows this flow (TEC-16):
 
 - Money and prices use `java.math.BigDecimal` with scale 2 and `RoundingMode.HALF_UP`, wrapped in domain value
   objects (`Money`). Never `double` or `float`.
-- In JSON, amounts, prices and percentages are **strings with exactly 2 decimals** (`"925.85"`); share
-  quantities are JSON integers (TEC-20). More than 2 decimals in a request → `VALIDATION_ERROR`.
+- In JSON, amounts, prices and percentages are **strings**; share quantities are JSON integers (TEC-20).
+  Responses always have **exactly 2 decimals** (`"925.85"`). Requests accept **at most 2 decimals**
+  (`"925"`, `"925.8"`, `"925.85"`; `MoneyInput` in the contract); more than 2 → `VALIDATION_ERROR`.
 - Database money columns are `NUMERIC(18,2)` (CM-09).
 
 ### IX. API conventions
@@ -161,7 +172,8 @@ Every operation that changes a user's data follows this flow (TEC-16):
   (`NOT_FOUND`).
 - Internal endpoints: `/api/internal/...`, require `X-Role: ADMIN`, are enabled only by configuration (demo
   profile) and are never part of the challenge scope.
-- Operations with effect require the `Idempotency-Key` header.
+- Orders, deposits and withdrawals require the `Idempotency-Key` header. Cancellation does not: it is idempotent
+  by nature (DEC-15). Internal endpoints do not take it either.
 - Errors use RFC 9457 Problem Details with a stable `code` and an English `detail` message containing the
   concrete values. The error catalog in `specs/003-api-conventions/plan.md` (TEC-19) is closed: do not add codes without a spec.
 - Unknown JSON fields in a request body are rejected with `VALIDATION_ERROR` (DEC-24); integers never accept
@@ -261,4 +273,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.3.6 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-23 (v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)
+**Version**: 1.3.7 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-24 (v1.3.7: decimals in requests, TEC-20; checks that need data after the idempotency lookup and operations without a key, TEC-16; package dependencies, port names, generic return types and domain-free DTOs, TEC-13; v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)
