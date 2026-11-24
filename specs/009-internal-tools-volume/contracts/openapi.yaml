@@ -8,7 +8,8 @@ info:
     Conventions (RFC TEC-18 to TEC-20):
     - The requesting user is identified by the `X-User-Id` header (no authentication in the challenge scope).
     - Operations with effect require the `Idempotency-Key` header.
-    - Amounts, prices and percentages are strings with exactly 2 decimals; share quantities are integers.
+    - Amounts, prices and percentages are strings. Responses always have exactly 2 decimals; requests accept at
+      most 2 (`MoneyInput`). Share quantities are integers.
     - Timestamps are ISO 8601 in UTC (`2026-11-21T14:36:00Z`).
     - Errors use RFC 9457 Problem Details with a stable `code`. All texts are in English.
     - `/api/internal/**` endpoints are demo-only, disabled by default, and require `X-Role: ADMIN`.
@@ -682,6 +683,13 @@ components:
       description: Decimal amount in ARS with exactly 2 decimals.
       pattern: '^-?\d{1,16}\.\d{2}$'
       example: '925.85'
+    MoneyInput:
+      type: string
+      description: >-
+        Decimal amount in ARS sent in a request, with at most 2 decimals ('925', '925.8' and '925.85' are valid;
+        '925.855' is not). Responses always use `Money`, with exactly 2 decimals.
+      pattern: '^-?\d{1,16}(\.\d{1,2})?$'
+      example: '925.85'
     Percentage:
       type: string
       description: Percentage with exactly 2 decimals.
@@ -764,10 +772,10 @@ components:
       required: [close]
       properties:
         close:
-          allOf: [ { $ref: '#/components/schemas/Money' } ]
+          allOf: [ { $ref: '#/components/schemas/MoneyInput' } ]
           description: New last price, greater than 0.
         previousClose:
-          allOf: [ { $ref: '#/components/schemas/Money' } ]
+          allOf: [ { $ref: '#/components/schemas/MoneyInput' } ]
           description: Optional new previous close, greater than 0.
     MarketDataView:
       type: object
@@ -847,7 +855,7 @@ components:
       properties:
         amount:
           allOf:
-            - $ref: '#/components/schemas/Money'
+            - $ref: '#/components/schemas/MoneyInput'
           description: Amount in ARS, greater than 0, at most 2 decimals.
           example: '100000.00'
     CashMovement:
@@ -948,11 +956,11 @@ components:
           description: Whole shares. Exactly one of `quantity` or `amount`.
         amount:
           allOf:
-            - $ref: '#/components/schemas/Money'
+            - $ref: '#/components/schemas/MoneyInput'
           description: Amount in ARS (> 0). Exactly one of `quantity` or `amount`.
         price:
           allOf:
-            - $ref: '#/components/schemas/Money'
+            - $ref: '#/components/schemas/MoneyInput'
           description: Limit price (> 0). Required for LIMIT, forbidden for MARKET.
     Rejection:
       type: object
