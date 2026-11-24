@@ -83,6 +83,19 @@ class OrderControllerIT {
         assertThat(orderCount()).isEqualTo(before + 1);
     }
 
+    @Test
+    void returnsTheFullTotalOfAnUnaffordableLimitOrder() {
+        long pgr = jdbc.sql("SELECT id FROM instruments WHERE ticker = 'PGR'").query(Long.class).single();
+        post("""
+                {"instrumentId":%d,"side":"BUY","type":"LIMIT","quantity":2,"price":"9000000000000000.00"}
+                """.formatted(pgr), "large-total").expectStatus().isCreated().expectBody()
+                .jsonPath("$.status").isEqualTo("REJECTED")
+                .jsonPath("$.rejection.code").isEqualTo("INSUFFICIENT_FUNDS")
+                .jsonPath("$.quantity").isEqualTo(2)
+                .jsonPath("$.price").isEqualTo("9000000000000000.00")
+                .jsonPath("$.totalAmount").isEqualTo("18000000000000000.00");
+    }
+
     private void rejects(String body, String key, String code, String detail) {
         long before = orderCount();
         post(body, key).expectStatus().isBadRequest().expectBody()
