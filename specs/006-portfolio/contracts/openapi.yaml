@@ -303,6 +303,14 @@ components:
       description: Decimal amount in ARS with exactly 2 decimals.
       pattern: '^-?\d{1,16}\.\d{2}$'
       example: '925.85'
+    MoneyTotal:
+      type: string
+      description: >-
+        Decimal amount in ARS with exactly 2 decimals, used only for `totalAmount` (quantity × price). It allows up to
+        26 integer digits: a rejected order keeps the requested quantity (up to 2147483647) and price (up to 16 integer
+        digits), so the product can exceed `Money`. Accepted orders always fit in `Money` (DEC-31).
+      pattern: '^\d{1,26}\.\d{2}$'
+      example: '49995.90'
     MoneyInput:
       type: string
       description: >-
@@ -504,7 +512,7 @@ components:
         totalAmount:
           description: quantity × price. Null when price is null.
           oneOf:
-            - $ref: '#/components/schemas/Money'
+            - $ref: '#/components/schemas/MoneyTotal'
             - type: 'null'
         requestedAmount:
           description: Amount sent by the client (orders by amount only).
