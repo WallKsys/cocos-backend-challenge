@@ -9,6 +9,7 @@ import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.application.port.out.NewOrder;
 import com.cocos.challenge.application.port.out.OrderRepository;
+import com.cocos.challenge.domain.exception.IdempotencyConflictException;
 import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
@@ -24,6 +25,7 @@ import com.cocos.challenge.domain.model.OrderSide;
 import com.cocos.challenge.domain.model.OrderStatus;
 import com.cocos.challenge.domain.model.OrderType;
 import com.cocos.challenge.domain.model.RejectionReason;
+import com.cocos.challenge.domain.model.RequestFingerprint;
 import com.cocos.challenge.domain.model.ShareBalance;
 import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.domain.service.OrderEvaluator;
@@ -35,7 +37,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -127,14 +131,118 @@ class PlaceOrderServiceTest {
         assertThat(ports.lastSaved.requestedAmount()).isEqualTo(Money.of("50000.00"));
     }
 
+    @Test
+    @Tag("CU-03.31")
+    void replaysOriginalOrderBeforeCheckingInstrumentAndLedger() {
+        var command = buy(USER, "k1", 10);
+        Order original = service.place(command).order();
+        assertThat(ports.calls).startsWith("lock", "wait", "key", "instrument");
+        ports.calls.clear();
+
+        var replay = service.place(command);
+
+        assertThat(replay.replayed()).isTrue();
+        assertThat(replay.order()).isEqualTo(original);
+        assertThat(ports.orders).containsExactly(original);
+        assertThat(ports.calls).containsExactly("lock", "wait", "key", "replay BUY", "find");
+    }
+
+    @Test
+    @Tag("CU-03.32")
+    void sameKeyWithChangedContentConflicts() {
+        Order original = service.place(buy(USER, "k1", 10)).order();
+        ports.calls.clear();
+
+        assertConflict(buy(USER, "k1", 20));
+        assertThat(ports.orders).containsExactly(original);
+    }
+
+    @Test
+    @Tag("CU-03.33")
+    void differentUserCanUseTheSameKey() {
+        Order original = service.place(buy(USER, "k1", 10)).order();
+        UserId otherUser = new UserId(2);
+
+        var other = service.place(buy(otherUser, "k1", 10));
+
+        assertThat(other.replayed()).isFalse();
+        assertThat(other.order().userId()).isEqualTo(otherUser);
+        assertThat(other.order().id()).isNotEqualTo(original.id());
+        assertThat(other.order().rejection().reason()).isEqualTo(RejectionReason.INSUFFICIENT_FUNDS);
+    }
+
+    @Test
+    @Tag("CU-03.34")
+    void rejectedOrderReplaysAfterCashIncreases() {
+        var command = buy(USER, "k2", 1000);
+        Order original = service.place(command).order();
+        assertThat(original.status()).isEqualTo(OrderStatus.REJECTED);
+        ports.cash = Money.of("1753000.00");
+        ports.calls.clear();
+
+        var replay = service.place(command);
+
+        assertThat(replay.replayed()).isTrue();
+        assertThat(replay.order()).isEqualTo(original);
+        assertThat(ports.orders).containsExactly(original);
+        assertThat(ports.calls).containsExactly("lock", "wait", "key", "replay BUY", "find");
+    }
+
+    @Test
+    @Tag("CU-03.35")
+    void invalidRequestLeavesTheKeyAvailable() {
+        assertThatThrownBy(() -> service.place(buy(USER, "k3", 0)))
+                .isInstanceOf(InvalidRequestException.class);
+        assertThat(ports.calls).isEmpty();
+        assertThat(ports.keys).isEmpty();
+
+        var valid = service.place(buy(USER, "k3", 1));
+
+        assertThat(valid.replayed()).isFalse();
+        assertThat(valid.order().status()).isEqualTo(OrderStatus.FILLED);
+        assertThat(ports.calls).startsWith("lock", "wait", "key", "instrument");
+        assertThat(ports.orders).containsExactly(valid.order());
+    }
+
+    @Test
+    @Tag("CU-03.41")
+    void identicalContentWithDifferentKeysCreatesTwoOrders() {
+        var first = service.place(buy(USER, "k10", 10));
+        var second = service.place(buy(USER, "k11", 10));
+
+        assertThat(second.replayed()).isFalse();
+        assertThat(second.order().id()).isNotEqualTo(first.order().id());
+        assertThat(ports.orders).containsExactly(first.order(), second.order());
+    }
+
+    @Test
+    @Tag("CU-03.42")
+    void depositKeyConflictsWithoutLoadingTheDepositAsAnOrder() {
+        ports.keys.put(new Key(USER, "d1"), new IdempotencyRecord(99, OrderSide.CASH_IN,
+                RequestFingerprint.of("CASH_IN|amount=1234.56")));
+
+        assertConflict(buy(USER, "d1", 1));
+        assertThat(ports.orders).isEmpty();
+    }
+
+    private void assertConflict(PlaceOrderCommand command) {
+        assertThatThrownBy(() -> service.place(command)).isInstanceOf(IdempotencyConflictException.class)
+                .hasMessage("Idempotency key '" + command.idempotencyKey() + "' was already used for a different request.");
+        assertThat(ports.calls).containsExactly("lock", "wait", "key", "conflict");
+    }
+
     private static PlaceOrderCommand buy(UserId user, String key, int quantity) {
         return new PlaceOrderCommand(user, key, OrderRequest.of(47L, "BUY", "MARKET", quantity, null, null));
     }
+
+    private record Key(UserId user, String key) {}
 
     private static class FakePorts implements AccountLock, OrderRepository, InstrumentRepository,
             LedgerReader, MarketDataRepository, BusinessMetrics {
         final List<String> calls = new ArrayList<>();
         final List<Order> orders = new ArrayList<>();
+        final Map<Key, IdempotencyRecord> keys = new HashMap<>();
+        Money cash = Money.of("753000.00");
         NewOrder lastSaved;
 
         public Optional<Account> lock(UserId user) {
@@ -144,12 +252,12 @@ class PlaceOrderServiceTest {
 
         public Optional<IdempotencyRecord> findIdempotencyRecord(UserId user, String key) {
             calls.add("key");
-            return Optional.empty();
+            return Optional.ofNullable(keys.get(new Key(user, key)));
         }
 
         public Order findById(long id) {
             calls.add("find");
-            throw new AssertionError("No existing order was found");
+            return orders.stream().filter(order -> order.id() == id).findFirst().orElseThrow();
         }
 
         public Order save(NewOrder order) {
@@ -160,6 +268,8 @@ class PlaceOrderServiceTest {
                     order.status(), order.quantity(), order.price(), order.requestedAmount(), order.rejection(),
                     order.createdAt(), order.idempotencyKey(), order.fingerprint());
             orders.add(saved);
+            keys.put(new Key(order.userId(), order.idempotencyKey()),
+                    new IdempotencyRecord(id, order.side(), order.fingerprint()));
             return saved;
         }
 
@@ -179,7 +289,8 @@ class PlaceOrderServiceTest {
 
         public CashBalance cashBalance(UserId user) {
             calls.add("cash");
-            return new CashBalance(Money.of("753000.00"), Money.of("125500.00"));
+            return USER.equals(user) ? new CashBalance(cash, Money.of("125500.00"))
+                    : new CashBalance(Money.ZERO, Money.ZERO);
         }
 
         public ShareBalance shareBalance(UserId user, InstrumentId id) {
