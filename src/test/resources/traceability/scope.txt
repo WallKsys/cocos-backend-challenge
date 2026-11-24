@@ -3,3 +3,4 @@
 # Spec 001 delivers no CU scenarios: the scope is empty.
 CU-02
 CU-03
+CU-01

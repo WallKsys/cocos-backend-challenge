@@ -12,7 +12,8 @@ import org.springframework.context.annotation.Import;
  * container and a {@code RestTestClient} (plan.md § Cucumber).
  */
 @CucumberContextConfiguration
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "cocos.internal-tools.enabled=true")
 @Import({PostgresTestcontainersConfiguration.class, TestClockConfiguration.class})
 @AutoConfigureRestTestClient
 public class CucumberSpringConfiguration {

@@ -34,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @IntegrationTest
+@Tag("integration")
 class GetPortfolioServiceIT {
 
     private static final UserId SEED_USER = new UserId(1);
