@@ -15,6 +15,6 @@ public class RestoreSeedDataService implements RestoreSeedDataUseCase {
     @Override
     @Transactional
     public void restore() {
-        throw new UnsupportedOperationException();
+        seedDataRestorer.restore();
     }
 }

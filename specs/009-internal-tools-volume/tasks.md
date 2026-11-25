@@ -58,9 +58,9 @@ split along the use cases, which share no test:
 T007, T007a and T007b are shared by both halves: each half does its part of them, and they are checked off in
 009-c1b (AGENTS.md § Slice protocol, step 2.5).
 
-- [ ] T007 [P] Write `UpdateMarketDataServiceTest`, `JdbcMarketDataWriterIT`, `JdbcSeedDataRestorerIT`, `JdbcUserWriterIT`.
-- [ ] T007a Skeletons of the data tool use cases, ports and adapters (no controllers). **Fail**. Record.
-- [ ] T007b Implement plan.md § Internal tools (market data, restore, create user) until green.
+- [x] T007 [P] Write `UpdateMarketDataServiceTest`, `JdbcMarketDataWriterIT`, `JdbcSeedDataRestorerIT`, `JdbcUserWriterIT`.
+- [x] T007a Skeletons of the data tool use cases, ports and adapters (no controllers). **Fail**. Record.
+- [x] T007b Implement plan.md § Internal tools (market data, restore, create user) until green.
 
 ### Slice 009-c2 — Internal endpoints and contract (branch `009-internal-tools-volume-c2`)
 
