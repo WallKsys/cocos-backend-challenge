@@ -16,9 +16,9 @@ half follows the test-first cycle on its own and leaves the suite green:
 - **008-a2:** `OrderLedgerRepository`, `JdbcOrderLedgerRepository` and `JdbcOrderLedgerRepositoryIT`.
 
 - [x] T001 [P] Write `OrderRecordTest`, `HistoryCursorTest`, `OrderHistoryCriteriaTest`.
-- [ ] T002 [P] Write `JdbcOrderLedgerRepositoryIT` (CU-04.01–04.03, 04.06–04.07, 07.01, 07.02, 07.07, 07.08).
-- [ ] T003 Skeletons of the domain types, `OrderLedgerRepository`, `JdbcOrderLedgerRepository`. **Fail**. Record.
-- [ ] T004 Implement plan.md § History and single order (persistence) and `cancelIfNew` until green.
+- [x] T002 [P] Write `JdbcOrderLedgerRepositoryIT` (CU-04.01–04.03, 04.06–04.07, 07.01, 07.02, 07.07, 07.08).
+- [x] T003 Skeletons of the domain types, `OrderLedgerRepository`, `JdbcOrderLedgerRepository`. **Fail**. Record.
+- [x] T004 Implement plan.md § History and single order (persistence) and `cancelIfNew` until green.
 
 ## Slice 008-b — Use cases and concurrency (branch `008-cancellation-history-b`)
 
