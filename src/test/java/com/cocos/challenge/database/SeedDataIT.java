@@ -10,7 +10,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Spec 002 US1 scenarios 1 and 4: Flyway applies V1 to V7 in order and the seed is loaded unchanged.
+ * Spec 002 US1 scenarios 1 and 4: Flyway applies V1 to V8 in order and the seed is loaded unchanged.
  */
 @IntegrationTest
 class SeedDataIT {
@@ -19,7 +19,7 @@ class SeedDataIT {
     JdbcClient jdbcClient;
 
     @Test
-    void flywayAppliedVersionsOneToSevenSuccessfully() {
+    void flywayAppliedVersionsOneToEightSuccessfully() {
         List<String> versions = jdbcClient.sql("""
                         SELECT version
                         FROM flyway_schema_history
@@ -37,8 +37,8 @@ class SeedDataIT {
                 .query(Boolean.class)
                 .list();
 
-        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7");
-        assertThat(successes).containsExactly(true, true, true, true, true, true, true);
+        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7", "8");
+        assertThat(successes).containsExactly(true, true, true, true, true, true, true, true);
     }
 
     @Test
