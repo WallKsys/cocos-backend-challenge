@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Estado** | Vigente. Se actualiza en el mismo PR que cambia una regla (chequeo 17 de la revisión automática). |
-| **Fecha** | 2026-11-23 |
+| **Fecha** | 2026-11-24 |
 | **Documentos relacionados** | [Constitución](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.specify/memory/constitution.md) · [AGENTS.md](https://github.com/WallKsys/cocos-backend-challenge/blob/main/AGENTS.md) · [RFC](rfc.md) · [Análisis funcional](analisis-funcional.md) · [README](https://github.com/WallKsys/cocos-backend-challenge#readme) |
 
 > Índice de las reglas de arquitectura y de desarrollo que guían al agente implementador. Para cada una indica
@@ -37,7 +37,7 @@ Un cambio pasa por estas barreras, en orden, antes de llegar a `main`:
 ```mermaid
 flowchart TD
     S["<b>Specs aprobadas</b><br/>constitución · spec · plan · tareas · .feature · contrato<br/>las escribe Claude"]
-    A["<b>Agente implementador (OpenCode)</b><br/>⚪ AGENTS.md: prohibiciones y «detenerse y reportar»"]
+    A["<b>Agente implementador (Antigravity, Gemini 4 Neon)</b><br/>⚪ AGENTS.md: prohibiciones y «detenerse y reportar»"]
     B["<b>./mvnw verify</b><br/>🔴 ArchUnit · trazabilidad · tests de base, convenciones y BDD"]
     P["<b>Pull request</b><br/>🟠 checks obligatorios: verify (CI) y pr-size (≤ 400 líneas)"]
     R["<b>Revisión automática (claude[bot])</b><br/>🟡 18 chequeos; espera a que termine verify"]
@@ -153,7 +153,7 @@ SC-003; evidencia en el PR #4).
 
 | ID | Regla | Por qué | Decidido en | Se hace cumplir en | Nivel |
 |---|---|---|---|---|---|
-| REV-01 | Quien implementa no revisa. El agente implementador (OpenCode; Kimi desde IntelliJ en las porciones 004-b2 y 004-c1) escribe el código y sus tests; Claude escribe specs, `.feature` y reglas de ArchUnit, y revisa. Claude nunca implementa lo que después revisa. | Revisión adversarial: sin contexto ni puntos ciegos compartidos. | TEC-03, TEC-05 | Proceso | ⚪ |
+| REV-01 | Quien implementa no revisa. El agente implementador (Antigravity con Gemini 4 Neon desde la porción 008-c2; antes OpenCode, y Kimi desde IntelliJ en las porciones 004-b2 y 004-c1) escribe el código y sus tests; Claude escribe specs, `.feature` y reglas de ArchUnit, y revisa. Claude nunca implementa lo que después revisa, y el modelo del agente implementador no puede ser de Claude. | Revisión adversarial: sin contexto ni puntos ciegos compartidos. | TEC-03, TEC-05 | Proceso | ⚪ |
 | REV-02 | `main` protegida: PR obligatorio incluso para administradores, checks obligatorios `verify`, `pr-size`, `review` y `manual-review`, rama al día, conversaciones resueltas, sin force push ni borrado. | Nada llega a `main` sin pasar por las barreras. | TEC-28, TEC-30, TEC-33, TEC-35 | Protección de rama en GitHub | 🟠 |
 | REV-03 | La CI corre `./mvnw verify` en cada PR y en cada push a `main`. | El build verde no depende de la máquina de nadie. | TEC-33 | [`ci.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/ci.yml) | 🟠 |
 | REV-04 | Cada PR recibe una revisión automática formal (aprobar o pedir cambios), después de que termina `verify`. El check `review` falla si no aprueba el último commit, y es obligatorio (TEC-35). | Revisión siempre, sin depender de una sesión abierta. | TEC-34 | [`claude-review.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/claude-review.yml) y [`pr-review.md`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/claude/pr-review.md) (18 chequeos) | 🟠 |

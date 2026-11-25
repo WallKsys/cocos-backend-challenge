@@ -18,8 +18,9 @@ enforced by ArchUnit.
 
 ## How to work
 
-- Use the Spec Kit commands in `.opencode/commands/`. Specs, plans and tasks are **already written**:
-  your job is `/speckit.implement` on the current spec, task by task.
+- Specs, plans and tasks are **already written**: your job is to implement the current spec, task by task, as the
+  Slice protocol below describes. The Spec Kit commands are in `.opencode/commands/` (for example
+  `speckit.implement.md`); if your agent does not load them as commands, read them as plain files.
 - Select the spec you are implementing before running Spec Kit commands, for example
   `export SPECIFY_FEATURE_DIRECTORY=specs/001-skeleton-guardrails`. Implement specs strictly in numeric order.
 - Follow the test-first cycle of Constitution Principle III **for every task**:
