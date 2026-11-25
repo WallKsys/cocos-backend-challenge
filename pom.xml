@@ -166,6 +166,9 @@
                 <!-- Integration tests and the Cucumber runner: *IT classes, during `verify`. -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <excludedGroups>volume</excludedGroups>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -177,4 +180,25 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>volume</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <groups>volume</groups>
+                            <excludedGroups combine.self="override"/>
+                            <excludes>
+                                <exclude>**/CucumberIT.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
