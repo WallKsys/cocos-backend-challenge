@@ -72,6 +72,11 @@ public class JdbcOrderLedgerRepository implements OrderLedgerRepository {
     }
 
     @Override
+    public Optional<OrderRecord> findRecordById(long orderId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean cancelIfNew(UserId userId, long orderId) {
         return jdbc.sql(CANCEL_IF_NEW_SQL)
                 .param("orderId", orderId)

@@ -13,6 +13,7 @@ public enum ApiErrorCode {
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "Method not allowed", "method-not-allowed"),
     NOT_ACCEPTABLE(HttpStatus.NOT_ACCEPTABLE, "Not acceptable", "not-acceptable"),
     ORDER_NOT_CANCELLABLE(HttpStatus.CONFLICT, "Order not cancellable", "order-not-cancellable"),
+    ORDER_NOT_EXECUTABLE(HttpStatus.CONFLICT, "Order not executable", "order-not-executable"),
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Unsupported media type", "unsupported-media-type"),
     IDEMPOTENCY_CONFLICT(HttpStatus.UNPROCESSABLE_ENTITY, "Idempotency key conflict", "idempotency-conflict"),
     REQUEST_ERROR(HttpStatus.BAD_REQUEST, "Request error", "request-error"),
