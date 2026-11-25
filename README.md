@@ -41,10 +41,10 @@ La implementación avanza por funcionalidades (*specs*), cada una entregada en p
 | 002 | Base de datos: esquema provisto + migraciones justificadas | ✅ Completa |
 | 003 | Convenciones de la API (errores, identidad, montos, idempotencia) | ✅ Completa |
 | 004 | Búsqueda de activos | ✅ Completa |
-| 005 | Envío de órdenes | ⏳ Pendiente |
-| 006 | Portfolio | ⏳ Pendiente |
-| 007 | Depósitos y retiros | ⏳ Pendiente |
-| 008 | Cancelación e historial | ⏳ Pendiente |
+| 005 | Envío de órdenes | ✅ Completa |
+| 006 | Portfolio | ✅ Completa |
+| 007 | Depósitos y retiros | ✅ Completa |
+| 008 | Cancelación e historial | ✅ Completa |
 | 009 | Herramientas internas de demo y pruebas de volumen | ⏳ Pendiente |
 | 010 | Observabilidad (métricas, trazas, logs y tableros) | ⏳ Pendiente |
 
