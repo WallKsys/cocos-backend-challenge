@@ -47,10 +47,10 @@ half follows the test-first cycle on its own and leaves the suite green:
 
 - [ ] T009 Copy the two features and the contract; append `CU-04` and `CU-07` to `scope.txt`.
 - [ ] T010 [P] Write `CancellationSteps` and `OrderHistorySteps` (plan.md § BDD steps).
-- [ ] T011 [P] Write `OrderQueryControllerIT` (edge cases of spec.md) and `InternalOrderHistoryControllerIT` (CU-07.06).
-- [ ] T012 Skeletons of the controllers and DTOs. Run `./mvnw verify`: **CU-04/CU-07 scenarios fail**. Record.
+- [x] T011 [P] Write `OrderQueryControllerIT` (edge cases of spec.md) and `InternalOrderHistoryControllerIT` (CU-07.06).
+- [x] T012 Skeletons of the controllers and DTOs. Run `./mvnw verify`: **CU-04/CU-07 scenarios fail**. Record.
 - [ ] T013 Implement plan.md § REST until green (17 scenarios; contract route test with the new routes).
-- [ ] T014 [P] `http/008-cancellation-history.http`.
+- [x] T014 [P] `http/008-cancellation-history.http`.
 
 ---
 
