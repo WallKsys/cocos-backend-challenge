@@ -11,7 +11,7 @@ public record OrderRecordResponse(
         Long quantity, String price, String amount, String requestedAmount, Instant createdAt,
         OrderResponse.RejectionResponse rejection) {
 
-    static OrderRecordResponse from(OrderRecord order) {
+    public static OrderRecordResponse from(OrderRecord order) {
         var rejection = order.rejection();
         return new OrderRecordResponse(order.id(), order.instrumentId().value(), order.ticker(), order.side().name(),
                 order.type().name(), order.status().name(), order.quantity(), format(order.price()),

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Cocos Broker API
-  version: 0.8.0
+  version: 0.9.0
   description: |
     Broker API: portfolio, instrument search and orders (Cocos backend challenge).
 
@@ -424,6 +424,143 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalError'
+  /api/internal/orders/{orderId}:
+    delete:
+      operationId: deleteOrderAsAdministrator
+      summary: "[INTERNAL · demo only] Delete an order (I-01)"
+      description: |
+        Physically deletes the order of any user, including its idempotency key (DEC-16). The portfolio is recalculated from `orders`.
+        Internal tool (not part of the challenge): exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise it answers 404 exactly like a missing route. May break invariants on purpose (DEC-03).
+      tags: [internal]
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '204':
+          description: Deleted.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/orders/{orderId}/execute:
+    post:
+      operationId: executeOrderAsAdministrator
+      summary: "[INTERNAL · demo only] Force the execution of a NEW limit order (I-02)"
+      description: |
+        Simulates that the market took a pending LIMIT order: it becomes FILLED at its limit price and its reservation becomes a debit (BUY) or a credit (SELL). Locks the user row first and only changes an order that is still NEW (the same protocol that makes it safe against a concurrent cancellation, CU-04.08). No market data is needed.
+        Internal tool (not part of the challenge): exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise it answers 404 exactly like a missing route. May break invariants on purpose (DEC-03).
+      tags: [internal]
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: The executed order.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderRecord'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/instruments/{instrumentId}/market-data:
+    put:
+      operationId: setMarketDataAsAdministrator
+      summary: "[INTERNAL · demo only] Set the latest market data of an instrument (I-03)"
+      description: |
+        Updates the latest market data row of the instrument (or creates one dated today in UTC when it has none). `previousClose` is optional: when absent the stored value is kept.
+        Internal tool (not part of the challenge): exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise it answers 404 exactly like a missing route. May break invariants on purpose (DEC-03).
+      tags: [internal]
+      parameters:
+        - name: instrumentId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarketDataUpdate'
+      responses:
+        '200':
+          description: The stored market data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketDataView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/reset:
+    post:
+      operationId: restoreSeedDataAsAdministrator
+      summary: "[INTERNAL · demo only] Restore the seed data (I-04)"
+      description: |
+        Deletes every user, instrument, market data row and order, and loads again the data of the provided database.sql. Idempotency keys disappear with their orders.
+        Internal tool (not part of the challenge): exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise it answers 404 exactly like a missing route. May break invariants on purpose (DEC-03).
+      tags: [internal]
+      parameters:
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '204':
+          description: Restored.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/users:
+    post:
+      operationId: createUserAsAdministrator
+      summary: "[INTERNAL · demo only] Create a test user (I-05)"
+      description: |
+        Creates a user with the next free numeric account number.
+        Internal tool (not part of the challenge): exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise it answers 404 exactly like a missing route. May break invariants on purpose (DEC-03).
+      tags: [internal]
+      parameters:
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: The created user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
   /api/v1/instruments:
     get:
       operationId: searchInstruments
@@ -594,6 +731,7 @@ components:
         - METHOD_NOT_ALLOWED
         - NOT_ACCEPTABLE
         - ORDER_NOT_CANCELLABLE
+        - ORDER_NOT_EXECUTABLE
         - UNSUPPORTED_MEDIA_TYPE
         - IDEMPOTENCY_CONFLICT
         - REQUEST_ERROR
@@ -636,6 +774,41 @@ components:
           description: Present only for VALIDATION_ERROR caused by request fields.
           items:
             $ref: '#/components/schemas/FieldError'
+    MarketDataUpdate:
+      type: object
+      additionalProperties: false
+      required: [close]
+      properties:
+        close:
+          allOf: [ { $ref: '#/components/schemas/MoneyInput' } ]
+          description: New last price, greater than 0.
+        previousClose:
+          allOf: [ { $ref: '#/components/schemas/MoneyInput' } ]
+          description: Optional new previous close, greater than 0.
+    MarketDataView:
+      type: object
+      required: [instrumentId, ticker, date, close, previousClose]
+      properties:
+        instrumentId: { type: integer, format: int64 }
+        ticker: { type: string }
+        date: { type: string, format: date }
+        close:
+          $ref: '#/components/schemas/Money'
+        previousClose:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+    CreateUserRequest:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email: { type: string, format: email, maxLength: 255 }
+    UserView:
+      type: object
+      required: [userId, email, accountNumber]
+      properties:
+        userId: { type: integer, format: int32 }
+        email: { type: string }
+        accountNumber: { type: string }
     OrderRecord:
       type: object
       description: An order or cash movement as stored in the ledger.
@@ -920,7 +1093,7 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     Conflict:
-      description: The resource state does not allow the operation (ORDER_NOT_CANCELLABLE).
+      description: The resource state does not allow the operation (ORDER_NOT_CANCELLABLE, ORDER_NOT_EXECUTABLE).
       headers:
         X-Request-Id:
           $ref: '#/components/headers/RequestId'

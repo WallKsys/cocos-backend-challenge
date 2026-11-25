@@ -131,8 +131,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     private static List<FieldError> handlerMethodErrors(HandlerMethodValidationException exception) {
         List<FieldError> errors = new ArrayList<>();
         for (ParameterValidationResult result : exception.getParameterValidationResults()) {
-            String field = result.getMethodParameter().getParameterName();
+            String parameter = result.getMethodParameter().getParameterName();
             for (MessageSourceResolvable resolvable : result.getResolvableErrors()) {
+                String field = resolvable instanceof org.springframework.validation.FieldError fieldError
+                        ? fieldError.getField()
+                        : parameter;
                 errors.add(new FieldError(field, resolvable.getDefaultMessage()));
             }
         }
