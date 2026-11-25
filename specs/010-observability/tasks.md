@@ -12,11 +12,11 @@
 
 **Estimated size**: ~250 lines.
 
-- [ ] T001 Write `TelemetryUnavailableIT` (plan.md § Tests). It passes today (no telemetry yet); keep it as a
+- [x] T001 Write `TelemetryUnavailableIT` (plan.md § Tests). It passes today (no telemetry yet); keep it as a
   regression guard.
-- [ ] T002 Add the dependencies of plan.md § Dependencies (exact versions), the configuration of § Configuration,
+- [x] T002 Add the dependencies of plan.md § Dependencies (exact versions), the configuration of § Configuration,
   `logback-spring.xml` of § Logs and `OpenTelemetryLoggingConfiguration`.
-- [ ] T003 Run `./mvnw verify`: everything green, console logs still JSON (check one line in the test output), and
+- [x] T003 Run `./mvnw verify`: everything green, console logs still JSON (check one line in the test output), and
   no exporter errors in the logs of normal tests (export is off by default).
 
 ## Slice 010-b — Grafana artifacts and Compose (branch `010-observability-b`)

@@ -25,6 +25,26 @@ management:
   endpoint:
     health:
       show-details: never
+  otlp:
+    metrics:
+      export:
+        enabled: false
+        step: 10s
+  tracing:
+    sampling:
+      probability: 1.0
+    export:
+      otlp:
+        enabled: false
+  logging:
+    export:
+      otlp:
+        enabled: false
+  metrics:
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+        "[cocos.account.lock.wait]": true
 
 logging:
   structured:
@@ -49,3 +69,27 @@ spring:
 cocos:
   internal-tools:
     enabled: true
+
+management:
+  otlp:
+    metrics:
+      export:
+        enabled: true
+        url: ${OTLP_BASE_URL:http://localhost:4318}/v1/metrics
+  tracing:
+    export:
+      otlp:
+        enabled: true
+  logging:
+    export:
+      otlp:
+        enabled: true
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTLP_BASE_URL:http://localhost:4318}/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: ${OTLP_BASE_URL:http://localhost:4318}/v1/logs
