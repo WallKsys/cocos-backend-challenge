@@ -1,0 +1,18 @@
+# Mounted into grafana/otel-lgtm at /otel-lgtm/grafana/conf/provisioning/datasources/cocos-datasources.yaml.
+# The image already provisions Prometheus (uid prometheus), Tempo (uid tempo) and Loki (uid loki).
+apiVersion: 1
+
+datasources:
+  - name: Cocos Ledger (read-only)
+    type: grafana-postgresql-datasource
+    uid: cocos-ledger
+    url: postgres:5432
+    user: grafana_reader
+    editable: false
+    jsonData:
+      database: cocos
+      sslmode: disable
+      postgresVersion: 1800
+      timescaledb: false
+    secureJsonData:
+      password: grafana_reader

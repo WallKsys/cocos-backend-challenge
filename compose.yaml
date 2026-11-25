@@ -7,11 +7,22 @@ services:
       POSTGRES_PASSWORD: cocos
     ports:
       - "5432:5432"
+    volumes:
+      - ./observability/postgres/01-grafana-reader.sql:/docker-entrypoint-initdb.d/01-grafana-reader.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U cocos -d cocos"]
       interval: 2s
       timeout: 3s
       retries: 30
+
+  lgtm:
+    image: grafana/otel-lgtm:0.41.1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./observability/grafana/provisioning/datasources/cocos-datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/cocos-datasources.yaml:ro
+      - ./observability/grafana/provisioning/dashboards/cocos-dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/cocos-dashboards.yaml:ro
+      - ./observability/grafana/dashboards:/otel-lgtm/cocos-dashboards:ro
 
   app:
     build: .
@@ -20,8 +31,11 @@ services:
       DB_USER: cocos
       DB_PASSWORD: cocos
       SPRING_PROFILES_ACTIVE: demo
+      OTLP_BASE_URL: http://lgtm:4318
     ports:
       - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
+      lgtm:
+        condition: service_started
