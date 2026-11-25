@@ -11,6 +11,8 @@ public interface OrderLedgerRepository {
 
     Optional<OrderRecord> findRecord(UserId userId, long orderId);
 
+    Optional<OrderRecord> findRecordById(long orderId);
+
     boolean cancelIfNew(UserId userId, long orderId);
 
     List<OrderRecord> history(UserId userId, OrderHistoryCriteria criteria, int maxResults);

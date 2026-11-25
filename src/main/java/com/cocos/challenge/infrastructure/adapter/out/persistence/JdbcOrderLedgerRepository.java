@@ -35,6 +35,10 @@ public class JdbcOrderLedgerRepository implements OrderLedgerRepository {
             WHERE o.id = :orderId AND o.userid = :userId
             """;
 
+    static final String FIND_RECORD_BY_ID_SQL = SELECT_RECORD + """
+            WHERE o.id = :orderId
+            """;
+
     static final String CANCEL_IF_NEW_SQL = """
             UPDATE orders SET status = 'CANCELLED'
             WHERE id = :orderId AND userid = :userId AND status = 'NEW'
@@ -68,6 +72,13 @@ public class JdbcOrderLedgerRepository implements OrderLedgerRepository {
         return jdbc.sql(FIND_RECORD_SQL)
                 .param("orderId", orderId)
                 .param("userId", userId.value())
+                .query((rs, rowNum) -> mapRecord(rs)).optional();
+    }
+
+    @Override
+    public Optional<OrderRecord> findRecordById(long orderId) {
+        return jdbc.sql(FIND_RECORD_BY_ID_SQL)
+                .param("orderId", orderId)
                 .query((rs, rowNum) -> mapRecord(rs)).optional();
     }
 

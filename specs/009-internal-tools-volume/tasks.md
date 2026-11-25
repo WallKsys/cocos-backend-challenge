@@ -29,11 +29,11 @@
 implemented routes and the published contract to be identical, and the spec 009 contract contains every internal
 tool route. So all the internal controllers of spec 009 arrive together with that contract, in slice 009-c2.
 
-- [ ] T003 [P] Write `DeleteOrderServiceTest`, `ExecuteOrderServiceTest`, `JdbcAdminOrderRepositoryIT`.
-- [ ] T004 Skeletons of the use cases, ports, adapter, `OrderNotExecutableException` (extends `DomainException`
+- [x] T003 [P] Write `DeleteOrderServiceTest`, `ExecuteOrderServiceTest`, `JdbcAdminOrderRepositoryIT`.
+- [x] T004 Skeletons of the use cases, ports, adapter, `OrderNotExecutableException` (extends `DomainException`
   directly) and `ORDER_NOT_EXECUTABLE`. **Fail**. Record.
-- [ ] T005 Implement plan.md § Internal tools (delete, execute: use cases and persistence) until green.
-- [ ] T006 In `CancelVersusExecutionIT`, add the test that runs `CancelOrderUseCase` and `ExecuteOrderUseCase`
+- [x] T005 Implement plan.md § Internal tools (delete, execute: use cases and persistence) until green.
+- [x] T006 In `CancelVersusExecutionIT`, add the test that runs `CancelOrderUseCase` and `ExecuteOrderUseCase`
   concurrently, 20 repetitions (plan.md § CU-04.08 with the real tool). Run `./mvnw verify` three times. The BDD step
   switches to the real endpoint in slice 009-c3.
 

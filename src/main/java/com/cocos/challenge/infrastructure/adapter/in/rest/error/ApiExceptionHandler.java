@@ -5,6 +5,7 @@ import com.cocos.challenge.domain.exception.IdempotencyConflictException;
 import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.exception.OrderNotCancellableException;
+import com.cocos.challenge.domain.exception.OrderNotExecutableException;
 import com.cocos.challenge.domain.exception.SearchTermTooShortException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
@@ -51,10 +52,12 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
             NotFoundException.class, ApiErrorCode.NOT_FOUND,
             IdempotencyConflictException.class, ApiErrorCode.IDEMPOTENCY_CONFLICT,
             OrderNotCancellableException.class, ApiErrorCode.ORDER_NOT_CANCELLABLE,
+            OrderNotExecutableException.class, ApiErrorCode.ORDER_NOT_EXECUTABLE,
             SearchTermTooShortException.class, ApiErrorCode.SEARCH_TERM_TOO_SHORT);
 
     @ExceptionHandler({ApiException.class, InvalidRequestException.class, NotFoundException.class,
-            IdempotencyConflictException.class, OrderNotCancellableException.class, SearchTermTooShortException.class})
+            IdempotencyConflictException.class, OrderNotCancellableException.class,
+            OrderNotExecutableException.class, SearchTermTooShortException.class})
     ResponseEntity<Object> handleExpectedException(Exception exception, WebRequest request) {
         ApiErrorCode code = exception instanceof ApiException apiException
                 ? apiException.code() : domainCode((DomainException) exception);
