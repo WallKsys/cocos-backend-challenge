@@ -197,7 +197,7 @@ paths:
         - name: status
           in: query
           required: false
-          description: Only orders in this status.
+          description: Only orders in this status. Blank means absent.
           schema:
             $ref: '#/components/schemas/OrderStatus'
         - name: limit
@@ -396,7 +396,7 @@ paths:
         - name: status
           in: query
           required: false
-          description: Only orders in this status.
+          description: Only orders in this status. Blank means absent.
           schema:
             $ref: '#/components/schemas/OrderStatus'
         - name: limit
