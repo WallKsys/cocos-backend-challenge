@@ -157,6 +157,7 @@ the same document).
     <include resource="org/springframework/boot/logging/logback/structured-console-appender.xml"/>
     <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
         <captureMdcAttributes>requestId</captureMdcAttributes>
+        <captureKeyValuePairAttributes>true</captureKeyValuePairAttributes>
     </appender>
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
@@ -169,6 +170,58 @@ the same document).
 `OpenTelemetryAppender.install(openTelemetry)` with the `OpenTelemetry` bean provided by Spring Boot.
 
 `logging.structured.format.console: ecs` (spec 001) stays as is.
+
+`captureKeyValuePairAttributes` is added by slice 010-c1 (§ Operation logs); slice 010-a wrote the file without it.
+
+## Operation logs (TEC-27, slice 010-c1)
+
+Added after slice 010-c stopped: no production code logged anything during a successful request, so Loki never
+received a line with a `requestId` (the 2026-11-21 verification used a `/probe` endpoint that logged explicitly).
+TEC-27 requires that every operation with effect records `orderId`, `userId`, idempotency key and result.
+
+**Where.** In the REST adapters (`infrastructure.adapter.in.rest`): ArchUnit forbids SLF4J in `application`, and a
+controller runs inside the HTTP observation, so its log line carries `traceId`/`spanId` as well as `requestId`. A
+servlet filter would not: `RequestIdFilter` runs before `ServerHttpObservationFilter`.
+
+**Helper.** `infrastructure/adapter/in/rest/tracing/OperationLog.java`, a final class with a private constructor,
+one `private static final Logger` (`LoggerFactory.getLogger(OperationLog.class)`) and four public static methods:
+
+```java
+public static void orderPlaced(UserId userId, String idempotencyKey, PlaceOrderResult result)
+public static void orderCancelled(UserId userId, CancellationResult result)
+public static void cashDeposited(UserId userId, String idempotencyKey, CashMovementResult result)
+public static void cashWithdrawn(UserId userId, String idempotencyKey, CashMovementResult result)
+```
+
+Each writes exactly one line with the SLF4J fluent API
+(`LOGGER.atInfo().addKeyValue(key, value)...log("Operation completed")`), level INFO, message
+`Operation completed`, and these key-value pairs, in this order:
+
+| Key | Value | Present |
+|---|---|---|
+| `operation` | `PLACE_ORDER`, `CANCEL_ORDER`, `DEPOSIT` or `WITHDRAW` | always |
+| `userId` | `userId.value()` (a `long`) | always |
+| `orderId` | the id of the order or cash movement (`long`) | always |
+| `idempotencyKey` | the `Idempotency-Key` header value | not for `CANCEL_ORDER` (it has no key) |
+| `result` | the order status name: `NEW`, `FILLED`, `REJECTED` or `CANCELLED` | always |
+| `rejectionReason` | the `RejectionReason` name | only when `result` is `REJECTED` |
+| `replayed` | `PlaceOrderResult.replayed()` / `CashMovementResult.replayed()`; for `CANCEL_ORDER`, `CancellationResult.alreadyCancelled()` (`boolean`) | always |
+
+No other key, and nothing else from the request (no amounts, prices, tickers or rejection messages).
+
+**Calls.** `OrderController.place`, `OrderQueryController.cancel` and both methods of `CashMovementController` call
+the helper with the use case result, right before building the response. A request that ends in an error response
+(validation, not found, idempotency conflict, 5xx) writes no operation line: it is not a completed operation, and
+its trace and HTTP metrics already record it. The internal tools (`/api/internal/**`) are out of scope.
+
+**Logback.** `logback-spring.xml` gains `<captureKeyValuePairAttributes>true</captureKeyValuePairAttributes>` in the
+`OTEL` appender (§ Logs), so the pairs reach Loki as structured metadata, like `requestId`. They are never Loki
+labels, so their cardinality does not matter (the metrics rule of the constitution does not apply to log
+attributes).
+
+**Console format (verified in the Spring Boot 4.1.3 jar).** The ECS formatter writes MDC entries and SLF4J
+key-value pairs as top-level members of the JSON line, the same way it writes `requestId`. A `long` value may be
+written as a JSON number: tests compare values with `JsonNode.asText()`.
 
 ## Docker Compose
 
@@ -235,6 +288,7 @@ orders per day). Every Prometheus query filters `service_name="cocos-broker-api"
 | `DashboardsTest` | unit | both JSON files parse; uids `cocos-health` / `cocos-business`; every Prometheus `expr` contains `service_name="cocos-broker-api"`; every SQL target uses data source uid `cocos-ledger`; no query mentions `userid`, `idempotency`, `ticker` or `orderId` labels; the files in `observability/` are byte-identical to `specs/010-observability/observability/` |
 | `DashboardSqlIT` | integration | every `rawSql` of `cocos-business.json` (with `$__timeFilter(datetime)` replaced by `TRUE`) runs on the seed without error; seed values: total 11; success 55.56; rejection 11.11; `NOT_RECORDED` 1; BUY 202300.00 / SELL 55300.00; CASH_IN 1000000.00 / CASH_OUT 100000.00; statuses CANCELLED 1, FILLED 7, NEW 2, REJECTED 1 |
 | `ObservabilityIT` | integration, own context | `LgtmStackContainer("grafana/otel-lgtm:0.41.1")` with `@ServiceConnection` + the shared PostgreSQL; properties: the three `enabled` switches `true`, `management.otlp.metrics.export.step=2s`. Sends `POST /api/v1/orders` (user 1, BUY MARKET 1 PAMP) with `X-Request-Id: obs-it-1`, then polls (up to 60 s): **metrics** — Prometheus series `cocos_orders_processed_total{side="BUY",type="MARKET",status="FILLED"}` exists and its label names are exactly `__name__, job, service_name, side, type, status, rejection_reason`; `http_server_requests_milliseconds_count{uri="/api/v1/orders"}` and `hikaricp_connections_active` exist; every Prometheus `expr` of both dashboards returns `status: success`. **Logs** — Loki has a line of `service_name="cocos-broker-api"` with `requestId="obs-it-1"` and a `trace_id`. **Traces** — Tempo `GET /api/traces/<that trace_id>` returns spans of the request |
+| `OperationLogIT` | integration (`@IntegrationTest`, `OutputCaptureExtension`, `SeedData.reset` before each test) | each request sends its own `X-Request-Id`; the test parses the captured console lines as JSON and finds exactly one line with message `Operation completed` and that `requestId`, then checks its members against § Operation logs: (1) `POST /api/v1/orders` BUY MARKET 1 PAMP for user 1 → `PLACE_ORDER`, `userId` 1, `orderId` = response `id`, the sent `idempotencyKey`, `FILLED`, `replayed` false, no `rejectionReason`; (2) the same request again with the same key and a new `X-Request-Id` → same `orderId`, `replayed` true; (3) user 1 BUY LIMIT 100 PAMP at `900.00` (CU-03.13) → `NEW`, then `POST /api/v1/orders/{id}/cancel` → `CANCEL_ORDER`, `CANCELLED`, `replayed` false, **no** `idempotencyKey` member; (4) `POST /api/v1/cash/deposits` 100.00 → `DEPOSIT`, `FILLED`; (5) user 1 `POST /api/v1/cash/withdrawals` 700000.00 (CU-06.02) → `WITHDRAW`, `REJECTED`, `rejectionReason` `INSUFFICIENT_FUNDS`; (6) a placement without `Idempotency-Key` (400) → **no** `Operation completed` line with its `requestId` |
 | `TelemetryUnavailableIT` | integration, own context | the three switches `true` and every endpoint pointing to `http://127.0.0.1:1` (nothing listening): `POST /api/v1/orders` still answers 201 and `GET /api/v1/portfolio` 200 (FR-005) |
 
 Use an HTTP client configured for **HTTP/1.1 with timeouts** to query the stack from tests (the probe hung with

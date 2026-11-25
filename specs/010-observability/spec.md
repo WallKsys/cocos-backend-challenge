@@ -66,10 +66,14 @@ trace of that request and a log line with `requestId = obs-it-1` and the same `t
 - **FR-004**: Grafana MUST provision a read-only PostgreSQL data source and the two dashboards of plan.md
   § Dashboards from files in the repository.
 - **FR-005**: The application MUST keep working when the stack is unreachable.
+- **FR-006** (TEC-27): Every client operation with effect (order placement, cancellation, deposit, withdrawal) that
+  completes with a response MUST write one INFO log line with `orderId`, `userId`, idempotency key (when the
+  operation has one) and result, as defined in plan.md § Operation logs.
 
 ## Success Criteria *(mandatory)*
 
 - **SC-001**: `docker compose up --build` starts PostgreSQL, the application and `lgtm`; Grafana at
   `http://localhost:3000` shows both dashboards with data after running `http/005-order-placement.http`.
-- **SC-002**: `ObservabilityIT` proves that metrics (with the expected names and tags), a trace and a correlated
+- **SC-002**: `OperationLogIT` proves that each operation of FR-006 writes its line with the request's `requestId`.
+- **SC-003**: `ObservabilityIT` proves that metrics (with the expected names and tags), a trace and a correlated
   log line reach the stack.
