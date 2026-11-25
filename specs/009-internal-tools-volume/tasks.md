@@ -80,11 +80,11 @@ T007, T007a and T007b are shared by both halves: each half does its part of them
 
 **Estimated size**: ~300 lines (feature copy excluded).
 
-- [ ] T012a Copy the feature; append `CU-I` to `scope.txt`; write `ScopeIsCompleteTest`.
-- [ ] T012b Write `InternalToolsSteps`. Switch the step `the administrator forces its execution at the same time` to
+- [x] T012a Copy the feature; append `CU-I` to `scope.txt`; write `ScopeIsCompleteTest`.
+- [x] T012b Write `InternalToolsSteps`. Switch the step `the administrator forces its execution at the same time` to
   `POST /api/internal/orders/{id}/execute` with `X-Role: ADMIN` (plan.md § CU-04.08 with the real tool); delete
   `ForcedExecutionSimulator` if no test uses it any more. Run `./mvnw verify`: **the CU-I scenarios fail**. Record.
-- [ ] T012c Implement the remaining glue until green (9 CU-I scenarios). Run `./mvnw verify` three times (CU-04.08).
+- [x] T012c Implement the remaining glue until green (9 CU-I scenarios). Run `./mvnw verify` three times (CU-04.08).
 
 ## Slice 009-d — Volume profile (branch `009-internal-tools-volume-d`)
 

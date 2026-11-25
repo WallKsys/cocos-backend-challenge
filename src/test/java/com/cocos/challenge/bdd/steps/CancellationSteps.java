@@ -1,17 +1,12 @@
 package com.cocos.challenge.bdd.steps;
 
-import com.cocos.challenge.application.port.out.AccountLock;
 import com.cocos.challenge.bdd.support.ScenarioContext;
-import com.cocos.challenge.domain.model.UserId;
-import com.cocos.challenge.support.ForcedExecutionSimulator;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.EntityExchangeResult;
 import org.springframework.test.web.servlet.client.RestTestClient;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 
 import java.util.concurrent.CountDownLatch;
@@ -25,17 +20,12 @@ public class CancellationSteps {
     private final RestTestClient client;
     private final ScenarioContext context;
     private final JdbcClient jdbc;
-    private final PlatformTransactionManager transactionManager;
-    private final AccountLock accountLock;
     private int forcedExecutionUpdates;
 
-    public CancellationSteps(RestTestClient client, ScenarioContext context, JdbcClient jdbc,
-            PlatformTransactionManager transactionManager, AccountLock accountLock) {
+    public CancellationSteps(RestTestClient client, ScenarioContext context, JdbcClient jdbc) {
         this.client = client;
         this.context = context;
         this.jdbc = jdbc;
-        this.transactionManager = transactionManager;
-        this.accountLock = accountLock;
     }
 
     @Given("user {int} cancelled order {long}")
@@ -57,7 +47,6 @@ public class CancellationSteps {
 
     @When("user {int} cancels order {long} while the administrator forces its execution at the same time")
     public void cancelWhileForcedExecution(int userId, long orderId) throws Exception {
-        var simulator = new ForcedExecutionSimulator(new TransactionTemplate(transactionManager), accountLock, jdbc);
         var ready = new CountDownLatch(2);
         var start = new CountDownLatch(1);
         try (var executor = Executors.newFixedThreadPool(2)) {
@@ -69,7 +58,7 @@ public class CancellationSteps {
             var executionFuture = executor.submit(() -> {
                 ready.countDown();
                 assertThat(start.await(10, TimeUnit.SECONDS)).isTrue();
-                return simulator.execute(new UserId(userId), orderId);
+                return exchangeExecute(orderId);
             });
             try {
                 assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
@@ -77,7 +66,17 @@ public class CancellationSteps {
                 start.countDown();
             }
             context.record(cancelFuture.get(10, TimeUnit.SECONDS));
-            forcedExecutionUpdates = executionFuture.get(10, TimeUnit.SECONDS);
+            var executionResponse = executionFuture.get(10, TimeUnit.SECONDS);
+            int executionStatus = executionResponse.getStatus().value();
+            assertThat(executionStatus).isIn(200, 409);
+            if (executionStatus == 200) {
+                assertThat(executionResponse.getResponseBody().required("status").asString()).isEqualTo("FILLED");
+                forcedExecutionUpdates = 1;
+            } else {
+                assertThat(executionResponse.getResponseBody().required("code").asString())
+                        .isEqualTo("ORDER_NOT_EXECUTABLE");
+                forcedExecutionUpdates = 0;
+            }
         }
     }
 
@@ -132,6 +131,12 @@ public class CancellationSteps {
     private EntityExchangeResult<JsonNode> exchangeCancel(int userId, long orderId) {
         return client.post().uri("/api/v1/orders/{orderId}/cancel", orderId)
                 .header("X-User-Id", Integer.toString(userId))
+                .exchange().returnResult(JsonNode.class);
+    }
+
+    private EntityExchangeResult<JsonNode> exchangeExecute(long orderId) {
+        return client.post().uri("/api/internal/orders/{orderId}/execute", orderId)
+                .header("X-Role", "ADMIN")
                 .exchange().returnResult(JsonNode.class);
     }
 
