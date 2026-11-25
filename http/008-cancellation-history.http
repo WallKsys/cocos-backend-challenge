@@ -1,0 +1,35 @@
+### Order history
+GET http://localhost:8080/api/v1/orders
+X-User-Id: 1
+
+### Filter by status
+GET http://localhost:8080/api/v1/orders?status=NEW
+X-User-Id: 1
+
+### First page
+GET http://localhost:8080/api/v1/orders?limit=5
+X-User-Id: 1
+
+### Next page of the seeded history (use nextCursor from the preceding response)
+GET http://localhost:8080/api/v1/orders?limit=5&cursor=djE6MTY4OTI0NjgwMDAwMDAwMDo3
+X-User-Id: 1
+
+### Read one order
+GET http://localhost:8080/api/v1/orders/7
+X-User-Id: 1
+
+### Cancel a pending order
+POST http://localhost:8080/api/v1/orders/7/cancel
+X-User-Id: 1
+
+### Cancel the same order again
+POST http://localhost:8080/api/v1/orders/7/cancel
+X-User-Id: 1
+
+### A filled order cannot be cancelled
+POST http://localhost:8080/api/v1/orders/2/cancel
+X-User-Id: 1
+
+### Administrator history (demo)
+GET http://localhost:8080/api/internal/users/1/orders
+X-Role: ADMIN
