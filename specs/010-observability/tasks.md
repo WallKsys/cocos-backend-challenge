@@ -23,10 +23,10 @@
 
 **Estimated size**: ~250 lines (copied `observability/` excluded).
 
-- [ ] T004 Write `DashboardsTest` and `DashboardSqlIT`. Run: **they fail** (files not copied yet). Record it.
-- [ ] T005 Copy `specs/010-observability/observability/` to `observability/` (`cp -R`); replace `compose.yaml`
+- [x] T004 Write `DashboardsTest` and `DashboardSqlIT`. Run: **they fail** (files not copied yet). Record it.
+- [x] T005 Copy `specs/010-observability/observability/` to `observability/` (`cp -R`); replace `compose.yaml`
   (plan.md § Docker Compose).
-- [ ] T006 Run until green. Run `docker compose down -v && docker compose up --build`, execute
+- [x] T006 Run until green. Run `docker compose down -v && docker compose up --build`, execute
   `http/005-order-placement.http`, open `http://localhost:3000` → folder "Cocos": both dashboards with data. Paste
   screenshots or panel values in the PR.
 
