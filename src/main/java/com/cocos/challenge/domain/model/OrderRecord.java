@@ -9,10 +9,17 @@ public record OrderRecord(long id, InstrumentId instrumentId, String ticker, Ord
                           Rejection rejection, Instant createdAt) {
 
     public Long quantity() {
-        throw new UnsupportedOperationException();
+        return isCashMovement() ? null : size.longValueExact();
     }
 
     public Money amount() {
-        throw new UnsupportedOperationException();
+        if (isCashMovement()) {
+            return Money.of(size);
+        }
+        return price == null ? null : price.times(size);
+    }
+
+    private boolean isCashMovement() {
+        return side == OrderSide.CASH_IN || side == OrderSide.CASH_OUT;
     }
 }
