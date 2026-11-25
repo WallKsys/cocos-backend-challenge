@@ -4,9 +4,11 @@ import com.cocos.challenge.application.port.in.CreateUserUseCase;
 import com.cocos.challenge.domain.model.CreatedUser;
 import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.support.IntegrationTest;
+import com.cocos.challenge.support.SeedData;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,12 +18,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JdbcUserWriterIT {
 
     @Autowired
+    JdbcClient jdbc;
+
+    @Autowired
     CreateUserUseCase createUser;
 
     @Test
     @Tag("CU-I.08")
     @Transactional
     void createsUsersWithIncrementingAccountNumbers() {
+        SeedData.reset(jdbc);
+
         assertThat(createUser.create("demo@test.com"))
                 .isEqualTo(new CreatedUser(new UserId(5), "demo@test.com", "10005"));
         assertThat(createUser.create("second@test.com"))
