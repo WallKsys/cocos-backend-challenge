@@ -30,11 +30,11 @@ half follows the test-first cycle on its own and leaves the suite green:
 - **008-b2:** `CancelOrderService`, `CancelOrderServiceTest`, `ForcedExecutionSimulator`, `CancelVersusExecutionIT`
   and `CancellationLoadIT` (run `./mvnw verify` three times).
 
-- [ ] T005 [P] Write `CancelOrderServiceTest`, `GetOrderServiceTest`, `GetOrderHistoryServiceTest`.
-- [ ] T006 [P] Write `support/ForcedExecutionSimulator`, `CancelVersusExecutionIT` (CU-04.08) and
+- [x] T005 [P] Write `CancelOrderServiceTest`, `GetOrderServiceTest`, `GetOrderHistoryServiceTest`.
+- [x] T006 [P] Write `support/ForcedExecutionSimulator`, `CancelVersusExecutionIT` (CU-04.08) and
   `CancellationLoadIT` (M-07).
-- [ ] T007 Skeletons of the ports, services and configuration. **Fail**. Record.
-- [ ] T008 Implement plan.md § Cancellation and the query services until green; run `./mvnw verify` three times to
+- [x] T007 Skeletons of the ports, services and configuration. **Fail**. Record.
+- [x] T008 Implement plan.md § Cancellation and the query services until green; run `./mvnw verify` three times to
   confirm the concurrency tests are stable.
 
 ## Slice 008-c — Endpoints, BDD and contract (branch `008-cancellation-history-c`)
