@@ -1,0 +1,39 @@
+### Force the execution of a pending LIMIT order (demo)
+POST http://localhost:8080/api/internal/orders/5/execute
+X-Role: ADMIN
+
+### Delete an order (demo)
+DELETE http://localhost:8080/api/internal/orders/7
+X-Role: ADMIN
+
+### Set the latest market data close price (demo)
+PUT http://localhost:8080/api/internal/instruments/47/market-data
+X-Role: ADMIN
+Content-Type: application/json
+
+{
+  "close": "1000.00"
+}
+
+### Set close and previousClose (demo)
+PUT http://localhost:8080/api/internal/instruments/47/market-data
+X-Role: ADMIN
+Content-Type: application/json
+
+{
+  "close": "1000.00",
+  "previousClose": "950.50"
+}
+
+### Create a test user (demo)
+POST http://localhost:8080/api/internal/users
+X-Role: ADMIN
+Content-Type: application/json
+
+{
+  "email": "demo@test.com"
+}
+
+### Restore the seed data (demo)
+POST http://localhost:8080/api/internal/reset
+X-Role: ADMIN

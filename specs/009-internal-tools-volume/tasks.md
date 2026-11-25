@@ -66,13 +66,13 @@ T007, T007a and T007b are shared by both halves: each half does its part of them
 
 **Estimated size**: ~300 lines (contract copy excluded).
 
-- [ ] T008 Copy the contract: `cp specs/009-internal-tools-volume/contracts/openapi.yaml src/main/resources/static/openapi/openapi.yaml`.
-- [ ] T009 [P] Write `InternalToolsControllerIT`: every internal tool route of spec 009 (status codes, bodies,
+- [x] T008 Copy the contract: `cp specs/009-internal-tools-volume/contracts/openapi.yaml src/main/resources/static/openapi/openapi.yaml`.
+- [x] T009 [P] Write `InternalToolsControllerIT`: every internal tool route of spec 009 (status codes, bodies,
   `ORDER_NOT_EXECUTABLE`, ids 0 or negative → 400 DEC-26, without the admin role → 404).
-- [ ] T010 Skeletons of `InternalOrderToolsController`, `InternalMarketDataController`, `InternalDataController` and
+- [x] T010 Skeletons of `InternalOrderToolsController`, `InternalMarketDataController`, `InternalDataController` and
   their DTOs. Run `./mvnw verify`: **`InternalToolsControllerIT` and the route test fail**. Record.
-- [ ] T011 Implement plan.md § REST until green.
-- [ ] T012 [P] `http/009-internal-tools.http`.
+- [x] T011 Implement plan.md § REST until green.
+- [x] T012 [P] `http/009-internal-tools.http`.
 
 ### Slice 009-c3 — BDD and complete traceability (branch `009-internal-tools-volume-c3`)
 
