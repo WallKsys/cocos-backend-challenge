@@ -97,7 +97,11 @@ Base package: `com.cocos.challenge` (TEC-10, TEC-13).
 | `infrastructure.adapter.out.metrics` | Micrometer implementation of the `BusinessMetrics` port | `application.port.out`, `domain.*`, Micrometer |
 | `infrastructure.config` | Bean wiring, clock, configuration | everything |
 
-Rules (each one is enforced by ArchUnit tests in `src/test/java/com/cocos/challenge/architecture/`):
+Rules (each one is enforced by ArchUnit tests in `src/test/java/com/cocos/challenge/architecture/`). They govern
+production code (`src/main/java`), which is what ArchUnit imports (`ImportOption.DoNotIncludeTests`). Test sources
+may use `JdbcClient`, `JdbcTemplate` and SQL text to prepare data, verify results and simulate external actors (for
+example `support/SeedData`, `bdd/support/DatabaseHooks` and the forced-execution simulator of spec 008); they never
+replace a production adapter inside the application context:
 
 1. `domain` depends only on `domain` and the JDK (no Spring, no Jackson, no `java.sql`, no `jakarta.*`).
 2. `application` depends only on `domain`, `application` and the JDK, except
@@ -273,4 +277,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.3.8 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-24 (v1.3.8: specs read-only except checking off the slice's tasks; test-change prescriptions only from `main`, TEC-09; v1.3.7: decimals in requests, TEC-20; checks that need data after the idempotency lookup and operations without a key, TEC-16; package dependencies, port names, generic return types and domain-free DTOs, TEC-13; v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)
+**Version**: 1.3.9 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-24 (v1.3.9: Principle V governs production code; test sources may use SQL, TEC-12; v1.3.8: specs read-only except checking off the slice's tasks; test-change prescriptions only from `main`, TEC-09; v1.3.7: decimals in requests, TEC-20; checks that need data after the idempotency lookup and operations without a key, TEC-16; package dependencies, port names, generic return types and domain-free DTOs, TEC-13; v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)
