@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -24,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * runs cleanly against PostgreSQL and matches the expected seed values.
  */
 @IntegrationTest
+@Transactional
 class DashboardSqlIT {
 
     private static final Path BUSINESS_DASHBOARD =
