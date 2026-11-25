@@ -1,0 +1,9 @@
+# GitGuardian / ggshield configuration (read from the default branch).
+# The paths below hold demo-only credentials for the local docker compose stack (spec 010, TEC-31):
+# the read-only "grafana_reader" PostgreSQL role and the Grafana data source that uses it.
+# They never reach a real environment, so they are excluded from secret detection.
+version: 2
+secret:
+  ignored_paths:
+    - "observability/**"
+    - "specs/*/observability/**"
