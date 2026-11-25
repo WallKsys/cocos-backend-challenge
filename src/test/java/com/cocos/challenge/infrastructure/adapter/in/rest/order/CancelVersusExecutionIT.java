@@ -1,9 +1,11 @@
 package com.cocos.challenge.infrastructure.adapter.in.rest.order;
 
 import com.cocos.challenge.application.port.in.CancelOrderUseCase;
+import com.cocos.challenge.application.port.in.ExecuteOrderUseCase;
 import com.cocos.challenge.application.port.out.AccountLock;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.domain.exception.OrderNotCancellableException;
+import com.cocos.challenge.domain.exception.OrderNotExecutableException;
 import com.cocos.challenge.domain.model.OrderStatus;
 import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.support.ForcedExecutionSimulator;
@@ -31,6 +33,8 @@ class CancelVersusExecutionIT extends OrderLoadSupport {
     private PlatformTransactionManager transactionManager;
     @Autowired
     private AccountLock lock;
+    @Autowired
+    private ExecuteOrderUseCase forcedExecution;
 
     @RepeatedTest(20)
     @Tag("CU-04.08")
@@ -42,6 +46,28 @@ class CancelVersusExecutionIT extends OrderLoadSupport {
         assertThat(updates).containsExactlyInAnyOrder(0, 1);
         assertThat(ledger.findRecord(USER, ORDER).orElseThrow().status())
                 .isEqualTo(updates.getFirst() == 1 ? OrderStatus.CANCELLED : OrderStatus.FILLED);
+    }
+
+    @RepeatedTest(20)
+    @Tag("CU-04.08")
+    void exactlyOneUseCaseChangesTheOrder() throws Exception {
+        var updates = simultaneously(2, worker -> worker == 0 ? cancel() : forceExecute());
+
+        assertThat(updates).containsExactlyInAnyOrder(0, 1);
+        assertThat(ledger.findRecord(USER, ORDER).orElseThrow().status())
+                .isEqualTo(updates.getFirst() == 1 ? OrderStatus.CANCELLED : OrderStatus.FILLED);
+    }
+
+    private int forceExecute() {
+        try {
+            var result = forcedExecution.execute(ORDER);
+            assertThat(result.status()).isEqualTo(OrderStatus.FILLED);
+            return 1;
+        } catch (OrderNotExecutableException exception) {
+            assertThat(exception).hasMessage("Order 7 cannot be executed because its status is CANCELLED."
+                    + " Only NEW orders can be executed.");
+            return 0;
+        }
     }
 
     private int cancel() {
