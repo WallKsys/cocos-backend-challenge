@@ -4,7 +4,8 @@
 
 **Before starting**: specs 001–008 merged. `export SPECIFY_FEATURE_DIRECTORY=specs/009-internal-tools-volume`.
 
-**Slices**: six PRs (009-a, 009-b, 009-c1, 009-c2, 009-c3, 009-d), in order. Each: tests → skeletons → confirm failure → implement → full suite → PR size check.
+**Slices**: six planned slices (009-a, 009-b, 009-c1, 009-c2, 009-c3, 009-d), in order; 009-c1 was split in two
+after measuring its size (009-c1a, 009-c1b), so seven PRs. Each: tests → skeletons → confirm failure → implement → full suite → PR size check.
 
 ---
 
@@ -42,9 +43,20 @@ tool route. So all the internal controllers of spec 009 arrive together with tha
 The previous single slice (~390 lines, with the order tools controller left in 009-b) is split in three, so that the
 contract and every internal route land together.
 
-### Slice 009-c1 — Data tools: use cases (branch `009-internal-tools-volume-c1`)
+### Slice 009-c1 — Data tools: use cases (split into 009-c1a and 009-c1b)
 
-**Estimated size**: ~300 lines.
+**Estimated size**: ~300 lines. The first attempt measured **more than 500 counted lines**, so the owner had it
+split along the use cases, which share no test:
+
+- **009-c1a** (branch `009-internal-tools-volume-c1a`): market data update. `UpdateMarketDataServiceTest`,
+  `JdbcMarketDataWriterIT`, `UpdateMarketDataUseCase` / `UpdateMarketDataService`, `MarketDataWriter` /
+  `JdbcMarketDataWriter` and their beans in `InternalToolsConfiguration`. Measured: 314 counted lines.
+- **009-c1b** (branch `009-internal-tools-volume-c1b`, after 009-c1a is merged): seed data restore and user creation.
+  `JdbcSeedDataRestorerIT`, `JdbcUserWriterIT`, `RestoreSeedDataUseCase`, `CreateUserUseCase`, their ports, the
+  adapters `JdbcSeedDataRestorer` and `JdbcUserWriter`, and their beans.
+
+T007, T007a and T007b are shared by both halves: each half does its part of them, and they are checked off in
+009-c1b (AGENTS.md § Slice protocol, step 2.5).
 
 - [ ] T007 [P] Write `UpdateMarketDataServiceTest`, `JdbcMarketDataWriterIT`, `JdbcSeedDataRestorerIT`, `JdbcUserWriterIT`.
 - [ ] T007a Skeletons of the data tool use cases, ports and adapters (no controllers). **Fail**. Record.
