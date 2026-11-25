@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Cocos Broker API
-  version: 0.7.0
+  version: 0.8.0
   description: |
     Broker API: portfolio, instrument search and orders (Cocos backend challenge).
 
@@ -185,6 +185,46 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
   /api/v1/orders:
+    get:
+      operationId: listOrders
+      summary: Order history of the requesting user (orders and cash movements), newest first
+      description: |
+        Ordered by execution time descending, then id descending. Cursor pagination (CM-08). Includes CASH_IN and
+        CASH_OUT movements, which are rows of the same ledger. Timestamps in UTC.
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: status
+          in: query
+          required: false
+          description: Only orders in this status. Blank means absent.
+          schema:
+            $ref: '#/components/schemas/OrderStatus'
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque cursor from `nextCursor` of the previous page.
+          schema: { type: string }
+      responses:
+        '200':
+          description: A page of the history.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderHistoryPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
     post:
       operationId: placeOrder
       summary: Place a BUY or SELL order (MARKET or LIMIT, by quantity or by amount)
@@ -275,6 +315,113 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/orders/{orderId}:
+    get:
+      operationId: getOrder
+      summary: One order (or cash movement) of the requesting user
+      description: An order of another user is answered exactly like a missing one (404, DEC-17).
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: The order.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderRecord'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/orders/{orderId}/cancel:
+    post:
+      operationId: cancelOrder
+      summary: Cancel a NEW order of the requesting user
+      description: |
+        A NEW order becomes CANCELLED and releases its reservation (DEC-01). Cancelling an already CANCELLED order
+        succeeds with `alreadyCancelled: true` and changes nothing (DEC-15). FILLED or REJECTED orders (including cash
+        movements) answer 409 `ORDER_NOT_CANCELLABLE`. Naturally idempotent: no `Idempotency-Key` is required.
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: The order is cancelled (now or before).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancellationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/internal/users/{userId}/orders:
+    get:
+      operationId: listOrdersAsAdministrator
+      summary: "[INTERNAL · demo only] Order history of any user"
+      description: |
+        Internal tool (not part of the challenge). Exists only when internal tools are enabled and requires
+        `X-Role: ADMIN`; otherwise 404 like a missing route. Same response as `GET /api/v1/orders`.
+      tags: [internal]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: integer, format: int32, minimum: 1 }
+        - $ref: '#/components/parameters/RoleHeader'
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: status
+          in: query
+          required: false
+          description: Only orders in this status. Blank means absent.
+          schema:
+            $ref: '#/components/schemas/OrderStatus'
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque cursor from `nextCursor` of the previous page.
+          schema: { type: string }
+      responses:
+        '200':
+          description: A page of the history.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderHistoryPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalError'
   /api/v1/instruments:
@@ -489,6 +636,53 @@ components:
           description: Present only for VALIDATION_ERROR caused by request fields.
           items:
             $ref: '#/components/schemas/FieldError'
+    OrderRecord:
+      type: object
+      description: An order or cash movement as stored in the ledger.
+      required: [orderId, instrumentId, ticker, side, type, status, quantity, price, amount, requestedAmount, createdAt, rejection]
+      properties:
+        orderId: { type: integer, format: int64 }
+        instrumentId: { type: integer, format: int64 }
+        ticker: { type: string }
+        side:
+          $ref: '#/components/schemas/OrderSide'
+        type:
+          $ref: '#/components/schemas/OrderType'
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        quantity:
+          type: [integer, 'null']
+          description: Whole shares for BUY/SELL; null for CASH_IN/CASH_OUT.
+        price:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        amount:
+          description: quantity × price for BUY/SELL (null without price); the moved amount for CASH_IN/CASH_OUT.
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        requestedAmount:
+          oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ]
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        rejection:
+          description: Null when not REJECTED, and for seed REJECTED orders (no reason recorded before CM-01).
+          oneOf: [ { $ref: '#/components/schemas/Rejection' }, { type: 'null' } ]
+    OrderHistoryPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderRecord' }
+        nextCursor:
+          type: [string, 'null']
+    CancellationResult:
+      allOf:
+        - $ref: '#/components/schemas/OrderRecord'
+        - type: object
+          required: [alreadyCancelled]
+          properties:
+            alreadyCancelled:
+              type: boolean
+              description: True when the order was already CANCELLED before this request (DEC-15).
     CashMovementRequest:
       type: object
       additionalProperties: false
