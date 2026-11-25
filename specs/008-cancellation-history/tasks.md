@@ -15,7 +15,7 @@ half follows the test-first cycle on its own and leaves the suite green:
 - **008-a1:** `OrderRecord`, `HistoryCursor`, `OrderHistoryCriteria`, `OrderHistoryPage` and their unit tests.
 - **008-a2:** `OrderLedgerRepository`, `JdbcOrderLedgerRepository` and `JdbcOrderLedgerRepositoryIT`.
 
-- [ ] T001 [P] Write `OrderRecordTest`, `HistoryCursorTest`, `OrderHistoryCriteriaTest`.
+- [x] T001 [P] Write `OrderRecordTest`, `HistoryCursorTest`, `OrderHistoryCriteriaTest`.
 - [ ] T002 [P] Write `JdbcOrderLedgerRepositoryIT` (CU-04.01–04.03, 04.06–04.07, 07.01, 07.02, 07.07, 07.08).
 - [ ] T003 Skeletons of the domain types, `OrderLedgerRepository`, `JdbcOrderLedgerRepository`. **Fail**. Record.
 - [ ] T004 Implement plan.md § History and single order (persistence) and `cancelIfNew` until green.
