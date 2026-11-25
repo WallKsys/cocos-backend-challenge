@@ -18,11 +18,15 @@
   | history page / with filter and cursor | ~0.2–1.3 ms | `orders_user_history_idx` |
   | idempotency lookup | ~0.2 ms | index |
   | partial search over 100k (worst case: matches every name) | ~14–27 ms | trigram bitmap scans |
-  | search without criteria (first page) | ~11 ms | sort of 100k tickers |
+  | search without criteria (first page) | ~11 ms | sort of 100k tickers (before V8; see § Plan guard) |
 
   The SQL part of the portfolio is about 15 ms against a 200 ms p95 target: **RSK-01 does not materialize** and
   pre-computed positions are not needed (TEC-17 criterion not met).
-- With `SET enable_seqscan = off`, every query of § Plan guard uses an index on the seed database.
+- With `SET enable_seqscan = off`, every query of § Plan guard uses an index on the seed database, **except search
+  with no criteria**: no index of V1–V7 gives `type <> 'MONEDA'` in `ticker COLLATE "C"` order, so PostgreSQL scans
+  and sorts `instruments` (found in slice 009-a, 2026-11-24). Migration V8 (§ Plan guard) adds that index; with it,
+  the plan becomes `Limit -> Index Scan using instruments_tradable_ticker_idx`, with and without cursor (verified on
+  PostgreSQL 18 with V1–V8, 2026-11-24).
 
 ## Internal tools
 
@@ -116,11 +120,23 @@ To test the real SQL, each `Jdbc*` adapter exposes its SQL as package-private `s
 `JdbcInstrumentSearchRepository` a package-private method that builds the SQL for given criteria. `PlanGuardIT` lives
 in the same package. For each query, inside a transaction: `SET LOCAL enable_seqscan = off`, then
 `EXPLAIN (FORMAT JSON) <query>` with representative parameters; parse the JSON and fail if any node has
-`"Node Type": "Seq Scan"` on `orders`, `instruments` or `marketdata`, naming the query.
+`"Node Type": "Seq Scan"` on `orders`, `instruments`, `marketdata` or `users` (the account lock reads `users`),
+naming the query.
 
 Queries: account lock; cash balance; share balance; idempotency record lookup; open positions; fills; latest quote;
 latest quotes (batch); history (no filter, status filter, cursor); single order record; search with `q` long, `q`
 short, ticker filter, name filter, no criteria with cursor.
+
+Migration `V8__instruments_tradable_ticker_index.sql` (the only migration of spec 009):
+
+```sql
+-- Spec 009, plan guard: search without criteria lists tradable instruments in ticker order (DEC-08).
+CREATE INDEX instruments_tradable_ticker_idx ON instruments (ticker COLLATE "C") WHERE type <> 'MONEDA';
+```
+
+The search SQL does not change. The cursor condition stays a `Filter` of the index scan (not an index condition),
+so a deep page reads the index from its start; acceptable for the catalog size. `SeedDataIT` (spec 002) expects
+migration versions 1 to 8.
 
 ## Volume profile
 

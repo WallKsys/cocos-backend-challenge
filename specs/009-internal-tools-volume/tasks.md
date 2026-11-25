@@ -15,8 +15,11 @@
 - [ ] T001 Check that every `Jdbc*` adapter exposes its SQL as package-private constants (and the search and history
   adapters their package-private SQL builder methods), as plans 004 to 008 require. Refactor only an adapter that
   does not, with no behavior change: all tests stay green unmodified.
-- [ ] T002 Write `PlanGuardIT` (plan.md § Plan guard). It should pass immediately; if a query fails, **stop and
-  report** (it means an index is missing or a query cannot use it).
+- [ ] T002 Write `PlanGuardIT` (plan.md § Plan guard). Extend `SeedDataIT` (spec 002) to expect migration versions
+  1 to 8 (rename its method to `flywayAppliedVersionsOneToEightSuccessfully`). Run `./mvnw verify`: **only** `search
+  with no criteria and cursor` (Seq Scan on `instruments`) and `SeedDataIT` fail. Record. If any other query fails,
+  **stop and report** (it means an index is missing or a query cannot use it).
+- [ ] T002a Add `V8__instruments_tradable_ticker_index.sql` (plan.md § Plan guard) until green.
 
 ## Slice 009-b — Order tools: delete and execute, use cases only (branch `009-internal-tools-volume-b`)
 
