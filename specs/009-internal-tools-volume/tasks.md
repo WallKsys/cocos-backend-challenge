@@ -92,9 +92,9 @@ T007, T007a and T007b are shared by both halves: each half does its part of them
 
 **Estimated size**: ~250 lines (the dataset copy is small).
 
-- [ ] T013 Copy `volume-dataset.sql`; add the Failsafe `excludedGroups` and the `volume` profile to `pom.xml`.
-- [ ] T014 Write `VolumeIT` (plan.md § Volume profile).
-- [ ] T015 Run `./mvnw verify` (the volume test must **not** run) and `./mvnw verify -Pvolume` (it must run and pass).
+- [x] T013 Copy `volume-dataset.sql`; add the Failsafe `excludedGroups` and the `volume` profile to `pom.xml`.
+- [x] T014 Write `VolumeIT` (plan.md § Volume profile).
+- [x] T015 Run `./mvnw verify` (the volume test must **not** run) and `./mvnw verify -Pvolume` (it must run and pass).
   Paste the printed latency table in the PR. If a target is not met, **stop and report** with the table.
 
 ---
