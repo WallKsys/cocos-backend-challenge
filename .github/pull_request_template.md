@@ -28,6 +28,11 @@
 <paste the output of scripts/check-pr-size.sh here>
 ```
 
+## Owner decisions
+
+<!-- Deviations the owner approved in the conversation (for example, a size over 400 lines), one per line, or "None".
+     The automatic review accepts them only when the owner has added the label `owner-approved` (TEC-36). -->
+
 ## Size justification
 
 <!-- Only when the PR exceeds 400 counted lines. Explain why it cannot be split further.

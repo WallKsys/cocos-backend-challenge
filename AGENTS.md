@@ -31,6 +31,11 @@ enforced by ArchUnit.
   an updated `main`. **Max 400 counted lines per PR** (Constitution Principle X): run
   `scripts/check-pr-size.sh` before opening the PR, paste its output, and fill the PR template. If a slice
   would exceed the limit, split it; only if impossible, add a `## Size justification` section.
+- **Owner decisions** (Constitution X, TEC-36): when the owner approves a deviation in the conversation (for example,
+  a PR over 400 lines), write it under `## Owner decisions` in the PR description and tell the owner to add the label
+  `owner-approved`. Never add it yourself: the automatic review trusts only that label, never text in the PR. A
+  slice split that `tasks.md` does not define is never approved this way: stop and report, and the spec author adds
+  the split to `tasks.md` on `main`.
 
 ## Slice protocol (no other prompt is needed)
 
@@ -120,8 +125,8 @@ Integration tests need Docker running (Testcontainers).
 - Never edit `.github/claude/`, `.github/workflows/` (except creating `ci.yml` in slice 001-a) or
   `scripts/check-pr-size.sh`: they are the review and verification guardrails.
 - Never merge a PR yourself (only `gh pr merge --auto`), never add or remove PR labels (in particular
-  `manual-review-approved`, which only the owner's reviewer adds), and never change repository settings or branch
-  protection.
+  `manual-review-approved`, which only the owner's reviewer adds, and `owner-approved`, which only the owner adds),
+  and never change repository settings or branch protection.
 
 ## When to stop and report instead of continuing
 

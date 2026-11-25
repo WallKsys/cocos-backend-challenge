@@ -25,13 +25,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Drop the approval when new commits arrive
+      # Both owner labels approve a specific state of the PR (TEC-35, TEC-36): new commits need a new approval.
+      - name: Drop the approvals when new commits arrive
         if: github.event.action == 'synchronize'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
-        run: gh pr edit "$PR" --repo "$REPO" --remove-label manual-review-approved || true
+        run: |
+          gh pr edit "$PR" --repo "$REPO" --remove-label manual-review-approved || true
+          gh pr edit "$PR" --repo "$REPO" --remove-label owner-approved || true
 
       - name: Require the manual review of critical slices
         env:
@@ -41,7 +44,7 @@ jobs:
           BRANCH: ${{ github.event.pull_request.head.ref }}
           BASE: ${{ github.event.pull_request.base.ref }}
         run: |
-          slice=$(printf '%s' "$BRANCH" | sed -nE 's/^([0-9]{3})-[a-z0-9-]+-([a-z][0-9]?)$/\1-\2/p')
+          slice=$(printf '%s' "$BRANCH" | sed -nE 's/^([0-9]{3})-[a-z0-9-]+-([a-z][0-9]?[a-z]?)$/\1-\2/p')
           if [ -z "$slice" ]; then
             echo "$BRANCH is not a slice branch: no manual review gate."
             exit 0
@@ -52,9 +55,14 @@ jobs:
             printf '%s\n' "$tasks" | awk -v s="Slice $1 " '/^## |^### / { inside = (index($0, s) > 0) } inside'
           }
           text=$(section "$slice")
-          if [ -z "$text" ]; then
-            text=$(section "${slice%[0-9]}")
-          fi
+          # A half (009-c1a, 003-c2) falls back to its parent slice (009-c1, then 009-c; 003-c), whose mark covers it.
+          parent=$slice
+          while [ -z "$text" ]; do
+            suffix=${parent#*-}
+            [ "${#suffix}" -gt 1 ] || break
+            parent=${parent%?}
+            text=$(section "$parent")
+          done
           if ! printf '%s\n' "$text" | grep -q '^\*\*Manual review\*\*: required'; then
             echo "Slice $slice: no manual review required."
             exit 0

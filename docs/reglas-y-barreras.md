@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Estado** | Vigente. Se actualiza en el mismo PR que cambia una regla (chequeo 17 de la revisión automática). |
-| **Fecha** | 2026-11-24 |
+| **Fecha** | 2026-11-25 |
 | **Documentos relacionados** | [Constitución](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.specify/memory/constitution.md) · [AGENTS.md](https://github.com/WallKsys/cocos-backend-challenge/blob/main/AGENTS.md) · [RFC](rfc.md) · [Análisis funcional](analisis-funcional.md) · [README](https://github.com/WallKsys/cocos-backend-challenge#readme) |
 
 > Índice de las reglas de arquitectura y de desarrollo que guían al agente implementador. Para cada una indica
@@ -164,6 +164,7 @@ SC-003; evidencia en el PR #4).
 | REV-09 | Las ramas mergeadas se conservan como evidencia. | Historia completa de cada porción. | Decisión del dueño | Instrucción | ⚪ |
 | REV-10 | El sitio de documentación se genera solo desde `docs/`, sin contenido propio. En cada PR se construye en modo estricto, y en cada merge a `main` se publica. | Una sola fuente, revisada en los PRs; un enlace roto se ve antes del merge. | Decisión del dueño (sitio en GitHub Pages) | [`docs.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/docs.yml) y [`zensical.toml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/zensical.toml); el check `docs` no es obligatorio | 🟡 |
 | REV-11 | Merge automático: el agente activa el auto-merge al abrir el PR y nunca mergea a mano ni agrega o quita etiquetas. Un PR se mergea solo cuando pasan `verify`, `pr-size`, `review` y `manual-review`. | El dueño no espera ni mergea a mano las porciones comunes; las críticas siguen esperando la revisión manual. | TEC-35 | Protección de `main` (los cuatro checks); [`manual-review.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/manual-review.yml); la prohibición al agente, en `AGENTS.md` | 🟠 · ⚪ |
+| REV-12 | Una desviación que el dueño aprueba en la conversación (tamaño mayor a 400 líneas, trabajo agregado fuera de la porción) se declara en `## Owner decisions` del PR y vale solo con la etiqueta `owner-approved`, que agrega el dueño y un push nuevo quita. Una división de porción nunca se aprueba así: se agrega antes al `tasks.md` de `main`. | La revisión no puede creer en texto del PR, porque el agente usa la cuenta del dueño; la etiqueta es una señal que el agente tiene prohibido tocar. | TEC-36 | `pr-review.md` § Owner decisions (chequeos 1 y 12); [`manual-review.yml`](https://github.com/WallKsys/cocos-backend-challenge/blob/main/.github/workflows/manual-review.yml) quita la etiqueta en cada push; la prohibición al agente, en `AGENTS.md` | 🟡 · ⚪ |
 
 **Porciones con revisión manual obligatoria (REV-06):**
 
@@ -225,9 +226,9 @@ Lo siguiente depende de la revisión o del proceso, no de una máquina:
 - **Dependencias fuera del plan** (PRO-11): chequeo 11, sin un check que compare el `pom.xml`.
 - **Formato de los commits** (PRO-10): no se verifica.
 - **Separación entre quien implementa y quien revisa** (REV-01): es una regla de proceso.
-- **Quién pone la etiqueta `manual-review-approved`** (REV-06, REV-11): el agente, el revisor y el dueño usan la
-  misma cuenta de GitHub, así que GitHub no distingue quién la agregó. Que el agente no la toque es una instrucción
-  de `AGENTS.md`, auditable en el historial de cada PR.
+- **Quién pone las etiquetas `manual-review-approved` y `owner-approved`** (REV-06, REV-11, REV-12): el agente, el
+  revisor y el dueño usan la misma cuenta de GitHub, así que GitHub no distingue quién las agregó. Que el agente no
+  las toque es una instrucción de `AGENTS.md`, auditable en el historial de cada PR.
 - **Los workflows mismos** (REV-07): en un `pull_request`, GitHub ejecuta los workflows en la versión del PR. Un PR
   que edite `ci.yml` o `pr-size.yml` podría debilitar los checks obligatorios. Lo cubren el chequeo 17, que marca el
   cambio, y la decisión de merge del dueño.

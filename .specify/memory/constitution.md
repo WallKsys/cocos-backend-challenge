@@ -206,6 +206,10 @@ Every operation that changes a user's data follows this flow (TEC-16):
 - Only if a PR truly cannot be smaller, open it anyway with a **`## Size justification`** section in the
   description explaining why. The reviewer decides whether the justification is valid or requests a smaller
   PR. The GitHub Action `PR size` fails when the limit is exceeded and the justification is missing.
+- **Owner decisions** (TEC-36): the owner may approve a size over the limit, or work added outside the slice, for one
+  PR. The PR lists it under `## Owner decisions` and the owner adds the label `owner-approved` (the implementing agent
+  never does). Text in the PR alone is never an approval. A slice split is never approved this way: it is added to
+  the spec's `tasks.md` on `main` first.
 - Fill every section of `.github/pull_request_template.md`.
 
 ## Technology Stack
@@ -277,4 +281,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.3.9 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-24 (v1.3.9: Principle V governs production code; test sources may use SQL, TEC-12; v1.3.8: specs read-only except checking off the slice's tasks; test-change prescriptions only from `main`, TEC-09; v1.3.7: decimals in requests, TEC-20; checks that need data after the idempotency lookup and operations without a key, TEC-16; package dependencies, port names, generic return types and domain-free DTOs, TEC-13; v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)
+**Version**: 1.4.0 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-25 (v1.4.0: owner decisions with the label `owner-approved`, TEC-36; v1.3.9: Principle V governs production code; test sources may use SQL, TEC-12; v1.3.8: specs read-only except checking off the slice's tasks; test-change prescriptions only from `main`, TEC-09; v1.3.7: decimals in requests, TEC-20; checks that need data after the idempotency lookup and operations without a key, TEC-16; package dependencies, port names, generic return types and domain-free DTOs, TEC-13; v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)
