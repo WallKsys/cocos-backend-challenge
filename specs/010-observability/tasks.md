@@ -55,7 +55,7 @@ the 010-c2 branch, unchanged unless the logs check needs it.
 - [x] T007 Write `ObservabilityIT` (plan.md § Tests). It should pass with slices a, b and c1; if a signal does not
   arrive, **stop and report** with what the stack returned. In the PR, paste the Loki line found for `obs-it-1`,
   with its `trace_id` and the operation-log pairs.
-- [ ] T008 Run `./mvnw verify` three times to confirm it is stable (polling with generous timeouts, no fixed sleeps
+- [x] T008 Run `./mvnw verify` three times to confirm it is stable (polling with generous timeouts, no fixed sleeps
   except between polls).
 
 ---
