@@ -37,7 +37,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -47,17 +46,7 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private static final Map<Class<? extends DomainException>, ApiErrorCode> DOMAIN_CODES = Map.of(
-            InvalidRequestException.class, ApiErrorCode.VALIDATION_ERROR,
-            NotFoundException.class, ApiErrorCode.NOT_FOUND,
-            IdempotencyConflictException.class, ApiErrorCode.IDEMPOTENCY_CONFLICT,
-            OrderNotCancellableException.class, ApiErrorCode.ORDER_NOT_CANCELLABLE,
-            OrderNotExecutableException.class, ApiErrorCode.ORDER_NOT_EXECUTABLE,
-            SearchTermTooShortException.class, ApiErrorCode.SEARCH_TERM_TOO_SHORT);
-
-    @ExceptionHandler({ApiException.class, InvalidRequestException.class, NotFoundException.class,
-            IdempotencyConflictException.class, OrderNotCancellableException.class,
-            OrderNotExecutableException.class, SearchTermTooShortException.class})
+    @ExceptionHandler({ApiException.class, DomainException.class})
     ResponseEntity<Object> handleExpectedException(Exception exception, WebRequest request) {
         ApiErrorCode code = exception instanceof ApiException apiException
                 ? apiException.code() : domainCode((DomainException) exception);
@@ -65,11 +54,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private static ApiErrorCode domainCode(DomainException exception) {
-        return DOMAIN_CODES.entrySet().stream()
-                .filter(entry -> entry.getKey().isInstance(exception))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .orElseThrow();
+        return switch (exception) {
+            case InvalidRequestException _ -> ApiErrorCode.VALIDATION_ERROR;
+            case NotFoundException _ -> ApiErrorCode.NOT_FOUND;
+            case IdempotencyConflictException _ -> ApiErrorCode.IDEMPOTENCY_CONFLICT;
+            case OrderNotCancellableException _ -> ApiErrorCode.ORDER_NOT_CANCELLABLE;
+            case OrderNotExecutableException _ -> ApiErrorCode.ORDER_NOT_EXECUTABLE;
+            case SearchTermTooShortException _ -> ApiErrorCode.SEARCH_TERM_TOO_SHORT;
+        };
     }
 
     @Override

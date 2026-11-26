@@ -7,12 +7,12 @@ import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.InstrumentType;
 import com.cocos.challenge.domain.model.MarketQuote;
 import com.cocos.challenge.domain.model.Money;
-import com.cocos.challenge.domain.model.OrderEvaluation;
 import com.cocos.challenge.domain.model.OrderRequest;
 import com.cocos.challenge.domain.model.OrderStatus;
 import com.cocos.challenge.domain.model.RejectionReason;
 import com.cocos.challenge.domain.model.ShareBalance;
 import com.cocos.challenge.domain.model.UserId;
+import com.cocos.challenge.domain.service.OrderEvaluator.OrderEvaluation;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 

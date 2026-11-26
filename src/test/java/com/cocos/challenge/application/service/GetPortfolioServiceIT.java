@@ -14,7 +14,7 @@ import com.cocos.challenge.domain.model.OrderRequest;
 import com.cocos.challenge.domain.model.OrderStatus;
 import com.cocos.challenge.domain.model.Percentage;
 import com.cocos.challenge.domain.model.Portfolio;
-import com.cocos.challenge.domain.model.PortfolioWarningCode;
+import com.cocos.challenge.domain.model.Portfolio.PortfolioWarningCode;
 import com.cocos.challenge.domain.model.Position;
 import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.support.IntegrationTest;

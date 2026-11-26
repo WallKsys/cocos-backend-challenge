@@ -25,12 +25,12 @@ Commit messages: `[011][T0xx] short description (TEC-38)`.
 
 **Estimated size**: ~200 lines.
 
-- [ ] T001 Adjust tests (passes at once): `OrderEvaluatorTest` (a), `PortfolioTest` (a), `PositionTest` (a),
+- [x] T001 Adjust tests (passes at once): `OrderEvaluatorTest` (a), `PortfolioTest` (a), `PositionTest` (a),
   `GetPortfolioServiceIT` (a), `SearchInstrumentsServiceTest` (a, b: `InstrumentPage` → `CursorPage<...>`),
   `GetOrderHistoryServiceTest` (a, b: `OrderHistoryPage` → `CursorPage<...>`).
-- [ ] T002 Implement plan.md § Sealed domain exceptions and § Domain (`CursorPage`, nested `OrderEvaluation`,
+- [x] T002 Implement plan.md § Sealed domain exceptions and § Domain (`CursorPage`, nested `OrderEvaluation`,
   nested `PortfolioWarning` and `PortfolioWarningCode`; `RankedInstrument` waits for 011-c).
-- [ ] T003 SC-004 evidence: add a temporary `public final class ProbeException extends DomainException` to the
+- [x] T003 SC-004 evidence: add a temporary `public final class ProbeException extends DomainException` to the
   `permits` list, run `./mvnw -q compile`, paste the compiler error (the `switch` of `ApiExceptionHandler` does not
   cover all values) in the PR, and remove it. Nothing of it is committed. Then step 3 of the slice protocol above.
 

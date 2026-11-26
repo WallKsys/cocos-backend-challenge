@@ -4,9 +4,9 @@ import com.cocos.challenge.application.port.out.AccountReader;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
+import com.cocos.challenge.domain.model.CursorPage;
 import com.cocos.challenge.domain.model.HistoryCursor;
 import com.cocos.challenge.domain.model.OrderHistoryCriteria;
-import com.cocos.challenge.domain.model.OrderHistoryPage;
 import com.cocos.challenge.domain.model.OrderRecord;
 import com.cocos.challenge.domain.model.UserId;
 import org.junit.jupiter.api.Tag;
@@ -42,14 +42,14 @@ class GetOrderHistoryServiceTest {
         when(first.createdAt()).thenReturn(createdAt);
         when(ledger.history(user, criteria, 2)).thenReturn(List.of(first, extra));
 
-        OrderHistoryPage page = service.list(user, criteria);
+        CursorPage<OrderRecord, HistoryCursor> page = service.list(user, criteria);
 
         assertThat(page.items()).containsExactly(first);
         assertThat(page.nextCursor()).isEqualTo(new HistoryCursor(createdAt, 7));
 
         OrderHistoryCriteria next = OrderHistoryCriteria.of("NEW", 1, page.nextCursor().encode());
         when(ledger.history(user, next, 2)).thenReturn(List.of(extra));
-        assertThat(service.list(user, next)).isEqualTo(new OrderHistoryPage(List.of(extra), null));
+        assertThat(service.list(user, next)).isEqualTo(new CursorPage<>(List.of(extra), null));
     }
 
     @Test
@@ -59,7 +59,7 @@ class GetOrderHistoryServiceTest {
         OrderHistoryCriteria criteria = OrderHistoryCriteria.of("CANCELLED", null, null);
         when(ledger.history(user, criteria, 21)).thenReturn(List.of());
 
-        assertThat(service.list(user, criteria)).isEqualTo(new OrderHistoryPage(List.of(), null));
+        assertThat(service.list(user, criteria)).isEqualTo(new CursorPage<>(List.of(), null));
     }
 
     @Test

@@ -1,5 +1,8 @@
 package com.cocos.challenge.domain.model;
 
+import com.cocos.challenge.domain.model.Portfolio.PortfolioWarning;
+import com.cocos.challenge.domain.model.Portfolio.PortfolioWarningCode;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
