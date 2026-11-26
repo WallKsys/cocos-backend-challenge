@@ -2,16 +2,14 @@ package com.cocos.challenge.infrastructure.config;
 
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
-import com.cocos.challenge.application.port.out.CashMovementRepository;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.application.service.CashMovementService;
 import com.cocos.challenge.application.service.IdempotencyLookup;
 import com.cocos.challenge.domain.service.CashMovementEvaluator;
-import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcCashMovementRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.time.Clock;
 
@@ -19,12 +17,7 @@ import java.time.Clock;
 public class CashMovementConfiguration {
 
     @Bean
-    CashMovementRepository cashMovementRepository(JdbcClient jdbc) {
-        return new JdbcCashMovementRepository(jdbc);
-    }
-
-    @Bean
-    CashMovementService cashMovementService(AccountRepository accountLock, CashMovementRepository movements,
+    CashMovementService cashMovementService(AccountRepository accountLock, OrderLedgerRepository movements,
             InstrumentRepository instruments, LedgerReader ledger, BusinessMetrics metrics, Clock clock,
             IdempotencyLookup idempotencyLookup) {
         return new CashMovementService(accountLock, movements, instruments, ledger, new CashMovementEvaluator(),

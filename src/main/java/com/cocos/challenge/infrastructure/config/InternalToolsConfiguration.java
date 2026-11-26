@@ -16,7 +16,6 @@ import com.cocos.challenge.application.service.DeleteOrderService;
 import com.cocos.challenge.application.service.ExecuteOrderService;
 import com.cocos.challenge.application.service.RestoreSeedDataService;
 import com.cocos.challenge.application.service.UpdateMarketDataService;
-import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcAdminOrderRepository;
 import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcSeedDataRestorer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,11 +25,6 @@ import java.time.Clock;
 
 @Configuration
 public class InternalToolsConfiguration {
-
-    @Bean
-    AdminOrderRepository adminOrderRepository(JdbcClient jdbc) {
-        return new JdbcAdminOrderRepository(jdbc);
-    }
 
     @Bean
     SeedDataRestorer seedDataRestorer(JdbcClient jdbc) {

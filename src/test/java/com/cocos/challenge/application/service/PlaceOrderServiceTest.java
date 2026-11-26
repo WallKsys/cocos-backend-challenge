@@ -14,6 +14,7 @@ import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
 import com.cocos.challenge.domain.model.CashBalance;
+import com.cocos.challenge.domain.model.CashMovement;
 import com.cocos.challenge.domain.model.CreatedUser;
 import com.cocos.challenge.domain.model.Fill;
 import com.cocos.challenge.domain.model.Instrument;
@@ -286,6 +287,14 @@ class PlaceOrderServiceTest {
             keys.put(new Key(order.userId(), order.idempotencyKey()),
                     new IdempotencyRecord(id, order.side(), order.fingerprint()));
             return saved;
+        }
+
+        public CashMovement findCashMovement(long id) {
+            throw new UnsupportedOperationException();
+        }
+
+        public CashMovement save(NewCashMovement movement) {
+            throw new UnsupportedOperationException();
         }
 
         public Optional<OrderRecord> findRecord(UserId userId, long orderId) {

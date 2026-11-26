@@ -18,7 +18,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 public class OrderQueryConfiguration {
 
     @Bean
-    OrderLedgerRepository orderLedgerRepository(JdbcClient jdbc) {
+    JdbcOrderLedgerRepository orderLedgerRepository(JdbcClient jdbc) {
         return new JdbcOrderLedgerRepository(jdbc);
     }
 

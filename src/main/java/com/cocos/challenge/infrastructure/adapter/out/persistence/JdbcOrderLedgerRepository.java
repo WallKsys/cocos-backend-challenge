@@ -1,6 +1,8 @@
 package com.cocos.challenge.infrastructure.adapter.out.persistence;
 
+import com.cocos.challenge.application.port.out.AdminOrderRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
+import com.cocos.challenge.domain.model.CashMovement;
 import com.cocos.challenge.domain.model.HistoryCursor;
 import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.Money;
@@ -19,12 +21,13 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
-public class JdbcOrderLedgerRepository implements OrderLedgerRepository {
+public class JdbcOrderLedgerRepository implements OrderLedgerRepository, AdminOrderRepository {
 
     static final String FIND_IDEMPOTENCY_RECORD_SQL = """
             SELECT id, side, request_fingerprint FROM orders WHERE userid = :userId AND idempotency_key = :key
@@ -45,6 +48,33 @@ public class JdbcOrderLedgerRepository implements OrderLedgerRepository {
             VALUES (:instrumentId, :userId, :size, :price, :type, :side, :status, :createdAt,
                     :rejectionCode, :rejectionMessage, :key, :fingerprint, :requestedAmount)
             RETURNING id
+            """;
+
+    static final String FIND_CASH_MOVEMENT_SQL = """
+            SELECT id, userid, side, status, size, rejection_code, rejection_message, datetime,
+                   idempotency_key, request_fingerprint
+            FROM orders
+            WHERE id = :id AND side IN ('CASH_IN', 'CASH_OUT')
+            """;
+
+    static final String INSERT_CASH_MOVEMENT_SQL = """
+            INSERT INTO orders (instrumentid, userid, size, price, type, side, status, datetime,
+                                rejection_code, rejection_message, idempotency_key, request_fingerprint)
+            VALUES (:instrumentId, :userId, :amount, 1, 'MARKET', :side, :status, :createdAt,
+                    :rejectionCode, :rejectionMessage, :key, :fingerprint)
+            RETURNING id
+            """;
+
+    static final String FIND_OWNER_SQL = """
+            SELECT userid FROM orders WHERE id = :orderId
+            """;
+
+    static final String DELETE_SQL = """
+            DELETE FROM orders WHERE id = :orderId
+            """;
+
+    static final String EXECUTE_IF_NEW_SQL = """
+            UPDATE orders SET status = 'FILLED' WHERE id = :orderId AND status = 'NEW'
             """;
 
     private static final String SELECT_RECORD = """
@@ -127,6 +157,48 @@ public class JdbcOrderLedgerRepository implements OrderLedgerRepository {
     }
 
     @Override
+    public CashMovement findCashMovement(long id) {
+        return jdbc.sql(FIND_CASH_MOVEMENT_SQL).param("id", id)
+                .query((rs, rowNum) -> mapMovement(rs)).single();
+    }
+
+    @Override
+    public CashMovement save(NewCashMovement movement) {
+        Rejection rejection = movement.rejection();
+        long id = jdbc.sql(INSERT_CASH_MOVEMENT_SQL)
+                .param("instrumentId", movement.instrumentId().value())
+                .param("userId", movement.userId().value())
+                .param("amount", movement.amount().amount())
+                .param("side", movement.side().name())
+                .param("status", movement.status().name())
+                .param("createdAt", movement.createdAt().atOffset(ZoneOffset.UTC))
+                .param("rejectionCode", rejection == null ? null : rejection.reason().name())
+                .param("rejectionMessage", rejection == null ? null : rejection.message())
+                .param("key", movement.idempotencyKey())
+                .param("fingerprint", movement.fingerprint().hex())
+                .query(Long.class).single();
+        return findCashMovement(id);
+    }
+
+    @Override
+    public Optional<UserId> findOwner(long orderId) {
+        return jdbc.sql(FIND_OWNER_SQL)
+                .param("orderId", orderId)
+                .query((rs, rowNum) -> new UserId(rs.getLong("userid")))
+                .optional();
+    }
+
+    @Override
+    public boolean delete(long orderId) {
+        return jdbc.sql(DELETE_SQL).param("orderId", orderId).update() == 1;
+    }
+
+    @Override
+    public boolean executeIfNew(long orderId) {
+        return jdbc.sql(EXECUTE_IF_NEW_SQL).param("orderId", orderId).update() == 1;
+    }
+
+    @Override
     public Optional<OrderRecord> findRecord(UserId userId, long orderId) {
         return jdbc.sql(FIND_RECORD_SQL)
                 .param("orderId", orderId)
@@ -173,32 +245,33 @@ public class JdbcOrderLedgerRepository implements OrderLedgerRepository {
     }
 
     private static OrderRecord mapRecord(ResultSet rs) throws SQLException {
-        String rejectionCode = rs.getString("rejection_code");
-        Rejection rejection = rejectionCode == null ? null
-                : new Rejection(RejectionReason.valueOf(rejectionCode), rs.getString("rejection_message"));
-        BigDecimal price = rs.getBigDecimal("price");
-        BigDecimal requestedAmount = rs.getBigDecimal("requested_amount");
         return new OrderRecord(
                 rs.getLong("id"), new InstrumentId(rs.getLong("instrumentid")), rs.getString("ticker"),
                 OrderSide.valueOf(rs.getString("side")), OrderType.valueOf(rs.getString("type")),
                 OrderStatus.valueOf(rs.getString("status")), rs.getBigDecimal("size"),
-                price == null ? null : Money.of(price),
-                requestedAmount == null ? null : Money.of(requestedAmount), rejection,
-                rs.getObject("datetime", OffsetDateTime.class).toInstant());
+                money(rs.getBigDecimal("price")), money(rs.getBigDecimal("requested_amount")),
+                rejection(rs), createdAt(rs));
     }
 
     private static Order mapOrder(ResultSet rs) throws SQLException {
-        String reason = rs.getString("rejection_code");
-        Rejection rejection = reason == null ? null
-                : new Rejection(RejectionReason.valueOf(reason), rs.getString("rejection_message"));
-        String fingerprint = rs.getString("request_fingerprint");
         return new Order(rs.getLong("id"), new UserId(rs.getLong("userid")),
                 new InstrumentId(rs.getLong("instrumentid")), rs.getString("ticker"),
                 OrderSide.valueOf(rs.getString("side")), OrderType.valueOf(rs.getString("type")),
                 OrderStatus.valueOf(rs.getString("status")), rs.getBigDecimal("size").longValueExact(),
-                money(rs.getBigDecimal("price")), money(rs.getBigDecimal("requested_amount")), rejection,
-                rs.getObject("datetime", OffsetDateTime.class).toInstant(), rs.getString("idempotency_key"),
-                fingerprint == null ? null : new RequestFingerprint(fingerprint));
+                money(rs.getBigDecimal("price")), money(rs.getBigDecimal("requested_amount")),
+                rejection(rs), createdAt(rs), rs.getString("idempotency_key"), fingerprint(rs));
+    }
+
+    private static CashMovement mapMovement(ResultSet rs) throws SQLException {
+        return new CashMovement(rs.getLong("id"), new UserId(rs.getLong("userid")),
+                OrderSide.valueOf(rs.getString("side")), OrderStatus.valueOf(rs.getString("status")),
+                Money.of(rs.getBigDecimal("size")), rejection(rs),
+                createdAt(rs), rs.getString("idempotency_key"), fingerprint(rs));
+    }
+
+    private static Rejection rejection(ResultSet rs) throws SQLException {
+        String code = rs.getString("rejection_code");
+        return code == null ? null : new Rejection(RejectionReason.valueOf(code), rs.getString("rejection_message"));
     }
 
     private static BigDecimal amount(Money money) {
@@ -207,5 +280,14 @@ public class JdbcOrderLedgerRepository implements OrderLedgerRepository {
 
     private static Money money(BigDecimal amount) {
         return amount == null ? null : Money.of(amount);
+    }
+
+    private static Instant createdAt(ResultSet rs) throws SQLException {
+        return rs.getObject("datetime", OffsetDateTime.class).toInstant();
+    }
+
+    private static RequestFingerprint fingerprint(ResultSet rs) throws SQLException {
+        String fingerprint = rs.getString("request_fingerprint");
+        return fingerprint == null ? null : new RequestFingerprint(fingerprint);
     }
 }

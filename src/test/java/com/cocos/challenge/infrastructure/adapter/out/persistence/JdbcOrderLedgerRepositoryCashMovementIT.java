@@ -1,6 +1,6 @@
 package com.cocos.challenge.infrastructure.adapter.out.persistence;
 
-import com.cocos.challenge.application.port.out.NewCashMovement;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository.NewCashMovement;
 import com.cocos.challenge.domain.model.CashMovement;
 import com.cocos.challenge.domain.model.CashMovementRequest;
 import com.cocos.challenge.domain.model.Money;
@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @IntegrationTest
 @Tag("integration")
 @Transactional
-class JdbcCashMovementRepositoryIT {
+class JdbcOrderLedgerRepositoryCashMovementIT {
 
     @Autowired
     JdbcClient jdbc;
@@ -30,7 +30,7 @@ class JdbcCashMovementRepositoryIT {
     @Test
     @Tag("CU-05.01")
     void storesDepositAsFilledMarketCashInOnArs() {
-        var repository = new JdbcCashMovementRepository(jdbc);
+        var repository = new JdbcOrderLedgerRepository(jdbc);
         CashMovement saved = deposit(repository, "100000.00");
 
         var row = jdbc.sql("""
@@ -48,16 +48,16 @@ class JdbcCashMovementRepositoryIT {
     @Test
     @Tag("CU-05.02")
     void roundTripsDepositWithCents() {
-        var repository = new JdbcCashMovementRepository(jdbc);
+        var repository = new JdbcOrderLedgerRepository(jdbc);
         CashMovement saved = deposit(repository, "1234.56");
         CashMovementRequest request = CashMovementRequest.of(OrderSide.CASH_IN, "1234.56");
 
-        assertThat(repository.findById(saved.id())).isEqualTo(new CashMovement(saved.id(), new UserId(2),
+        assertThat(repository.findCashMovement(saved.id())).isEqualTo(new CashMovement(saved.id(), new UserId(2),
                 OrderSide.CASH_IN, OrderStatus.FILLED, Money.of("1234.56"), null,
                 Instant.parse("2026-11-21T14:36:00.123456Z"), "deposit", request.fingerprint()));
     }
 
-    private CashMovement deposit(JdbcCashMovementRepository repository, String amount) {
+    private CashMovement deposit(JdbcOrderLedgerRepository repository, String amount) {
         CashMovementRequest request = CashMovementRequest.of(OrderSide.CASH_IN, amount);
         return repository.save(new NewCashMovement(new UserId(2),
                 new JdbcInstrumentRepository(jdbc).findCashInstrument().orElseThrow(),
