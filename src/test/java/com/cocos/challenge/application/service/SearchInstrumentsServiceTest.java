@@ -1,8 +1,8 @@
 package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.out.InstrumentSearchRepository;
+import com.cocos.challenge.domain.model.CursorPage;
 import com.cocos.challenge.domain.model.InstrumentId;
-import com.cocos.challenge.domain.model.InstrumentPage;
 import com.cocos.challenge.domain.model.InstrumentSearchCriteria;
 import com.cocos.challenge.domain.model.InstrumentSummary;
 import com.cocos.challenge.domain.model.InstrumentType;
@@ -25,7 +25,7 @@ class SearchInstrumentsServiceTest {
                 ranked(0, "AGRO"), ranked(0, "ALUA"), ranked(0, "AUSO")));
         SearchInstrumentsService service = new SearchInstrumentsService(repository);
 
-        InstrumentPage page = service.search(criteria());
+        CursorPage<InstrumentSummary, SearchCursor> page = service.search(criteria());
 
         assertThat(repository.maxResults).isEqualTo(3);
         assertThat(page.items()).extracting(InstrumentSummary::ticker).containsExactly("AGRO", "ALUA");
@@ -38,7 +38,7 @@ class SearchInstrumentsServiceTest {
                 ranked(0, "AGRO"), ranked(0, "ALUA")));
         SearchInstrumentsService service = new SearchInstrumentsService(repository);
 
-        InstrumentPage page = service.search(criteria());
+        CursorPage<InstrumentSummary, SearchCursor> page = service.search(criteria());
 
         assertThat(repository.maxResults).isEqualTo(3);
         assertThat(page.items()).extracting(InstrumentSummary::ticker).containsExactly("AGRO", "ALUA");

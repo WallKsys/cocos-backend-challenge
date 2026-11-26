@@ -2,6 +2,8 @@ package com.cocos.challenge.domain.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.cocos.challenge.domain.model.Portfolio.PortfolioWarning;
+import com.cocos.challenge.domain.model.Portfolio.PortfolioWarningCode;
 import java.math.BigDecimal;
 import java.util.Optional;
 import org.junit.jupiter.api.Tag;
