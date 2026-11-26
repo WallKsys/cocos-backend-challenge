@@ -120,9 +120,9 @@ T016 and T017; **011-g2** (branch `011-consolidation-g2`, after 011-g1 is merged
   `OrderQuery`/`OrderQueryService` and `CashMovementUseCase`; the controllers and `OperationLog` that use them; the
   beans (`orderQuery` replaces `getOrderQuery` and `getOrderHistoryQuery`; `cashMovementUseCase`, of type
   `CashMovementUseCase`, replaces `cashMovementService`).
-- [ ] T018 Adjust tests (passes at once): rename `IdempotencyLookupTest` → `IdempotentMutationGuardTest` (g, b, c);
+- [x] T018 Adjust tests (passes at once): rename `IdempotencyLookupTest` → `IdempotentMutationGuardTest` (g, b, c);
   `PlaceOrderServiceTest` (c); `CashMovementServiceTest` (c).
-- [ ] T019 Implement plan.md § Idempotent mutation guard and the beans (`idempotentMutationGuard` replaces
+- [x] T019 Implement plan.md § Idempotent mutation guard and the beans (`idempotentMutationGuard` replaces
   `idempotencyLookup`).
 
 ## Slice 011-h — Internal tools use case (branch `011-consolidation-h`)
