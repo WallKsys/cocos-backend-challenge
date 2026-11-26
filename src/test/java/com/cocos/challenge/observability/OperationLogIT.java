@@ -2,6 +2,7 @@ package com.cocos.challenge.observability;
 
 import com.cocos.challenge.support.IntegrationTest;
 import com.cocos.challenge.support.SeedData;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -34,11 +36,15 @@ class OperationLogIT {
     private JdbcClient jdbc;
 
     @Autowired
+    private TransactionTemplate transactionTemplate;
+
+    @Autowired
     private JsonMapper jsonMapper;
 
     @BeforeEach
+    @AfterEach
     void resetDatabase() {
-        SeedData.reset(jdbc);
+        transactionTemplate.executeWithoutResult(status -> SeedData.reset(jdbc));
     }
 
     @Test
