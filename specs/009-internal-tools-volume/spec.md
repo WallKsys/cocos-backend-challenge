@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-21
 
-**Status**: Approved for implementation
+**Status**: Implemented (2026-11-25)
 
 **Input**: Catalog level 3 (I-01 to I-05, DEC-03, DEC-16); PRD M-08 to M-11, RSK-01, PA-02, PA-03; RFC TEC-17,
 TEC-18, TEC-24; acceptance scenarios **CU-I.01 to CU-I.09**; Gherkin

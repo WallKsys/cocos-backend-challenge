@@ -61,6 +61,6 @@
 
 ## Definition of done (spec 002)
 
-- [ ] Slices 002-a and 002-b merged into `main`.
-- [ ] `./mvnw verify` green; `docker compose up --build` starts with five applied migrations.
-- [ ] No migration was edited after being copied.
+- [x] Slices 002-a and 002-b merged into `main`.
+- [x] `./mvnw verify` green; `docker compose up --build` starts with five applied migrations.
+- [x] No migration was edited after being copied.

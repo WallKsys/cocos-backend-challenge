@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-21
 
-**Status**: Approved for implementation
+**Status**: Implemented (2026-11-25)
 
 **Input**: Functional analysis § 8 (schema changes CM-01 to CM-11), DEC-07, DEC-12, DEC-13, DEC-18, DEC-23,
 RFC TEC-12, TEC-16, TEC-17, TEC-20. Original schema and data: `docs/referencia/database.sql`.

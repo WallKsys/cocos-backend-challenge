@@ -152,6 +152,6 @@ conventions belong to spec 003.
 
 ## Definition of done (spec 003)
 
-- [ ] Slices 003-a to 003-f merged into `main`.
-- [ ] `./mvnw verify` green; ArchUnit (both files) green.
-- [ ] Every error response of the probes matches plan.md § Error catalog exactly.
+- [x] Slices 003-a to 003-f merged into `main`.
+- [x] `./mvnw verify` green; ArchUnit (both files) green.
+- [x] Every error response of the probes matches plan.md § Error catalog exactly.

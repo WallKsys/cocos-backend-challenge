@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-21
 
-**Status**: Approved for implementation
+**Status**: Implemented (2026-11-25)
 
 **Input**: RFC TEC-27 (structured logs, correlation id), TEC-31 (OpenTelemetry, business metrics, dashboards);
 PRD RNF-04, RNF-09. The `BusinessMetrics` port and its Micrometer adapter already exist (spec 003) and every use

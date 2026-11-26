@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Estado** | En elaboración |
+| **Estado** | **Cerrado** (2026-11-25): el proyecto está implementado y este documento queda como registro de las decisiones |
 | **Fecha** | 2026-11-21 |
 | **Documentos relacionados** | [PRD](prd.md) · [Análisis funcional](analisis-funcional.md) · [Casos de uso](casos-de-uso.md) |
 

@@ -103,9 +103,6 @@ half follows the test-first cycle on its own and leaves the suite green:
 `CU-03` is **not** added to `scope.txt` in this slice: `CU-03.36` has no JUnit test until `ConcurrentOrdersIT`
 (005-f), and traceability rule 8 would fail the build. Cucumber runs the 46 scenarios regardless of the scope.
 
-005-e1 delivers the controller, published contract and HTTP examples. T014 and T018 close in 005-e2 with the
-feature copy and verification of all 46 scenarios.
-
 - [x] T014 Copy the feature file and the contract.
 - [x] T015 [P] Write `OrderSteps` and `TestClockConfiguration` (plan.md § BDD steps).
 - [x] T016 [P] Write `OrderControllerIT` (CU-03.23, 03.29, 03.30, replay 200 + header, response shape).
@@ -145,6 +142,6 @@ feature file; check that the published contract still matches the spec contract.
 
 ## Definition of done (spec 005)
 
-- [ ] Slices merged; `./mvnw verify` green on `main`.
-- [ ] 46 CU-03 scenarios passing; `CU-03` in scope.
-- [ ] M-02, M-04, M-05, M-06 green and stable.
+- [x] Slices merged; `./mvnw verify` green on `main`.
+- [x] 46 CU-03 scenarios passing; `CU-03` in scope.
+- [x] M-02, M-04, M-05, M-06 green and stable.

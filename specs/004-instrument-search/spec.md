@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-21
 
-**Status**: Approved for implementation
+**Status**: Implemented (2026-11-25)
 
 **Input**: Challenge requirement "Buscar activos"; DEC-08, DEC-19, DEC-21; acceptance scenarios **CU-02.01 to
 CU-02.15** (`docs/casos-de-uso.md`); Gherkin `specs/004-instrument-search/features/cu-02-instrument-search.feature`

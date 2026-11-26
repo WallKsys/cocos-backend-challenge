@@ -13,7 +13,7 @@ código que escribe un agente de IA.
 | Si querés saber... | Leé |
 |---|---|
 | Qué pide el negocio, qué era ambiguo en el enunciado y cómo se resolvió | [Análisis funcional](analisis-funcional.md) |
-| Qué tiene que pasar exactamente en cada situación, con valores reales | [Casos de uso](casos-de-uso.md) (128 escenarios) |
+| Qué tiene que pasar exactamente en cada situación, con valores reales | [Casos de uso](casos-de-uso.md) (120 escenarios) |
 | Objetivos, alcance y métricas de éxito | [PRD](prd.md) |
 | Las decisiones técnicas y las alternativas descartadas | [RFC](rfc.md) |
 | Qué reglas sigue el agente, dónde se decidieron y qué las hace cumplir | [Reglas y barreras](reglas-y-barreras.md) |

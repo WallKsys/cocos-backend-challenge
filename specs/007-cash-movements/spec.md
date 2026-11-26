@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-21
 
-**Status**: Approved for implementation
+**Status**: Implemented (2026-11-25)
 
 **Input**: R-09, R-11; DEC-04, DEC-05, DEC-07, DEC-09, DEC-12, DEC-13, DEC-17, DEC-23, DEC-24; RFC TEC-16, TEC-32;
 acceptance scenarios **CU-05.01 to CU-05.08** and **CU-06.01 to CU-06.09**; Gherkin
