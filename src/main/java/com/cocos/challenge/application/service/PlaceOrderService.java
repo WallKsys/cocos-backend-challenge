@@ -18,13 +18,13 @@ import com.cocos.challenge.domain.model.Instrument;
 import com.cocos.challenge.domain.model.InstrumentType;
 import com.cocos.challenge.domain.model.MarketQuote;
 import com.cocos.challenge.domain.model.Order;
-import com.cocos.challenge.domain.model.OrderEvaluation;
 import com.cocos.challenge.domain.model.OrderRequest;
 import com.cocos.challenge.domain.model.Rejection;
 import com.cocos.challenge.domain.model.RequestFingerprint;
 import com.cocos.challenge.domain.model.ShareBalance;
 import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.domain.service.OrderEvaluator;
+import com.cocos.challenge.domain.service.OrderEvaluator.OrderEvaluation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;

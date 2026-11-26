@@ -38,4 +38,14 @@ public record Portfolio(Money totalValue, CashBalance cash, List<Position> posit
         }
         return new Portfolio(total, cash, openPositions, warnings);
     }
+
+    public record PortfolioWarning(PortfolioWarningCode code, String message) {
+    }
+
+    public enum PortfolioWarningCode {
+        NEGATIVE_POSITION,
+        MISSING_MARKET_DATA,
+        TOTAL_EXCLUDES_UNPRICED,
+        NEGATIVE_CASH
+    }
 }

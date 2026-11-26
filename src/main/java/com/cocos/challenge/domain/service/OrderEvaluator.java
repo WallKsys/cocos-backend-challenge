@@ -5,7 +5,6 @@ import com.cocos.challenge.domain.model.CashBalance;
 import com.cocos.challenge.domain.model.Instrument;
 import com.cocos.challenge.domain.model.MarketQuote;
 import com.cocos.challenge.domain.model.Money;
-import com.cocos.challenge.domain.model.OrderEvaluation;
 import com.cocos.challenge.domain.model.OrderRequest;
 import com.cocos.challenge.domain.model.OrderSide;
 import com.cocos.challenge.domain.model.OrderStatus;
@@ -116,5 +115,12 @@ public class OrderEvaluator {
     private static OrderEvaluation rejected(
             RejectionReason reason, String message, long quantity, Money price) {
         return new OrderEvaluation(OrderStatus.REJECTED, quantity, price, new Rejection(reason, message));
+    }
+
+    /**
+     * Outcome of evaluating an order: status, executed quantity, price (null without market price) and,
+     * when rejected, the reason and message.
+     */
+    public record OrderEvaluation(OrderStatus status, long quantity, Money price, Rejection rejection) {
     }
 }
