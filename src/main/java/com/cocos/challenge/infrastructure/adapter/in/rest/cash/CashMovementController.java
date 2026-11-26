@@ -10,6 +10,7 @@ import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.infrastructure.adapter.in.rest.idempotency.IdempotencyKeyHeader;
 import com.cocos.challenge.infrastructure.adapter.in.rest.idempotency.IdempotentResponses;
 import com.cocos.challenge.infrastructure.adapter.in.rest.identity.RequesterId;
+import com.cocos.challenge.infrastructure.adapter.in.rest.tracing.OperationLog;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,14 +32,18 @@ public class CashMovementController {
     public ResponseEntity<CashMovementResponse> deposit(@RequesterId UserId userId, @IdempotencyKeyHeader String key,
                                                         @Valid @RequestBody CashMovementRequestBody body) {
         var request = CashMovementRequest.of(OrderSide.CASH_IN, body.amount());
-        return response(deposits.deposit(new CashMovementCommand(userId, key, request)));
+        var result = deposits.deposit(new CashMovementCommand(userId, key, request));
+        OperationLog.cashDeposited(userId, key, result);
+        return response(result);
     }
 
     @PostMapping("/api/v1/cash/withdrawals")
     public ResponseEntity<CashMovementResponse> withdraw(@RequesterId UserId userId, @IdempotencyKeyHeader String key,
                                                          @Valid @RequestBody CashMovementRequestBody body) {
         var request = CashMovementRequest.of(OrderSide.CASH_OUT, body.amount());
-        return response(withdrawals.withdraw(new CashMovementCommand(userId, key, request)));
+        var result = withdrawals.withdraw(new CashMovementCommand(userId, key, request));
+        OperationLog.cashWithdrawn(userId, key, result);
+        return response(result);
     }
 
     private ResponseEntity<CashMovementResponse> response(CashMovementResult result) {
