@@ -1,5 +1,6 @@
 package com.cocos.challenge.infrastructure.config;
 
+import com.cocos.challenge.application.port.in.CashMovementUseCase;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
@@ -17,7 +18,7 @@ import java.time.Clock;
 public class CashMovementConfiguration {
 
     @Bean
-    CashMovementService cashMovementService(AccountRepository accountLock, OrderLedgerRepository movements,
+    CashMovementUseCase cashMovementUseCase(AccountRepository accountLock, OrderLedgerRepository movements,
             InstrumentRepository instruments, LedgerReader ledger, BusinessMetrics metrics, Clock clock,
             IdempotencyLookup idempotencyLookup) {
         return new CashMovementService(accountLock, movements, instruments, ledger, new CashMovementEvaluator(),

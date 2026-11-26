@@ -1,7 +1,7 @@
 package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.in.GetPortfolioQuery;
-import com.cocos.challenge.application.port.in.PlaceOrderCommand;
+import com.cocos.challenge.application.port.in.PlaceOrderUseCase.PlaceOrderCommand;
 import com.cocos.challenge.application.port.in.PlaceOrderUseCase;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;

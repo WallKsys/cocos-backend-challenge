@@ -113,10 +113,10 @@ recording the lock wait.
 **Estimated size**: ~400 lines. Predefined split if it exceeds 400: **011-g1** (branch `011-consolidation-g1`) is
 T016 and T017; **011-g2** (branch `011-consolidation-g2`, after 011-g1 is merged) is T018 and T019.
 
-- [ ] T016 Adjust tests (passes at once): `PlaceOrderServiceTest`, `GetPortfolioServiceIT` and
+- [x] T016 Adjust tests (passes at once): `PlaceOrderServiceTest`, `GetPortfolioServiceIT` and
   `CashMovementServiceTest` (a); rename `GetOrderServiceTest` → `OrderQueryServiceGetTest` (g, b) and
   `GetOrderHistoryServiceTest` → `OrderQueryServiceListTest` (g, b).
-- [ ] T017 Implement plan.md § Inbound ports and services for `PlaceOrderUseCase`, `CancelOrderUseCase`,
+- [x] T017 Implement plan.md § Inbound ports and services for `PlaceOrderUseCase`, `CancelOrderUseCase`,
   `OrderQuery`/`OrderQueryService` and `CashMovementUseCase`; the controllers and `OperationLog` that use them; the
   beans (`orderQuery` replaces `getOrderQuery` and `getOrderHistoryQuery`; `cashMovementUseCase`, of type
   `CashMovementUseCase`, replaces `cashMovementService`).

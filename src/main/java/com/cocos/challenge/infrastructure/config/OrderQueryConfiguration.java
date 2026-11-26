@@ -1,14 +1,12 @@
 package com.cocos.challenge.infrastructure.config;
 
 import com.cocos.challenge.application.port.in.CancelOrderUseCase;
-import com.cocos.challenge.application.port.in.GetOrderHistoryQuery;
-import com.cocos.challenge.application.port.in.GetOrderQuery;
+import com.cocos.challenge.application.port.in.OrderQuery;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.application.service.CancelOrderService;
-import com.cocos.challenge.application.service.GetOrderHistoryService;
-import com.cocos.challenge.application.service.GetOrderService;
+import com.cocos.challenge.application.service.OrderQueryService;
 import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcOrderLedgerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,12 +26,7 @@ public class OrderQueryConfiguration {
     }
 
     @Bean
-    GetOrderQuery getOrderQuery(AccountRepository accounts, OrderLedgerRepository ledger) {
-        return new GetOrderService(accounts, ledger);
-    }
-
-    @Bean
-    GetOrderHistoryQuery getOrderHistoryQuery(AccountRepository accounts, OrderLedgerRepository ledger) {
-        return new GetOrderHistoryService(accounts, ledger);
+    OrderQuery orderQuery(AccountRepository accounts, OrderLedgerRepository ledger) {
+        return new OrderQueryService(accounts, ledger);
     }
 }

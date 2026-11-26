@@ -23,12 +23,12 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @Tag("unit")
-class GetOrderHistoryServiceTest {
+class OrderQueryServiceListTest {
 
     private final UserId user = new UserId(1);
     private final AccountRepository accounts = mock(AccountRepository.class);
     private final OrderLedgerRepository ledger = mock(OrderLedgerRepository.class);
-    private final GetOrderHistoryService service = new GetOrderHistoryService(accounts, ledger);
+    private final OrderQueryService service = new OrderQueryService(accounts, ledger);
 
     @Test
     @Tag("CU-07.07")

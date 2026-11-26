@@ -1,6 +1,6 @@
 package com.cocos.challenge.infrastructure.adapter.in.rest.internal;
 
-import com.cocos.challenge.application.port.in.GetOrderHistoryQuery;
+import com.cocos.challenge.application.port.in.OrderQuery;
 import com.cocos.challenge.domain.model.OrderHistoryCriteria;
 import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.infrastructure.adapter.in.rest.order.OrderHistoryPageResponse;
@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 @ConditionalOnProperty(name = "cocos.internal-tools.enabled", havingValue = "true")
 public class InternalOrderHistoryController {
 
-    private final GetOrderHistoryQuery history;
+    private final OrderQuery history;
 
-    public InternalOrderHistoryController(GetOrderHistoryQuery history) {
+    public InternalOrderHistoryController(OrderQuery history) {
         this.history = history;
     }
 

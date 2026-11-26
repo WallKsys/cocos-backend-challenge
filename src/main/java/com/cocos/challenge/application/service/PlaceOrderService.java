@@ -1,7 +1,5 @@
 package com.cocos.challenge.application.service;
 
-import com.cocos.challenge.application.port.in.PlaceOrderCommand;
-import com.cocos.challenge.application.port.in.PlaceOrderResult;
 import com.cocos.challenge.application.port.in.PlaceOrderUseCase;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;

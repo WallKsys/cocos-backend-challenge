@@ -1,8 +1,8 @@
 package com.cocos.challenge.infrastructure.adapter.in.rest.tracing;
 
-import com.cocos.challenge.application.port.in.CancellationResult;
-import com.cocos.challenge.application.port.in.CashMovementResult;
-import com.cocos.challenge.application.port.in.PlaceOrderResult;
+import com.cocos.challenge.application.port.in.CancelOrderUseCase.CancellationResult;
+import com.cocos.challenge.application.port.in.CashMovementUseCase.CashMovementResult;
+import com.cocos.challenge.application.port.in.PlaceOrderUseCase.PlaceOrderResult;
 import com.cocos.challenge.domain.model.Order;
 import com.cocos.challenge.domain.model.OrderRecord;
 import com.cocos.challenge.domain.model.OrderStatus;
