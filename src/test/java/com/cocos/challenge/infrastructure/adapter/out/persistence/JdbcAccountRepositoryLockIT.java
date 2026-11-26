@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
-class JdbcAccountLockIT {
+class JdbcAccountRepositoryLockIT {
 
     @Autowired
     JdbcClient jdbc;
@@ -26,7 +26,7 @@ class JdbcAccountLockIT {
 
     @Test
     void secondTransactionWaitsForTheFirstToReleaseTheUserRow() throws Exception {
-        JdbcAccountLock accountLock = new JdbcAccountLock(jdbc);
+        JdbcAccountRepository accountLock = new JdbcAccountRepository(jdbc);
         TransactionTemplate transactions = new TransactionTemplate(transactionManager);
         UserId user = new UserId(1);
         Account expected = new Account(user, "10001");
@@ -50,7 +50,7 @@ class JdbcAccountLockIT {
 
     @Test
     void missingUserHasNoAccountToLock() {
-        assertThat(new JdbcAccountLock(jdbc).lock(new UserId(999))).isEmpty();
+        assertThat(new JdbcAccountRepository(jdbc).lock(new UserId(999))).isEmpty();
     }
 
     private int backendPid() {

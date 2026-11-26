@@ -1,7 +1,7 @@
 package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.in.PlaceOrderCommand;
-import com.cocos.challenge.application.port.out.AccountLock;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.IdempotencyRecord;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
@@ -14,6 +14,7 @@ import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
 import com.cocos.challenge.domain.model.CashBalance;
+import com.cocos.challenge.domain.model.CreatedUser;
 import com.cocos.challenge.domain.model.Instrument;
 import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.InstrumentType;
@@ -237,7 +238,7 @@ class PlaceOrderServiceTest {
 
     private record Key(UserId user, String key) {}
 
-    private static class FakePorts implements AccountLock, OrderRepository, InstrumentRepository,
+    private static class FakePorts implements AccountRepository, OrderRepository, InstrumentRepository,
             LedgerReader, MarketDataRepository, BusinessMetrics {
         final List<String> calls = new ArrayList<>();
         final List<Order> orders = new ArrayList<>();
@@ -248,6 +249,14 @@ class PlaceOrderServiceTest {
         public Optional<Account> lock(UserId user) {
             calls.add("lock");
             return user.value() == 999 ? Optional.empty() : Optional.of(new Account(user, "1000" + user.value()));
+        }
+
+        public Optional<Account> find(UserId user) {
+            throw new UnsupportedOperationException();
+        }
+
+        public CreatedUser create(String email) {
+            throw new UnsupportedOperationException();
         }
 
         public Optional<IdempotencyRecord> findIdempotencyRecord(UserId user, String key) {

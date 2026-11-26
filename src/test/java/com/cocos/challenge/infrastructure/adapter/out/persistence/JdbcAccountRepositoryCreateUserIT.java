@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
 @Tag("integration")
-class JdbcUserWriterIT {
+class JdbcAccountRepositoryCreateUserIT {
 
     @Autowired
     JdbcClient jdbc;

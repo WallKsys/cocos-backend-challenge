@@ -3,7 +3,7 @@ package com.cocos.challenge.application.service;
 import com.cocos.challenge.application.port.in.GetPortfolioQuery;
 import com.cocos.challenge.application.port.in.PlaceOrderCommand;
 import com.cocos.challenge.application.port.in.PlaceOrderUseCase;
-import com.cocos.challenge.application.port.out.AccountReader;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.application.port.out.PortfolioReader;
@@ -50,7 +50,7 @@ class GetPortfolioServiceIT {
     JdbcClient jdbc;
 
     @MockitoSpyBean
-    AccountReader accounts;
+    AccountRepository accounts;
 
     @MockitoSpyBean
     LedgerReader ledger;

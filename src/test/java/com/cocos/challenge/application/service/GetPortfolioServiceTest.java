@@ -1,6 +1,6 @@
 package com.cocos.challenge.application.service;
 
-import com.cocos.challenge.application.port.out.AccountReader;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.application.port.out.PortfolioReader;
@@ -26,7 +26,7 @@ class GetPortfolioServiceTest {
     @Tag("CU-01.08")
     void rejectsUnknownUserBeforeReadingLedger() {
         UserId userId = new UserId(999);
-        AccountReader accounts = mock(AccountReader.class);
+        AccountRepository accounts = mock(AccountRepository.class);
         LedgerReader ledger = mock(LedgerReader.class);
         PortfolioReader portfolios = mock(PortfolioReader.class);
         MarketDataRepository marketData = mock(MarketDataRepository.class);

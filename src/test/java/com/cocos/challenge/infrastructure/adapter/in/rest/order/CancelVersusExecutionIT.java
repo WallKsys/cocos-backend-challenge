@@ -2,7 +2,7 @@ package com.cocos.challenge.infrastructure.adapter.in.rest.order;
 
 import com.cocos.challenge.application.port.in.CancelOrderUseCase;
 import com.cocos.challenge.application.port.in.ExecuteOrderUseCase;
-import com.cocos.challenge.application.port.out.AccountLock;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.domain.exception.OrderNotCancellableException;
 import com.cocos.challenge.domain.exception.OrderNotExecutableException;
@@ -32,7 +32,7 @@ class CancelVersusExecutionIT extends OrderLoadSupport {
     @Autowired
     private PlatformTransactionManager transactionManager;
     @Autowired
-    private AccountLock lock;
+    private AccountRepository lock;
     @Autowired
     private ExecuteOrderUseCase forcedExecution;
 
