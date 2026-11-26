@@ -276,6 +276,12 @@ cambio: [análisis funcional §8](docs/analisis-funcional.md).
 | Planes de ejecución | `EXPLAIN` en el build | Ninguna consulta crítica puede perder sus índices sin romper el build |
 | Volumen | Perfil `-Pvolume` | Metas del PRD: portfolio p95 < 200 ms, historial < 100 ms, orden < 150 ms, búsqueda < 100 ms |
 
+**Forma de la suite** (al cierre, v1.0.0): 275 tests unitarios, 258 de integración y 139 ejecuciones BDD de los
+120 escenarios. Hay casi tantos tests de integración como unitarios porque buena parte de la lógica vive, a
+propósito, en SQL y en la base (saldos calculados desde `orders`, búsqueda, bloqueos, idempotencia), y cada regla
+se prueba en el nivel más bajo capaz de verificarla; las reglas de dominio tienen sus tests unitarios. La suite
+completa tarda menos de 2 minutos. Justificación y alternativa descartada en el [RFC, TEC-37](docs/rfc.md).
+
 Última medición del perfil `-Pvolume` (10.000.011 órdenes y 100.066 instrumentos en PostgreSQL 18; 500 pedidos
 HTTP medidos por métrica, [PR #99](https://github.com/WallKsys/cocos-backend-challenge/pull/99)):
 
@@ -353,7 +359,7 @@ Los logs de consola son JSON estructurado (formato ECS).
 El proyecto se construye con **spec-driven development** ([GitHub Spec Kit](https://github.com/github/spec-kit)):
 
 1. **Análisis funcional** del enunciado: reglas explícitas, ambigüedades y 31 decisiones de producto justificadas.
-2. **PRD** con objetivos y métricas de éxito; **RFC** con 36 decisiones técnicas y sus alternativas descartadas.
+2. **PRD** con objetivos y métricas de éxito; **RFC** con 37 decisiones técnicas y sus alternativas descartadas.
 3. **Constitución** del proyecto: reglas no negociables (arquitectura, dinero, concurrencia, testing, tamaño de PR).
 4. **Una spec por funcionalidad**, con plan, contrato OpenAPI, escenarios Gherkin y tareas divididas en PRs
    revisables.
