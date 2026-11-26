@@ -63,6 +63,8 @@ plain 500 at runtime.
   constant is renamed, its **text** stays byte-identical.
 - A merge would make two methods of the same port share a signature with different return types (for example,
   `findById(long)` of orders and of cash movements): plan.md fixes the new name; nothing else is renamed.
+- A subclass of a mapped domain exception (the `not-found-subclass` probe of `ErrorHandlingIT`, spec 003) keeps the
+  error code of its parent: the six permitted subclasses are `non-sealed`, not `final`.
 - A hand-written test fake implements a port that grows: it gets the new methods as stubs that throw
   `UnsupportedOperationException`; its existing methods do not change.
 

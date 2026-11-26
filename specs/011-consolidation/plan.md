@@ -360,7 +360,11 @@ public abstract sealed class DomainException extends RuntimeException
         OrderNotCancellableException, OrderNotExecutableException, SearchTermTooShortException {
 ```
 
-Each of the six subclasses becomes `public final class`. In `ApiExceptionHandler`, the `DOMAIN_CODES` map and its
+Each of the six subclasses becomes `public non-sealed class` (Java requires a permitted subclass to be `final`,
+`sealed` or `non-sealed`). Not `final`: `ErrorHandlingIT.domainExceptionSubclassUsesTheDomainMapping` throws an
+anonymous subclass of `NotFoundException` (`ProbeControllers`, `not-found-subclass`) and expects the mapping of its
+parent, a regression guard of spec 003; the `switch` below keeps it, because `case NotFoundException _` matches every
+subclass. Neither test file changes. In `ApiExceptionHandler`, the `DOMAIN_CODES` map and its
 lookup are replaced by:
 
 ```java
