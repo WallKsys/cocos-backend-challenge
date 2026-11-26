@@ -1,5 +1,6 @@
 package com.cocos.challenge.application.service;
 
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository.IdempotencyRecord;
@@ -10,6 +11,7 @@ import com.cocos.challenge.domain.model.UserId;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.time.Clock;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,15 +23,17 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @Tag("unit")
-class IdempotencyLookupTest {
+class IdempotentMutationGuardTest {
 
     private static final UserId USER = new UserId(1);
     private static final String KEY = "d1";
     private static final RequestFingerprint DEPOSIT = RequestFingerprint.of("CASH_IN|amount=100000.00");
 
+    private final AccountRepository accounts = mock(AccountRepository.class);
     private final OrderLedgerRepository orders = mock(OrderLedgerRepository.class);
     private final BusinessMetrics metrics = mock(BusinessMetrics.class);
-    private final IdempotencyLookup lookup = new IdempotencyLookup(orders, metrics);
+    private final IdempotentMutationGuard lookup = new IdempotentMutationGuard(
+            accounts, orders, metrics, Clock.systemUTC());
 
     @Test
     void unusedKeyReturnsEmpty() {

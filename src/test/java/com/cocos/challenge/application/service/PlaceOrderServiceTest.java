@@ -60,7 +60,8 @@ class PlaceOrderServiceTest {
     private static final Instant NOW = Instant.parse("2026-11-21T14:36:00.123456789Z");
     private final FakePorts ports = new FakePorts();
     private final PlaceOrderService service = new PlaceOrderService(
-            ports, ports, ports, ports, ports, new OrderEvaluator(), ports, Clock.fixed(NOW, ZoneOffset.UTC));
+            new IdempotentMutationGuard(ports, ports, ports, Clock.fixed(NOW, ZoneOffset.UTC)),
+            ports, ports, ports, ports, new OrderEvaluator(), ports);
 
     @Test
     void newOrderUsesTheLedgerAndRecordsMetricsInOrder() {
