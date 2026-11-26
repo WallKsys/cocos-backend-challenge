@@ -4,7 +4,7 @@
 
 **Before starting**: specs 001–009 merged. `export SPECIFY_FEATURE_DIRECTORY=specs/010-observability`.
 
-**Slices**: three PRs. Each: tests → skeletons/config → confirm failure → implement → full suite → PR size check.
+**Slices**: four PRs (010-a, 010-b, 010-c1, 010-c2); 010-c was split after its first attempt stopped. Each: tests → skeletons/config → confirm failure → implement → full suite → PR size check.
 
 ---
 
@@ -30,12 +30,31 @@
   `http/005-order-placement.http`, open `http://localhost:3000` → folder "Cocos": both dashboards with data. Paste
   screenshots or panel values in the PR.
 
-## Slice 010-c — End-to-end telemetry test (branch `010-observability-c`)
+## Slice 010-c — Operation logs and end-to-end telemetry test (two PRs: 010-c1, 010-c2)
 
-**Estimated size**: ~250 lines.
+The first attempt (branch `010-observability-c`) stopped at T007: the Loki check never found the `requestId` line,
+because no production code logged during a successful request (plan.md § Operation logs). Its `ObservabilityIT`
+already measured 351 lines, so the missing operation logs go first in a slice of their own. That branch is not
+continued: before 010-c1, keep its uncommitted `ObservabilityIT.java` aside (`git stash push -u`) and restore it on
+the 010-c2 branch, unchanged unless the logs check needs it.
 
-- [ ] T007 Write `ObservabilityIT` (plan.md § Tests). It should pass with slices a and b; if a signal does not
-  arrive, **stop and report** with what the stack returned.
+### Slice 010-c1 — Operation logs, TEC-27 (branch `010-observability-c1`)
+
+**Estimated size**: ~200 lines.
+
+- [ ] T007a Write `OperationLogIT` (plan.md § Tests). Skeleton of `OperationLog` with the four methods empty, called
+  from the controllers. Run: the five operation cases **fail** (no `Operation completed` line); case (6) passes.
+  Record.
+- [ ] T007b Implement plan.md § Operation logs (helper and the `logback-spring.xml` attribute) until green. The
+  console lines keep the ECS format (spec 001 tests unchanged).
+
+### Slice 010-c2 — End-to-end telemetry test (branch `010-observability-c2`, after 010-c1 is merged)
+
+**Estimated size**: ~350 lines.
+
+- [ ] T007 Write `ObservabilityIT` (plan.md § Tests). It should pass with slices a, b and c1; if a signal does not
+  arrive, **stop and report** with what the stack returned. In the PR, paste the Loki line found for `obs-it-1`,
+  with its `trace_id` and the operation-log pairs.
 - [ ] T008 Run `./mvnw verify` three times to confirm it is stable (polling with generous timeouts, no fixed sleeps
   except between polls).
 
