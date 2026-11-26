@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -303,6 +304,10 @@ class PlaceOrderServiceTest {
         public Optional<MarketQuote> latestQuote(InstrumentId id) {
             calls.add("quote");
             return Optional.of(new MarketQuote(Money.of("925.85"), null));
+        }
+
+        public StoredMarketData upsert(InstrumentId id, Money close, Money previousClose, LocalDate date) {
+            throw new UnsupportedOperationException();
         }
 
         public CashBalance cashBalance(UserId user) {

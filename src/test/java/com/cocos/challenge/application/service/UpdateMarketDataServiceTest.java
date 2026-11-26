@@ -2,7 +2,7 @@ package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.in.UpdateMarketDataUseCase;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
-import com.cocos.challenge.application.port.out.MarketDataWriter;
+import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Instrument;
@@ -36,7 +36,7 @@ class UpdateMarketDataServiceTest {
     private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-11-25T12:00:00Z"), ZoneOffset.UTC);
 
     private final InstrumentRepository instruments = mock(InstrumentRepository.class);
-    private final MarketDataWriter writer = mock(MarketDataWriter.class);
+    private final MarketDataRepository writer = mock(MarketDataRepository.class);
     private final UpdateMarketDataService service = new UpdateMarketDataService(instruments, writer, CLOCK);
 
     @Test
@@ -44,7 +44,7 @@ class UpdateMarketDataServiceTest {
     void updatesTradableInstrumentUsingUtcDate() {
         when(instruments.findById(PAMP_ID)).thenReturn(Optional.of(new Instrument(PAMP_ID, "PAMP", InstrumentType.ACCIONES)));
         when(writer.upsert(PAMP_ID, Money.of("1000.00"), null, TODAY))
-                .thenReturn(new MarketDataWriter.StoredMarketData(TODAY, Money.of("1000.00"), Money.of("921.80")));
+                .thenReturn(new MarketDataRepository.StoredMarketData(TODAY, Money.of("1000.00"), Money.of("921.80")));
 
         var result = service.update(PAMP_ID, Money.of("1000.00"), null);
 
