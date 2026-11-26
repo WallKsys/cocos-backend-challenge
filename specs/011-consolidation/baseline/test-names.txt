@@ -1,0 +1,672 @@
+A buy above the available cash is rejected and stored
+A buy amount below the price of one share is rejected
+A cancellation and a forced execution at the same time never both apply
+A deposit cannot name another user
+A deposit credits the available cash
+A filled order cannot be cancelled
+A filter without matches returns an empty page
+A limit buy above the available cash is rejected
+A limit buy by amount reserves only the amount actually used
+A limit buy stays NEW and reserves cash
+A limit order better than the market is not executed immediately
+A limit order does not need market data
+A limit price above the price band is rejected
+A limit price below the price band is rejected
+A limit price on the edge of the price band is accepted
+A limit sell by amount reserves whole shares
+A limit sell stays NEW and reserves shares
+A market order must not carry a price
+A market order without market data is rejected
+A pending limit buy reserves cash but is not a position
+A position sold completely disappears
+A position without market data has no value and is excluded from the total
+A rejected order cannot be cancelled
+A rejected order is not re-evaluated when it is resent
+A rejected order shows its reason
+A rejected seed order has no recorded reason
+A sale does not change the average cost and a new buy averages against the shares still held
+A search without matches returns an empty list
+A sell above the available shares is rejected
+A sell amount below the price of one share is rejected
+A sell by amount is never reduced to the available shares
+A short exact ticker is found without returning partial matches
+A two-character ticker filter only matches an exact ticker
+A user can only see their own portfolio
+A user cannot cancel another user&apos;s order
+A user cannot read another user&apos;s order
+A user without orders has an empty portfolio
+A withdrawal cannot name another user
+A withdrawal debits the available cash
+After a position reaches zero the average cost starts again
+After deleting an order its idempotency key can execute again
+An exact ticker match comes first
+An executed order is reflected immediately
+An instrument without market data has no price
+An invalid request does not consume its idempotency key
+An order by amount that would buy too many shares is rejected
+An order cannot name another user
+An unknown instrument is rejected as invalid
+An unknown order cannot be cancelled
+An unknown user cannot place orders
+An unknown user has no portfolio
+Buy at market by amount uses whole shares and keeps the remainder available
+Buy at market by quantity
+Cancelling a pending limit buy releases the reserved cash
+Cancelling a pending limit sell releases the reserved shares
+Cancelling twice succeeds and releases the reservation only once
+Cash cannot be bought or sold
+Changing a price changes valuations and search results
+Creating a test user
+Deleting the initial deposit leaves a negative cash balance that is shown and flagged
+Deposits accept cents
+Each result includes its market data
+Example #1.1
+Example #1.1
+Example #1.1
+Example #1.1
+Example #1.1
+Example #1.1
+Example #1.1
+Example #1.1
+Example #1.1
+Example #1.1
+Example #1.1
+Example #1.1
+Example #1.1
+Example #1.2
+Example #1.2
+Example #1.2
+Example #1.2
+Example #1.2
+Example #1.2
+Example #1.2
+Example #1.2
+Example #1.2
+Example #1.2
+Example #1.2
+Example #1.2
+Example #1.2
+Example #1.3
+Example #1.3
+Example #1.3
+Example #1.4
+Example #1.5
+Filtering by cancelled orders
+Filtering by status
+Forcing the execution of a limit order without market data uses the limit price
+Forcing the execution of a pending limit buy turns the reservation into a position
+Fractional shares are rejected
+General term combined with a ticker filter
+Identical content with different keys creates two orders
+Matching ignores accents
+More than two decimals are rejected
+More than two decimals are rejected
+One idempotency key per user across all operations
+Orders are processed by execution time, not by insertion order
+Orders are timestamped in UTC
+Paging through the history returns every order once
+Paging through the market returns every instrument once
+Partial match on the instrument name
+Portfolio of the seed user
+Resending the same deposit does not credit it twice
+Resending the same order returns the original result
+Resending the same withdrawal does not debit it twice
+Reserved cash cannot be spent
+Reserved cash cannot be withdrawn
+Reserved shares cannot be sold
+Restoring the seed data undoes every change, idempotency keys included
+Results are ranked by exact ticker, ticker prefix, then other matches
+Reusing a key with different content is a conflict
+Reusing a withdrawal key with a different amount is a conflict
+Searching with no criteria lists the whole market alphabetically
+Sell at market by amount
+Sell at market by quantity
+Selling an instrument that is not held is rejected
+Selling from the inconsistent negative seed position is rejected
+The administrator can list the orders of any user
+The administrator can see the portfolio of any user
+The application reports that it is up
+The history lists every order of the user, newest first, in UTC
+The idempotency key is required
+The idempotency key is required
+The idempotency key is required
+The inconsistent negative seed position is shown and flagged
+The quantity of a limit order by amount uses the limit price
+The same key used by another user is a different order
+The whole available cash can be withdrawn, cents included
+Ticker and name filters must both match
+Total return against the average cost and daily change against the previous close
+Two simultaneous orders never spend the same cash
+aKeyWithNoStoredOrderCanBeUsedForAValidOrder
+acceptsABuyAtMarketByQuantity
+acceptsALimitOrderWithAPrice
+acceptsANameWithThreeUnicodeCodePoints
+acceptsASellAtMarketByAmount
+acceptsCalculatedQuantityAtTheMaximum
+acceptsExactly64LowercaseHexCharacters
+acceptsLimitPriceAtTheUpperBound
+acceptsNullAndDecimalStringsWithinTheLimits
+acceptsOneHundredUnicodeCodePoints
+acceptsTheLowerLimitAndTreatsBlankCursorAsAbsent
+acceptsValuesWithinTheDatabaseRange(long)[1]
+acceptsValuesWithinTheDatabaseRange(long)[2]
+acceptsValuesWithinTheDatabaseRange(long)[3]
+accountLockWaitIsATimerWithAPercentileHistogram
+additionAndSubtractionProduceNormalizedMoney
+adminCanCallAnEnabledInternalEndpoint
+administratorCanListAnotherUsersOrders
+application_classes_are_not_spring_components
+application_depends_only_on_domain_application_jdk_and_transactional
+appliesDefaultsToAbsentParameters
+averagesTheNewBuyWithTheSharesStillHeld
+buildsTheNextCursorFromTheLastReturnedOrder
+buildsTrimmedTermsAndDecodesTheCursor
+businessDashboardHasExpectedUidQueriesAndNoForbiddenLabels
+buyAboveTheAvailableCashIsRejectedAndKeepsTheComputedValues
+buyAmountBelowThePriceOfOneShareIsRejected
+buyAtMarketByAmountUsesWholeSharesRoundedDown
+buyAtMarketByQuantityIsFilledAtTheLastPrice
+buyWhoseTotalEqualsTheAvailableCashIsFilled
+calculatesPampDailyChangeRoundedToTwoDecimals
+calculatesReturnFromTheUnroundedAverage
+calculatesReturnsAgainstAverageCostAndPreviousClose
+cancellationReplayAndConflictCountersUseOnlyTheirDocumentedTags
+cancelsPendingBuyAndReleasesCashOnce
+cancelsPendingSellAndReleasesShares
+cashDepositLogsOperationCompleted(CapturedOutput)
+cashInWithCentsSucceeds
+cashIsNeverReturned
+cashMovementsUseSizeForAmountAndHaveNoShares
+cashReservedCashAndAvailableCashMatchTheSeed
+checksTheRulesInTheDocumentedOrder
+clearsAverageAtZeroAndStartsAgainOnTheNextBuy
+command_use_case_methods_are_transactional
+comparisonsUseTheMonetaryValue
+competingBuysWaitForTheAccountLockBeforeSpendingCash
+conflictsWithChangedOrderContentAndWithADeposit
+constructorAndFactoriesNormalizeToScaleTwo
+controllers_never_return_domain_objects
+controllers_never_return_domain_objects_inside_generics
+copiedFeaturesAreByteIdenticalToTheirSpecSources
+createsUserAndRejectsInvalidEmails
+createsUsersWithIncrementingAccountNumbers
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[10]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[11]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[12]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[13]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[14]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[15]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[16]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[17]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[18]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[1]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[2]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[3]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[4]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[5]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[6]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[7]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[8]
+criticalQueryUsesIndexWhenSeqScanIsDisabled(QueryCase)[9]
+currencyCannotBeTraded
+dailyChangeIsEmptyWhenPreviousCloseIsZero
+dailyChangeIsEmptyWithoutAPreviousClose
+decimalQuantityIsRejectedInsteadOfTruncated
+decimalQuantityWithZeroFractionIsRejected
+decodesAnEncodedCursor
+defaultsLimitAndTreatsBlankStatusAsAbsent
+deletesOrderAndRejectsMissingOrder
+deletesOrderRowAndFreesIdempotencyKey
+depositKeyCannotBeReusedForWithdrawal
+depositKeyConflictsWithDifferentAmountOrWithdrawal
+depositKeyConflictsWithoutLoadingTheDepositAsAnOrder
+depositPersistsCentsWithArsAndRecordsProcessedMetric
+depositReplayReturnsOriginalMovement
+differentFingerprintRecordsConflictAndThrows
+differentUserCanUseTheSameKey
+differentUsersMayReuseAnIdempotencyKey
+domainExceptionSubclassUsesTheDomainMapping
+domain_depends_only_on_domain_and_the_jdk
+emptyPortfolioHasZeroValueAndNoWarnings
+emptyScopePassesButStillRejectsUnknownFeatureIds
+encodesAsUrlSafeBase64WithoutPadding
+equivalentValuesHaveTheSameRecordValue
+equivalentValuesWithDifferentInputScalesAreEqual
+errorResponseWritesNoOperationCompletedLine(CapturedOutput)
+everyDocumentedIndexExists
+everyScenarioInScopeIsTraceable
+everySqlQueryInBusinessDashboardExecutesWithoutError
+exactTickerComesFirst
+exactlyOneOperationChangesTheOrder()[10]
+exactlyOneOperationChangesTheOrder()[11]
+exactlyOneOperationChangesTheOrder()[12]
+exactlyOneOperationChangesTheOrder()[13]
+exactlyOneOperationChangesTheOrder()[14]
+exactlyOneOperationChangesTheOrder()[15]
+exactlyOneOperationChangesTheOrder()[16]
+exactlyOneOperationChangesTheOrder()[17]
+exactlyOneOperationChangesTheOrder()[18]
+exactlyOneOperationChangesTheOrder()[19]
+exactlyOneOperationChangesTheOrder()[1]
+exactlyOneOperationChangesTheOrder()[20]
+exactlyOneOperationChangesTheOrder()[2]
+exactlyOneOperationChangesTheOrder()[3]
+exactlyOneOperationChangesTheOrder()[4]
+exactlyOneOperationChangesTheOrder()[5]
+exactlyOneOperationChangesTheOrder()[6]
+exactlyOneOperationChangesTheOrder()[7]
+exactlyOneOperationChangesTheOrder()[8]
+exactlyOneOperationChangesTheOrder()[9]
+exactlyOneUseCaseChangesTheOrder()[10]
+exactlyOneUseCaseChangesTheOrder()[11]
+exactlyOneUseCaseChangesTheOrder()[12]
+exactlyOneUseCaseChangesTheOrder()[13]
+exactlyOneUseCaseChangesTheOrder()[14]
+exactlyOneUseCaseChangesTheOrder()[15]
+exactlyOneUseCaseChangesTheOrder()[16]
+exactlyOneUseCaseChangesTheOrder()[17]
+exactlyOneUseCaseChangesTheOrder()[18]
+exactlyOneUseCaseChangesTheOrder()[19]
+exactlyOneUseCaseChangesTheOrder()[1]
+exactlyOneUseCaseChangesTheOrder()[20]
+exactlyOneUseCaseChangesTheOrder()[2]
+exactlyOneUseCaseChangesTheOrder()[3]
+exactlyOneUseCaseChangesTheOrder()[4]
+exactlyOneUseCaseChangesTheOrder()[5]
+exactlyOneUseCaseChangesTheOrder()[6]
+exactlyOneUseCaseChangesTheOrder()[7]
+exactlyOneUseCaseChangesTheOrder()[8]
+exactlyOneUseCaseChangesTheOrder()[9]
+excludesAClosedPosition
+excludesUnpricedPositionsAndReportsTheirTickersInPositionOrder
+executesNewOrderOnceAndTurnsReservationIntoPosition
+executesPendingLimitOrder
+fiftyDistinctSimultaneousOrdersCannotOverspend
+fiftySimultaneousCancellationsReleaseOneReservation
+fiftySimultaneousRequestsWithTheSameKeyExecuteOnce
+filledOrderWithRejectionCodeIsRejected
+filledPositionsMatchTheSeed
+fillsDepositWithoutExistingCash
+fillsWithdrawalOfExactAvailableCashIncludingCents
+fillsWithdrawalWithinAvailableCash
+filtersHistoryByStatus
+findByIdReadsTheTickerOfTheStoredInstrument
+findsAKeyUsedByAFractionalDepositWithoutMappingTheDepositToShares
+fingerprintChangesWithEveryRequestField
+fingerprintNormalizesEquivalentAmounts
+fingerprintOfALimitOrderByAmountIsTheCanonicalString
+fingerprintOfAMarketOrderByQuantityIsTheCanonicalString
+firstSeedOrderIsReadAsUtcRegardlessOfSessionTimeZone
+flagsNegativeCashWithTheExactBalance
+flywayAppliedVersionsOneToEightSuccessfully
+formatEndpointSerializesAmountsAndTimestamp
+formatUsesTwoDecimalsAndHalfUpRounding
+generalTermCombinesWithTickerFilter
+hashesTheCanonicalRequestWithSha256
+healthDashboardHasExpectedUidPrometheusFiltersAndNoForbiddenLabels
+healthEndpointReportsUp
+healthIsDownWhenTheDatabaseIsUnavailable
+hidesOrdersBelongingToAnotherUserAndMissingOrders
+hidesUnownedAndMissingRecords
+historicalDashboardQueriesReturnExpectedSeedValues
+idempotencyConflictUsesTheExactMessage
+identicalContentWithDifferentKeysCreatesTwoOrders
+inbound_ports_are_named_use_case_or_query
+includesReservedCashAndSignedPositionValuesInTheSeedTotal
+insertsNewRowWhenInstrumentHasNoMarketDataThenUpdatesIt
+instrumentWithAnExistingTickerIsRejected
+instrumentWithoutMarketDataHasNoQuote
+instrumentsWithoutMarketDataAndUsersWithoutOrders
+internalEndpointIsNotFoundEvenForAnAdmin
+internalEndpointRequiresTheExactAdminRole
+internal_controllers_are_conditional
+invalidBodyListsEachFieldErrorInEnglish
+invalidDecimalStringsAreRejected
+invalidKeyIsRejectedWithoutBeingTrimmed
+invalidRequestIdIsNeverReflected
+invalidRequestLeavesTheKeyAvailable
+invalidRequestUsesItsDetail
+invalidRequiredIntegerParameterHasAStableProblem
+invalidUserIdIsRejected
+largeCashInFitsTheMoneyColumns
+latestMarketDataOfPampMatchesTheSeed
+limitBuyAboveTheAvailableCashIsRejected
+limitBuyBetterThanTheMarketIsNotExecutedImmediately
+limitBuyByAmountUsesTheLimitPriceAndWholeShares
+limitBuyByAmountUsesTheLimitPriceToComputeTheQuantity
+limitBuyStaysNewAtTheLimitPrice
+limitOrderAndCancellationLogOperationCompleted(CapturedOutput)
+limitOrderDoesNotNeedMarketData
+limitOrderUsesQuoteToRejectPriceOutsideTheBand
+limitSellByAmountReservesWholeShares
+limitSellStaysNewAtTheLimitPrice
+listsOnlyOpenPositionsInTickerOrder
+listsOnlyTheUsersOrdersAndCashMovementsInUtc
+loadsAllPositionsWithOneCallToEachReaderQuery
+locksBeforeReadingAndCancelsPendingTrade(OrderSide)[1]
+locksBeforeReadingAndCancelsPendingTrade(OrderSide)[2]
+locksOwnerBeforeDeletingOrder
+locksOwnerExecutesPendingOrderAndReturnsRecord
+looksUpInstrumentsIncludingCurrency
+malformedJsonBodyHasAStableProblem
+marketOrderWithoutMarketDataIsRejectedWithoutPrice
+matchingFingerprintReturnsStoredIdAndRecordsReplay
+matchingIgnoresAccents
+matchingIgnoresCase
+missingOrBlankKeyHasItsOwnError
+missingOrBlankUserIdIsRejected
+missingRequestIdIsGenerated
+missingRequiredIntegerParameterHasAStableProblem
+missingUserHasNoAccountToLock
+missingUserStopsBeforeIdempotencyLookup
+multiplicationRoundsHalfUpToScaleTwo
+newLimitSellReservesSharesWithoutChangingCash
+newOrderUsesTheLedgerAndRecordsMetricsInOrder
+noCriteriaReturnsTheFirstTwentyInstrumentsAlphabetically
+noMatchesReturnsAnEmptyList
+noMeterHasBusinessIdentifierTags
+noSharesAreReservedByNewSellOrders
+no_cycles_between_layers
+no_floating_point_fields
+no_floating_point_return_types
+no_jackson_2_databind
+no_orm_anywhere
+nonAsciiKeyIsRejectedOverRawHttp
+normalizationRoundsHalfUp
+normalizesToScaleTwoWithHalfUpRounding
+notFoundDomainExceptionUsesItsDetail
+nullAmountIsRejected
+nullOrBlankRawValueProducesNoSearchTerm(String)[1]
+nullOrBlankRawValueProducesNoSearchTerm(String)[2]
+nullOrBlankRawValueProducesNoSearchTerm(String)[3]
+nullOrBlankRawValueProducesNoSearchTerm(String)[4]
+numericAmountIsRejectedInsteadOfCoerced
+observabilityArtifactsAreByteIdenticalToSpecCopies
+oneKeyCanIdentifyDifferentOrdersForDifferentUsers
+oneThousandSequentialRequestsMoveCashOnce
+onlyAdministratorCanSeeAnotherUsersPortfolio
+only_infrastructure_uses_metrics_libraries
+only_internal_controllers_map_internal_paths
+only_persistence_adapters_access_the_database
+orderNotCancellableUsesTheExactMessage
+orderPlacementExportsMetricsLogsAndCorrelatedTrace
+orderPlacementLogsOperationCompleted(CapturedOutput)
+orderProcessedRecordsAllTagsAndTheDefaultRejectionReason
+orderWithFractionalSharesIsRejected
+orderWithIdempotencyKeyAndNoFingerprintIsRejected
+orderWithNegativeSizeIsRejected
+orderWithUnknownSideIsRejected
+orderWithUnknownStatusIsRejected
+orderWithUnknownTypeIsRejected
+ordersAndPortfolioStillWorkWhenTelemetryEndpointIsUnavailable
+ordersFillsByExecutionTimeAndThenId
+ordersWithoutIdempotencyKeyAreNotCompared
+outOfRangeIntegerBodyFieldHasAStableProblem
+pagesThroughHistoryWithAnIdTieBreakerAtThePageBoundary
+paginationReturnsEveryTradableInstrumentOnceInOrder
+pampTickerNormalizedIsLowerCase
+parseAndFormatNormalizeAcceptedInputScales
+parsesStatusAndCursor
+partialNameMatch
+partialNameSearchReturnsAccentsRemovedMatches
+passesTheOriginalRequestedAmountToTheRepository
+passesWhenScopedIdHasOneScenarioAndProperlyTaggedTest
+persistsTheOriginalAmountAndRejectionForReplay
+preservesCentsAndNormalizesTheFingerprint
+priceOutOfRangeRejectionIsAccepted
+probeLogLineContainsTheRequestIdFromMdc(CapturedOutput)
+processesFillsInTheSuppliedExecutionOrder
+publishedContractIsByteIdenticalToTheLatestSpecContract
+publishedContractIsServedAsYaml
+publishedRoutesExactlyMatchApplicationRoutes
+quantityOfAnAmountOrderRoundsDownToWholeShares
+quantityTooLargeRejectionWithZeroSharesIsAccepted
+query_use_case_methods_are_read_only_transactional
+reReadsStatusWhenGuardedUpdateLoses
+readsAllPortfolioDataInOneSnapshot
+readsDirectTagsOnMethodAndClass
+readsLatestQuotesInOneBatchAndOmitsMissingQuotes
+readsSeededCashAndReservationsAndReturnsZeroForAnEmptyLedger
+readsSeededShareBalancesIncludingNegativeHoldings
+readsTagsFromMetaAnnotationsOfMetaAnnotations
+readsTagsFromMetaAnnotationsOnTheClass
+readsTagsInheritedFromSuperclasses
+readsTheLatestQuoteAndHandlesInstrumentsWithoutQuotes
+recognizesSuffixedAndInternalScenarioIds
+reflectsACommittedMarketBuyImmediately
+refusesTerminalTrade(OrderStatus)[1]
+refusesTerminalTrade(OrderStatus)[2]
+rejectedCashWithdrawalLogsRejectionReason(CapturedOutput)
+rejectedOrderIsStoredAndRecordsItsReason
+rejectedOrderReplaysAfterCashIncreases
+rejectedOrderWithUnknownRejectionCodeIsRejected
+rejectedWithdrawalIsStoredAndCounted
+rejectionMayBeAbsentAndUnpricedTradesHaveNoAmount
+rejectsALimitOrderWithANonPositivePrice(String)[1]
+rejectsALimitOrderWithANonPositivePrice(String)[2]
+rejectsALimitOrderWithANonPositivePrice(String)[3]
+rejectsALimitOrderWithoutPrice
+rejectsAMarketOrderWithPrice
+rejectsANonPositiveAmount(String)[1]
+rejectsANonPositiveAmount(String)[2]
+rejectsANonPositiveAmount(String)[3]
+rejectsANonPositiveAmount(String)[4]
+rejectsANonPositiveQuantity(int)[1]
+rejectsANonPositiveQuantity(int)[2]
+rejectsARequestWithBothQuantityAndAmount
+rejectsARequestWithoutQuantityOrAmount
+rejectsAnUnknownUserBeforeLookingUpTheOrder
+rejectsAnUnknownUserBeforeReadingHistory
+rejectsAnySideOtherThanBuyOrSell(String)[1]
+rejectsAnySideOtherThanBuyOrSell(String)[2]
+rejectsAnySideOtherThanBuyOrSell(String)[3]
+rejectsAnySideOtherThanBuyOrSell(String)[4]
+rejectsAnySideOtherThanBuyOrSell(String)[5]
+rejectsAnySideOtherThanBuyOrSell(String)[6]
+rejectsAnyTypeOtherThanMarketOrLimit(String)[1]
+rejectsAnyTypeOtherThanMarketOrLimit(String)[2]
+rejectsAnyTypeOtherThanMarketOrLimit(String)[3]
+rejectsAnyTypeOtherThanMarketOrLimit(String)[4]
+rejectsAnythingOtherThan64LowercaseHexCharacters(String)[1]
+rejectsAnythingOtherThan64LowercaseHexCharacters(String)[2]
+rejectsAnythingOtherThan64LowercaseHexCharacters(String)[3]
+rejectsAnythingOtherThan64LowercaseHexCharacters(String)[4]
+rejectsAnythingOtherThan64LowercaseHexCharacters(String)[5]
+rejectsAnythingOtherThan64LowercaseHexCharacters(String)[6]
+rejectsAnythingOtherThan64LowercaseHexCharacters(String)[7]
+rejectsBuyByAmountAboveTheMaximumQuantity
+rejectsCancellation(int, int, int, String, String)[1]
+rejectsCancellation(int, int, int, String, String)[2]
+rejectsCancellation(int, int, int, String, String)[3]
+rejectsCurrencyInstrument
+rejectsExtraDecimalPlaces
+rejectsFractionalQuantityWithoutStoringAnOrder
+rejectsInvalidCursor
+rejectsInvalidCursors(String)[1]
+rejectsInvalidCursors(String)[2]
+rejectsInvalidCursors(String)[3]
+rejectsInvalidCursors(String)[4]
+rejectsInvalidCursors(String)[5]
+rejectsInvalidCursors(String)[6]
+rejectsInvalidCursors(String)[7]
+rejectsInvalidCursors(String)[8]
+rejectsInvalidCursors(String)[9]
+rejectsInvalidFilters
+rejectsInvalidParameters(String, String, String)[1]
+rejectsInvalidParameters(String, String, String)[2]
+rejectsInvalidParameters(String, String, String)[3]
+rejectsInvalidParameters(String, String, String)[4]
+rejectsInvalidParameters(String, String, String)[5]
+rejectsInvalidParameters(String, String, String)[6]
+rejectsInvalidSyntaxScaleAndLength
+rejectsLimitOutsideItsAllowedRange
+rejectsLimitPriceAboveTheBand
+rejectsLimitPriceBelowTheBand
+rejectsLimitsOutsideTheAllowedRange(int)[1]
+rejectsLimitsOutsideTheAllowedRange(int)[2]
+rejectsLimitsOutsideTheAllowedRange(int)[3]
+rejectsMalformedCursors
+rejectsMoreThanOneHundredCodePointsWithTheParameterName(String)[1]
+rejectsMoreThanOneHundredCodePointsWithTheParameterName(String)[2]
+rejectsMoreThanOneHundredCodePointsWithTheParameterName(String)[3]
+rejectsNonExecutableOrMissingOrder(long, int, String, String)[1]
+rejectsNonExecutableOrMissingOrder(long, int, String, String)[2]
+rejectsNonExecutableOrMissingOrder(long, int, String, String)[3]
+rejectsNonIntegerLimit
+rejectsNonNewOrderWithCurrentStatus(OrderStatus)[1]
+rejectsNonNewOrderWithCurrentStatus(OrderStatus)[2]
+rejectsNonNewOrderWithCurrentStatus(OrderStatus)[3]
+rejectsNonPositiveAmounts(OrderSide, String)[1]
+rejectsNonPositiveAmounts(OrderSide, String)[2]
+rejectsNonPositiveAmounts(OrderSide, String)[3]
+rejectsNonPositiveAmounts(OrderSide, String)[4]
+rejectsNonPositiveClose(String)[1]
+rejectsNonPositiveClose(String)[2]
+rejectsNonPositiveClose(String)[3]
+rejectsNonPositivePathIds(String, String, String, String)[1]
+rejectsNonPositivePathIds(String, String, String, String)[2]
+rejectsNonPositivePathIds(String, String, String, String)[3]
+rejectsNonPositivePathIds(String, String, String, String)[4]
+rejectsNonPositivePathIds(String, String, String, String)[5]
+rejectsNonPositivePathIds(String, String, String, String)[6]
+rejectsNonPositivePreviousClose(String)[1]
+rejectsNonPositivePreviousClose(String)[2]
+rejectsNullValue
+rejectsParameterLongerThanOneHundredCharacters(String)[1]
+rejectsParameterLongerThanOneHundredCharacters(String)[2]
+rejectsParameterLongerThanOneHundredCharacters(String)[3]
+rejectsSellByAmountAboveTheMaximumQuantity
+rejectsShortNameFilter(String)[1]
+rejectsShortNameFilter(String)[2]
+rejectsShortNameFilters(String)[1]
+rejectsShortNameFilters(String)[2]
+rejectsShortNameFilters(String)[3]
+rejectsShortNameFilters(String)[4]
+rejectsUnknownInstrument
+rejectsUnknownUserBeforeReadingLedger
+rejectsUnknownUserIdField
+rejectsUserIdInTheBodyWithoutStoringAnOrder
+rejectsValuesOutsideTheDatabaseRange(long)[1]
+rejectsValuesOutsideTheDatabaseRange(long)[2]
+rejectsValuesOutsideTheDatabaseRange(long)[3]
+rejectsValuesOutsideTheDatabaseRange(long)[4]
+rejectsWithdrawalThatWouldSpendReservedCash
+rejectsZeroUserId
+repeatedIdempotencyKeyHeadersAreRejectedOverRawHttp
+repeatedUserIdHeadersAreRejectedOverRawHttp
+replayedOrderPlacementLogsReplayedTrue(CapturedOutput)
+replayedResponseHasTheReplayHeader
+replaysOriginalOrderBeforeCheckingInstrumentAndLedger
+reportsAnOrderMissingFromTheRequestingUsersLedger
+requestsOneExtraItemAndUsesTheLastReturnedItemForTheNextCursor
+requiresIdempotencyKey
+requiresIdempotencyKeyWithoutStoringAnOrder
+reservedCashCannotBeSpent
+reservedSharesCannotBeSold
+rest_adapters_use_only_inbound_ports
+rest_dtos_do_not_hold_domain_types
+rest_dtos_do_not_leave_the_rest_adapter
+restartsOnABuyWhileQuantityIsNegative
+restoresSeedCountsLedgerPricesIdempotencyAndUtcTimestamps
+restoresSeedData
+resultsAreRankedByExactTickerPrefixThenOtherMatches
+returnsAlreadyCancelledWithoutUpdating
+returnsAnEmptyPageWithoutACursorWhenTheFilterDoesNotMatch
+returnsAnEmptyPortfolioForAUserWithoutOrders
+returnsEntireOrderAndReplaysTheSameBody
+returnsInstrumentAndMarketDataWithDecimalStrings
+returnsNoCursorWhenThereIsNoNextPage
+returnsTheFullTotalOfAnUnaffordableLimitOrder
+returnsTheRecordForTheRequestingUser
+roundTripsDepositWithCents
+roundTripsUtcMicrosecondsAndOrderId
+roundsBothBandBoundsInwardWhenHalfUpWouldWidenTheBand
+roundsPositiveTotalReturnDownWhenBelowHalf
+roundsTheBandInwardsAndIncludesBothBounds
+roundsTotalReturnHalfUpAtAnExactTie
+rule10RejectsUnknownTestIds
+rule1RejectsDuplicateIdsInUseCases
+rule2RejectsUnknownFeatureIds
+rule3RejectsCuTagsAtFeatureLevel
+rule4RejectsSeveralCuTagsOnOneScenario
+rule5RejectsScenarioWithoutCuOrSmokeTag
+rule6RejectsAnIdOnMoreThanOneScenario
+rule7RejectsMissingScenarioWhenIdIsInScope
+rule8RejectsMissingTestWhenIdIsInScope
+rule9RejectsTestsWithoutUnitOrIntegrationTag
+sameKeyWithChangedContentConflicts
+sameUserCannotReuseAnIdempotencyKey
+savesAndReadsTheSameInstantInANonUtcSession
+secondTransactionWaitsForTheFirstToReleaseTheUserRow
+seedRowCountsMatchTheProvidedData
+sellAboveTheAvailableSharesIsRejected
+sellAmountBelowThePriceOfOneShareIsRejected
+sellAtMarketByAmountUsesWholeSharesRoundedDown
+sellAtMarketByQuantityIsFilledAtTheLastPrice
+sellByAmountIsNeverReducedToTheAvailableShares
+sellOfExactlyTheAvailableSharesIsFilled
+sellingAnInstrumentThatIsNotHeldIsRejected
+sellingFromTheNegativeSeedPositionIsRejected
+shortDecimalStringsAreAccepted
+shortExactTickerDoesNotReturnPartialMatches
+shortGeneralTermsAreAllowedAndMarkedShort(String)[1]
+shortGeneralTermsAreAllowedAndMarkedShort(String)[2]
+shortGeneralTermsAreAllowedAndMarkedShort(String)[3]
+shortGeneralTermsAreAllowedAndMarkedShort(String)[4]
+shortGeneralTermsOnlyMatchExactTickers
+shortTickerFilterOnlyMatchesExactTicker
+shortnessCountsUnicodeCodePoints
+showsZeroAverageCostWithoutTotalReturn
+simultaneousBuysCannotSpendTheSameCash
+simultaneousIdenticalDepositsCreateOneMovement
+storesDepositAsFilledMarketCashInOnArs
+stringQuantityIsRejected
+surroundingWhitespaceIsRemovedByTheHttpServer
+swaggerUiIsServed
+testWithCuAndIntegrationTagsSatisfiesRules8And9
+throwsNotFoundWhenOrderDisappearsAfterLock
+throwsNotFoundWhenOrderDisappearsBeforeDelete
+throwsNotFoundWhenOrderDoesNotExist
+throwsNotFoundWhenOrderDoesNotExist
+tickerAndNameFiltersMustBothMatch
+traceabilityScopeCoversEveryDocumentedCuGroup
+tradeKeepsItsRejectionAndComputesAmount
+treatsBlankParametersAsAbsent
+treatsSearchPunctuationAsLiteralCharacters(String)[1]
+treatsSearchPunctuationAsLiteralCharacters(String)[2]
+treatsSearchPunctuationAsLiteralCharacters(String)[3]
+trimsTheSearchTerm
+unacceptableAcceptHeaderHasAStableProblem
+unexpectedExceptionNeverLeaksItsMessage
+unitTestsRun
+unknownApiRouteIsNotFound
+unknownBodyFieldIsRejected
+unknownInstrumentStoresNothing
+unknownUserCannotMoveCash
+unknownUserStopsAtTheLock
+unknownUserStopsBeforeReadingOrders
+unsupportedContentTypeHasAStableProblem
+unsupportedHttpMethodHasAStableProblem
+unsupportedMethodsDoNotRevealInternalRoutesWithoutTheAdminRole
+unusedKeyReturnsEmpty
+updatesLatestRowPreservingPreviousCloseWhenNull
+updatesMarketDataAndValidatesInput
+updatesTradableInstrumentUsingUtcDate
+userCanOnlySeeTheirOwnPortfolio
+userIdComesFromTheTrimmedHeader
+userIdsBeyondTheSixtyFourBitRangeAreRejected
+v1MigrationIsByteIdenticalToTheProvidedScript
+validKeyReachesTheEndpointWithoutAReplayHeader
+validRequestIdIsEchoed
+validationMessagesStayEnglishWithSpanishAcceptLanguage
+valuesAndFlagsNegativeQuantity
+valuesTheSeedPortfolioFromTheLedger
+withdrawalKeyConflictsWithDifferentAmount
+withdrawalReplayReturnsOriginalMovement
+withoutAdminRoleToolsDoNotExist(String, String, String)[1]
+withoutAdminRoleToolsDoNotExist(String, String, String)[2]
+withoutAdminRoleToolsDoNotExist(String, String, String)[3]
+withoutAdminRoleToolsDoNotExist(String, String, String)[4]
+withoutAdminRoleToolsDoNotExist(String, String, String)[5]
+zeroIsNormalizedMoney
+zeroUserIdViolatesDec26
