@@ -1,7 +1,7 @@
 package com.cocos.challenge.infrastructure.adapter.in.rest.order;
 
-import com.cocos.challenge.application.port.in.PlaceOrderCommand;
 import com.cocos.challenge.application.port.in.PlaceOrderUseCase;
+import com.cocos.challenge.application.port.in.PlaceOrderUseCase.PlaceOrderCommand;
 import com.cocos.challenge.domain.model.OrderRequest;
 import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.infrastructure.adapter.in.rest.idempotency.IdempotencyKeyHeader;

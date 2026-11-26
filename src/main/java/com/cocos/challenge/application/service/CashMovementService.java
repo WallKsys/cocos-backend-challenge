@@ -1,9 +1,6 @@
 package com.cocos.challenge.application.service;
 
-import com.cocos.challenge.application.port.in.CashMovementCommand;
-import com.cocos.challenge.application.port.in.CashMovementResult;
-import com.cocos.challenge.application.port.in.DepositCashUseCase;
-import com.cocos.challenge.application.port.in.WithdrawCashUseCase;
+import com.cocos.challenge.application.port.in.CashMovementUseCase;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
@@ -28,7 +25,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.OptionalLong;
 
-public class CashMovementService implements DepositCashUseCase, WithdrawCashUseCase {
+public class CashMovementService implements CashMovementUseCase {
 
     private final AccountRepository accountLock;
     private final OrderLedgerRepository movements;

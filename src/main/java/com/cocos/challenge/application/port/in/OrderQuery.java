@@ -6,7 +6,9 @@ import com.cocos.challenge.domain.model.OrderHistoryCriteria;
 import com.cocos.challenge.domain.model.OrderRecord;
 import com.cocos.challenge.domain.model.UserId;
 
-public interface GetOrderHistoryQuery {
+public interface OrderQuery {
+
+    OrderRecord get(UserId userId, long orderId);
 
     CursorPage<OrderRecord, HistoryCursor> list(UserId userId, OrderHistoryCriteria criteria);
 }

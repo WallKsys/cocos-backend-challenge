@@ -1,6 +1,6 @@
 package com.cocos.challenge.application.service;
 
-import com.cocos.challenge.application.port.in.GetOrderHistoryQuery;
+import com.cocos.challenge.application.port.in.OrderQuery;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.domain.exception.NotFoundException;
@@ -13,14 +13,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-public class GetOrderHistoryService implements GetOrderHistoryQuery {
+public class OrderQueryService implements OrderQuery {
 
     private final AccountRepository accounts;
     private final OrderLedgerRepository ledger;
 
-    public GetOrderHistoryService(AccountRepository accounts, OrderLedgerRepository ledger) {
+    public OrderQueryService(AccountRepository accounts, OrderLedgerRepository ledger) {
         this.accounts = accounts;
         this.ledger = ledger;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderRecord get(UserId userId, long orderId) {
+        accounts.find(userId)
+                .orElseThrow(() -> new NotFoundException("User " + userId.value() + " was not found."));
+        return ledger.findRecord(userId, orderId)
+                .orElseThrow(() -> new NotFoundException("Order " + orderId + " was not found."));
     }
 
     @Override
