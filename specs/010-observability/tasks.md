@@ -42,10 +42,10 @@ the 010-c2 branch, unchanged unless the logs check needs it.
 
 **Estimated size**: ~200 lines.
 
-- [ ] T007a Write `OperationLogIT` (plan.md § Tests). Skeleton of `OperationLog` with the four methods empty, called
+- [x] T007a Write `OperationLogIT` (plan.md § Tests). Skeleton of `OperationLog` with the four methods empty, called
   from the controllers. Run: the five operation cases **fail** (no `Operation completed` line); case (6) passes.
   Record.
-- [ ] T007b Implement plan.md § Operation logs (helper and the `logback-spring.xml` attribute) until green. The
+- [x] T007b Implement plan.md § Operation logs (helper and the `logback-spring.xml` attribute) until green. The
   console lines keep the ECS format (spec 001 tests unchanged).
 
 ### Slice 010-c2 — End-to-end telemetry test (branch `010-observability-c2`, after 010-c1 is merged)

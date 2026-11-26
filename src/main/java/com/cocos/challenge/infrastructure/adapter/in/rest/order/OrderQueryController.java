@@ -6,6 +6,7 @@ import com.cocos.challenge.application.port.in.GetOrderQuery;
 import com.cocos.challenge.domain.model.OrderHistoryCriteria;
 import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.infrastructure.adapter.in.rest.identity.RequesterId;
+import com.cocos.challenge.infrastructure.adapter.in.rest.tracing.OperationLog;
 import jakarta.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +43,8 @@ public class OrderQueryController {
 
     @PostMapping("/{orderId}/cancel")
     public CancellationResponse cancel(@RequesterId UserId userId, @PathVariable @Positive long orderId) {
-        return CancellationResponse.from(cancellation.cancel(userId, orderId));
+        var result = cancellation.cancel(userId, orderId);
+        OperationLog.orderCancelled(userId, result);
+        return CancellationResponse.from(result);
     }
 }
