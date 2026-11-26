@@ -1,7 +1,7 @@
 package com.cocos.challenge.infrastructure.adapter.out.persistence;
 
-import com.cocos.challenge.application.port.out.IdempotencyRecord;
-import com.cocos.challenge.application.port.out.NewOrder;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository.IdempotencyRecord;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository.NewOrder;
 import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.Money;
@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @IntegrationTest
 @Tag("integration")
 @Transactional
-class JdbcOrderRepositoryIT {
+class JdbcOrderLedgerRepositoryPlacementIT {
 
     private static final UserId USER = new UserId(1);
     private static final InstrumentId PAMP = new InstrumentId(47);
@@ -43,7 +43,7 @@ class JdbcOrderRepositoryIT {
     @Test
     @Tag("CU-03.33")
     void oneKeyCanIdentifyDifferentOrdersForDifferentUsers() {
-        JdbcOrderRepository repository = new JdbcOrderRepository(jdbc);
+        JdbcOrderLedgerRepository repository = new JdbcOrderLedgerRepository(jdbc);
         UserId secondUser = new UserId(2);
         Order first = repository.save(buy(USER, "shared"));
         Order second = repository.save(buy(secondUser, "shared"));
@@ -58,7 +58,7 @@ class JdbcOrderRepositoryIT {
     @Test
     @Tag("CU-03.35")
     void aKeyWithNoStoredOrderCanBeUsedForAValidOrder() {
-        JdbcOrderRepository repository = new JdbcOrderRepository(jdbc);
+        JdbcOrderLedgerRepository repository = new JdbcOrderLedgerRepository(jdbc);
         String key = "retry-after-invalid-request";
         assertThatThrownBy(() -> OrderRequest.of(47L, "BUY", "MARKET", 0, null, null))
                 .isInstanceOf(InvalidRequestException.class);
@@ -73,7 +73,7 @@ class JdbcOrderRepositoryIT {
     @Tag("CU-03.37")
     void savesAndReadsTheSameInstantInANonUtcSession() {
         jdbc.sql("SET LOCAL TIME ZONE 'America/Argentina/Buenos_Aires'").update();
-        JdbcOrderRepository repository = new JdbcOrderRepository(jdbc);
+        JdbcOrderLedgerRepository repository = new JdbcOrderLedgerRepository(jdbc);
         Order saved = repository.save(buy(USER, "timestamp"));
 
         assertThat(saved.createdAt()).isEqualTo(CREATED_AT);
@@ -83,7 +83,7 @@ class JdbcOrderRepositoryIT {
     @Test
     @Tag("CU-03.42")
     void findsAKeyUsedByAFractionalDepositWithoutMappingTheDepositToShares() {
-        JdbcOrderRepository repository = new JdbcOrderRepository(jdbc);
+        JdbcOrderLedgerRepository repository = new JdbcOrderLedgerRepository(jdbc);
         RequestFingerprint depositFingerprint = RequestFingerprint.of("CASH_IN|amount=1234.56");
         long depositId = jdbc.sql("""
                 INSERT INTO orders (instrumentid, userid, size, price, type, side, status, datetime,
@@ -99,7 +99,7 @@ class JdbcOrderRepositoryIT {
 
     @Test
     void persistsTheOriginalAmountAndRejectionForReplay() {
-        JdbcOrderRepository repository = new JdbcOrderRepository(jdbc);
+        JdbcOrderLedgerRepository repository = new JdbcOrderLedgerRepository(jdbc);
         Money amount = Money.of("800.00");
         Money price = Money.of("1000.00");
         Rejection rejection = new Rejection(RejectionReason.AMOUNT_BELOW_PRICE,
@@ -118,7 +118,7 @@ class JdbcOrderRepositoryIT {
 
     @Test
     void findByIdReadsTheTickerOfTheStoredInstrument() {
-        JdbcOrderRepository repository = new JdbcOrderRepository(jdbc);
+        JdbcOrderLedgerRepository repository = new JdbcOrderLedgerRepository(jdbc);
         RequestFingerprint fingerprint = OrderRequest.of(54L, "BUY", "MARKET", 1, null, null).fingerprint();
         NewOrder order = new NewOrder(USER, new InstrumentId(54), "METR", OrderSide.BUY, OrderType.MARKET,
                 OrderStatus.FILLED, 1, Money.of("100.00"), null, null, CREATED_AT, "metr-ticker", fingerprint);
