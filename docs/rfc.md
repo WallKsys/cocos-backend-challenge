@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Estado** | **Cerrado** (2026-11-25): el proyecto está implementado y este documento queda como registro de las decisiones |
+| **Estado** | **Vigente**: reabierto el 2026-11-26 para la spec 011 (TEC-38). Las decisiones hasta TEC-37 quedaron implementadas en v1.0.0 (cierre del 2026-11-25) |
 | **Fecha** | 2026-11-21 |
 | **Documentos relacionados** | [PRD](prd.md) · [Análisis funcional](analisis-funcional.md) · [Casos de uso](casos-de-uso.md) |
 
@@ -126,6 +126,69 @@ Las consultas (portfolio, búsqueda, historial) usan `@Transactional(readOnly = 
 | Idempotencia | Ejecutar dos veces la misma operación | Restricción única en la base sobre (usuario, clave) |
 
 **Cuándo adoptarlo:** si el sistema tuviera que publicar eventos hacia afuera (por ejemplo, "orden ejecutada" para notificar al usuario o enrutar la orden a un mercado real). En ese caso, el evento se guardaría en una tabla `outbox` dentro de la misma transacción del caso de uso, y un proceso aparte lo publicaría con reintentos.
+
+### TEC-38 · Consolidación por tabla y por recurso (spec 011)
+
+**Contexto.** Al cierre (v1.0.0), el dueño pidió a otro agente una auditoría de la estructura del código. Contó 165
+archivos de producción para 4 tablas y 15 endpoints, con una mediana de 13 líneas por archivo. Más o menos la mitad
+de esa fragmentación es accidental. Cada spec agregó sus propios puertos, adaptadores, casos de uso, controllers y
+configuraciones, y con el límite de 400 líneas por PR (TEC-30) fusionar lo que se superponía era caro:
+
+- la tabla `users` tenía tres puertos y tres adaptadores, dos de ellos idénticos salvo el `FOR UPDATE`;
+- la tabla `orders` tenía seis puertos y seis adaptadores, y tres repetían el mismo mapeo de filas;
+- las órdenes tenían dos controllers;
+- depósitos y retiros tenían dos puertos de entrada implementados por un solo servicio;
+- las cinco herramientas internas tenían cinco puertos, cinco servicios y cinco controllers;
+- la configuración estaba repartida en once clases.
+
+La otra mitad es el costo deliberado de la arquitectura hexagonal (puertos, comandos y DTOs separados del dominio), y
+se conserva.
+
+**Decisión.** Se agrega la spec 011, una consolidación **sin cambio de comportamiento**: la persistencia se agrupa por
+tabla, los puertos de entrada y los controllers por recurso, y la configuración por propósito. Los archivos de
+producción pasan de 165 a 103. Se aceptan los puntos P1 a P7 de la auditoría con estos ajustes del dueño:
+
+- **P1, persistencia:** un adaptador por tabla. `AdminOrderRepository` sigue siendo un puerto aparte, implementado
+  por el mismo adaptador de `orders`: el puerto principal no ofrece las operaciones destructivas de la demo (TEC-18).
+- **P3, puertos de entrada:** no se fusionan el envío y la cancelación de órdenes. `PlaceOrderService` es la clase más
+  crítica, revisada con mutación, y la cancelación no usa seis de sus diez dependencias.
+- **P4, REST:** los cuerpos de pedido se anidan en su controller y los DTOs hijos en su DTO padre. No se crea un
+  contenedor genérico de DTOs.
+- **P5, dominio:** no se unifican `Order` y `OrderRecord`, que tienen invariantes y JSON distintos.
+- **P6, excepciones:** `DomainException` pasa a ser sellada y el manejador usa un `switch` exhaustivo, pero las seis
+  clases se conservan. Así no hay que reescribir los ~20 tests que verifican el tipo, y ARQ-15 pasa de la revisión al
+  compilador.
+- **P7, guardia de lock e idempotencia:** solo para las tres operaciones con `Idempotency-Key` (envío, depósito y
+  retiro). Ninguna otra operación empieza a registrar la espera del lock.
+- **P2, configuración:** cuatro clases por propósito en lugar de tres, para no mezclar web con observabilidad.
+
+Se rechaza **P8**, eliminar las interfaces de los puertos de entrada: los controllers siguen dependiendo solo de
+`port.in`, y ninguna regla de ArchUnit cambia.
+
+**Cómo se verifica que nada cambia.** Un refactor no tiene "rojo": la suite de v1.0.0 es su especificación. La
+constitución (v1.5.0, principio III) lo admite para una spec que se declara refactor, con tres condiciones:
+
+1. Los tests cambian solo por ajustes mecánicos que el `tasks.md` prescribe archivo por archivo: imports, tipos,
+   constructores y renombres. Las clases de test se renombran y nunca se fusionan.
+2. Cada porción termina con `./mvnw clean verify` en verde.
+3. `specs/011-consolidation/preservation.sh` compara con una línea de base tomada de v1.0.0 los 41 textos SQL de los
+   adaptadores (leídos con `javap`) y los 672 casos de test ejecutados (por nombre, con repeticiones). Si algo
+   difiere, el agente se detiene y reporta.
+
+**Justificación.** Menos clases y más cohesivas, sin perder ninguna garantía: quien lee el código encuentra un
+adaptador por tabla y un controller por recurso. Se hace como una spec más, con el mismo protocolo que las anteriores
+(TEC-03: implementa el agente, revisa Claude), porque el refactor toca el código más crítico (lock, idempotencia,
+cancelación contra ejecución forzada) y merece las mismas barreras que su implementación original. Costo: once
+porciones (hasta dieciséis PRs con los cortes predefinidos), cinco de ellas con revisión manual.
+
+**Alternativas descartadas:**
+
+- **P8, controllers que llaman a los servicios directamente:** ahorra 6 archivos más, pero obliga a cambiar reglas de
+  ArchUnit y debilita la frontera hexagonal que el proyecto muestra.
+- **Fusionar también las clases de test:** las que se fusionarían tienen campos con el mismo nombre y valores
+  distintos, y anotaciones de clase distintas. No es un cambio mecánico, y renombrarlas alcanza.
+- **Una sola excepción de dominio con un enum de códigos:** 5 archivos menos a cambio de reescribir ~20 tests.
+- **Un único PR grande con justificación de tamaño:** contradice TEC-30 justo en el código más crítico.
 
 ## 6. Concurrencia e idempotencia
 
@@ -342,7 +405,7 @@ Los mensajes nunca revelan datos de otros usuarios. Por ejemplo, el error por un
 
 ## 9. División en funcionalidades (Spec Kit)
 
-### TEC-21 · Specs, implementadas en este orden (10 desde TEC-31)
+### TEC-21 · Specs, implementadas en este orden (10 desde TEC-31; 11 desde TEC-38)
 
 | # | Spec | Alcance | Criterio de terminado |
 |---|---|---|---|
@@ -356,6 +419,7 @@ Los mensajes nunca revelan datos de otros usuarios. Por ejemplo, el error por un
 | 008 | Cancelación e historial | CU-04, CU-07 | Escenarios CU-04 y CU-07 en verde |
 | 009 | Herramientas internas y volumen | CU-I, endpoints de administrador, pruebas de volumen (M-08 a M-11) y guardia de planes (TEC-17) | Escenarios CU-I en verde y métricas de volumen cumplidas |
 | 010 | Observabilidad | Exportación OpenTelemetry, backend `grafana/otel-lgtm` en el compose, correlación de trazas y logs, tableros de salud y de negocio (TEC-31). El puerto `BusinessMetrics` se crea antes, en la 003 | Tableros aprovisionados y con datos al levantar el compose; tests verifican que cada operación registra sus métricas |
+| 011 | Consolidación | Refactor sin cambio de comportamiento (TEC-38): persistencia por tabla, puertos de entrada y controllers por recurso, configuración por propósito | Los 103 archivos de producción del plan; suite en verde, y SQL y tests ejecutados idénticos a los de v1.0.0 |
 
 **Justificación.** Specs chicas y con un criterio de terminado verificable son más fáciles de cumplir para un agente implementador. La base se dividió en tres porque mezcla temas independientes: las **barreras** (001) son lo más importante del proyecto, porque una vez que funcionan todo lo demás se autocontrola, y se revisan antes de seguir; los **datos** (002) quedan verificados antes de que exista lógica de negocio; y las **convenciones** (003) evitan que cada funcionalidad invente su propio formato de errores o de montos. El orden va de lo más simple (búsqueda, para ejercitar el ciclo de TDD) al corazón del sistema (órdenes), y luego a lo que depende de él. Se evaluó juntar 002 y 003 (8 specs) y se prefirió mantenerlas separadas.
 

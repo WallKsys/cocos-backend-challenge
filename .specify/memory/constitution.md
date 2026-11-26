@@ -61,6 +61,11 @@ examples: `@Disabled`, `@Ignore`, `assumeTrue(false)`, deleting assertions, wide
 catching and swallowing exceptions in tests, editing `.feature` files.
 The only exception is a change that the slice's `tasks.md`, as it stands on `main` before the slice starts, **prescribes for a named existing test file** (the agent never writes that prescription itself), for example extending `SeedDataIT`'s expected migration versions when a migration is added, or switching a BDD step to a real endpoint. That change goes in the tests commit, does exactly what the task says and nothing else, and is explained in the PR under "Test adjustments after the red run".
 
+**Refactor without behavior change.** A spec that declares itself a refactor without behavior change (spec 011) adds no
+behavior to see fail: the existing suite is its specification. Its tasks pass at once, with no red run. Its test changes
+are only the mechanical adjustments that its `tasks.md` prescribes for named test files, under the rule above, and each
+slice proves that behavior did not change with the evidence its plan requires (TEC-38).
+
 ### IV. Every scenario is verified, and traceability is enforced by the build
 
 - Every scenario `CU-xx.yy` in `docs/casos-de-uso.md` has **exactly one** Gherkin scenario tagged with its ID
@@ -255,7 +260,8 @@ If code does not compile, check this table before anything else.
 
 - **Spec order** (TEC-21): 001 skeleton and guardrails → 002 database → 003 API conventions → 004 instrument
   search → 005 order placement → 006 portfolio → 007 deposits and withdrawals → 008 cancellation and history
-  → 009 internal tools and volume → 010 observability. Do not start a spec before the previous one is complete.
+  → 009 internal tools and volume → 010 observability → 011 consolidation (refactor, TEC-38). Do not start a
+  spec before the previous one is complete.
 - **Branches**: one branch per PR slice, created from an up-to-date `main`:
   `NNN-short-name-<slice letter>` (example: `005-order-placement-b`). Specs and plans are already committed in
   `main`. Merge a slice into `main` only after its PR is approved; start the next slice from the updated `main`.
@@ -281,4 +287,4 @@ If code does not compile, check this table before anything else.
 - The final code review checks every principle of this document, every scenario in
   `docs/casos-de-uso.md` and every ArchUnit rule.
 
-**Version**: 1.4.0 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-25 (v1.4.0: owner decisions with the label `owner-approved`, TEC-36; v1.3.9: Principle V governs production code; test sources may use SQL, TEC-12; v1.3.8: specs read-only except checking off the slice's tasks; test-change prescriptions only from `main`, TEC-09; v1.3.7: decimals in requests, TEC-20; checks that need data after the idempotency lookup and operations without a key, TEC-16; package dependencies, port names, generic return types and domain-free DTOs, TEC-13; v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)
+**Version**: 1.5.0 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-26 (v1.5.0: refactor without behavior change in Principle III, spec 011 in the spec order, TEC-38; v1.4.0: owner decisions with the label `owner-approved`, TEC-36; v1.3.9: Principle V governs production code; test sources may use SQL, TEC-12; v1.3.8: specs read-only except checking off the slice's tasks; test-change prescriptions only from `main`, TEC-09; v1.3.7: decimals in requests, TEC-20; checks that need data after the idempotency lookup and operations without a key, TEC-16; package dependencies, port names, generic return types and domain-free DTOs, TEC-13; v1.3.6: test changes prescribed by tasks.md, TEC-09; v1.1.0: Principle X, PR size limit, TEC-30; v1.2.0: observability, TEC-31; v1.2.1: @Transactional member enums allowed in application; v1.3.0: published cumulative contract, extended error catalog; v1.3.1: feature files copied from specs; v1.3.2: strict JSON, DEC-24; v1.3.3: observability pitfalls and copied artifacts; v1.3.4: CI, TEC-33; v1.3.5: automatic Claude review, TEC-34)

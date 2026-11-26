@@ -33,8 +33,9 @@ Resuelve el [challenge de backend de Cocos](docs/referencia/backend-challenge.md
 
 ## Estado
 
-El proyecto está **completo**: las diez funcionalidades (*specs*) están implementadas en `main`, cada una
-entregada en pull requests chicos y revisados.
+Las diez funcionalidades (*specs*) del challenge están implementadas en `main` desde v1.0.0, cada una entregada
+en pull requests chicos y revisados. Después del cierre se agregó la spec 011, una consolidación de clases sin cambio
+de comportamiento ([TEC-38](docs/rfc.md)), que está en curso.
 
 | # | Funcionalidad | Estado |
 |---|---|---|
@@ -48,6 +49,7 @@ entregada en pull requests chicos y revisados.
 | 008 | Cancelación e historial | ✅ Completa |
 | 009 | Herramientas internas de demo y pruebas de volumen | ✅ Completa |
 | 010 | Observabilidad (métricas, trazas, logs y tableros) | ✅ Completa |
+| 011 | Consolidación: persistencia por tabla, puertos y controllers por recurso (refactor sin cambio de comportamiento) | 🚧 En curso |
 
 ---
 
