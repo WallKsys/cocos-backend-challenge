@@ -2,7 +2,7 @@ package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.in.UpdateMarketDataUseCase;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
-import com.cocos.challenge.application.port.out.MarketDataWriter;
+import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Instrument;
@@ -17,11 +17,11 @@ import java.time.LocalDate;
 public class UpdateMarketDataService implements UpdateMarketDataUseCase {
 
     private final InstrumentRepository instruments;
-    private final MarketDataWriter marketDataWriter;
+    private final MarketDataRepository marketDataWriter;
     private final Clock clock;
 
     public UpdateMarketDataService(
-            InstrumentRepository instruments, MarketDataWriter marketDataWriter, Clock clock) {
+            InstrumentRepository instruments, MarketDataRepository marketDataWriter, Clock clock) {
         this.instruments = instruments;
         this.marketDataWriter = marketDataWriter;
         this.clock = clock;
@@ -42,7 +42,7 @@ public class UpdateMarketDataService implements UpdateMarketDataUseCase {
             throw new InvalidRequestException(
                     "Request validation failed: 'instrumentId' must reference a tradable instrument; ARS has no market data.");
         }
-        MarketDataWriter.StoredMarketData stored = marketDataWriter.upsert(
+        MarketDataRepository.StoredMarketData stored = marketDataWriter.upsert(
                 instrumentId, close, previousClose, LocalDate.now(clock));
         return new MarketDataResult(instrument.id(), instrument.ticker(), stored.date(), stored.close(),
                 stored.previousClose());

@@ -3,7 +3,6 @@ package com.cocos.challenge.application.service;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
-import com.cocos.challenge.application.port.out.PortfolioReader;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.UserId;
 import org.junit.jupiter.api.Tag;
@@ -28,15 +27,14 @@ class GetPortfolioServiceTest {
         UserId userId = new UserId(999);
         AccountRepository accounts = mock(AccountRepository.class);
         LedgerReader ledger = mock(LedgerReader.class);
-        PortfolioReader portfolios = mock(PortfolioReader.class);
         MarketDataRepository marketData = mock(MarketDataRepository.class);
         when(accounts.find(userId)).thenReturn(Optional.empty());
-        GetPortfolioService service = new GetPortfolioService(accounts, ledger, portfolios, marketData);
+        GetPortfolioService service = new GetPortfolioService(accounts, ledger, marketData);
 
         assertThatThrownBy(() -> service.get(userId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("User 999 was not found.");
-        verifyNoInteractions(ledger, portfolios, marketData);
+        verifyNoInteractions(ledger, marketData);
     }
 
     @Test

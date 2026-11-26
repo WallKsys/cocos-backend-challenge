@@ -4,24 +4,16 @@ import com.cocos.challenge.application.port.in.GetPortfolioQuery;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
-import com.cocos.challenge.application.port.out.PortfolioReader;
 import com.cocos.challenge.application.service.GetPortfolioService;
-import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcPortfolioReader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.simple.JdbcClient;
 
 @Configuration
 public class PortfolioConfiguration {
 
     @Bean
-    PortfolioReader portfolioReader(JdbcClient jdbc) {
-        return new JdbcPortfolioReader(jdbc);
-    }
-
-    @Bean
-    GetPortfolioQuery getPortfolioQuery(AccountRepository accounts, LedgerReader ledger, PortfolioReader portfolios,
+    GetPortfolioQuery getPortfolioQuery(AccountRepository accounts, LedgerReader ledger,
                                         MarketDataRepository marketData) {
-        return new GetPortfolioService(accounts, ledger, portfolios, marketData);
+        return new GetPortfolioService(accounts, ledger, marketData);
     }
 }

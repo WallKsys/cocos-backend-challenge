@@ -6,7 +6,6 @@ import com.cocos.challenge.application.port.in.PlaceOrderUseCase;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
-import com.cocos.challenge.application.port.out.PortfolioReader;
 import com.cocos.challenge.domain.model.CashBalance;
 import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.Money;
@@ -54,9 +53,6 @@ class GetPortfolioServiceIT {
 
     @MockitoSpyBean
     LedgerReader ledger;
-
-    @MockitoSpyBean
-    PortfolioReader portfolios;
 
     @MockitoSpyBean
     MarketDataRepository marketData;
@@ -125,10 +121,10 @@ class GetPortfolioServiceIT {
 
         verify(accounts).find(SEED_USER);
         verify(ledger).cashBalance(SEED_USER);
-        verify(portfolios).openPositions(SEED_USER);
-        verify(portfolios).fills(SEED_USER, instruments);
+        verify(ledger).openPositions(SEED_USER);
+        verify(ledger).fills(SEED_USER, instruments);
         verify(marketData).latestQuotes(instruments);
-        verifyNoMoreInteractions(accounts, ledger, portfolios, marketData);
+        verifyNoMoreInteractions(accounts, ledger, marketData);
     }
 
     private static void assertCash(Portfolio portfolio, String total, String reserved, String available) {
