@@ -57,9 +57,10 @@ class JdbcCashMovementRepositoryIT {
                 Instant.parse("2026-11-21T14:36:00.123456Z"), "deposit", request.fingerprint()));
     }
 
-    private static CashMovement deposit(JdbcCashMovementRepository repository, String amount) {
+    private CashMovement deposit(JdbcCashMovementRepository repository, String amount) {
         CashMovementRequest request = CashMovementRequest.of(OrderSide.CASH_IN, amount);
-        return repository.save(new NewCashMovement(new UserId(2), repository.findCashInstrument().orElseThrow(),
+        return repository.save(new NewCashMovement(new UserId(2),
+                new JdbcInstrumentRepository(jdbc).findCashInstrument().orElseThrow(),
                 request.side(), OrderStatus.FILLED, request.amount(), null,
                 Instant.parse("2026-11-21T14:36:00.123456Z"), "deposit", request.fingerprint()));
     }
