@@ -18,12 +18,12 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @Tag("unit")
-class GetOrderServiceTest {
+class OrderQueryServiceGetTest {
 
     private final UserId user = new UserId(2);
     private final AccountRepository accounts = mock(AccountRepository.class);
     private final OrderLedgerRepository ledger = mock(OrderLedgerRepository.class);
-    private final GetOrderService service = new GetOrderService(accounts, ledger);
+    private final OrderQueryService service = new OrderQueryService(accounts, ledger);
 
     @Test
     void returnsTheRecordForTheRequestingUser() {
