@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-21
 
-**Status**: Approved for implementation
+**Status**: Implemented (2026-11-25)
 
 **Input**: RFC TEC-18 (identity and admin), TEC-19 (errors and messages), TEC-20 (money as text), TEC-22
 (contract-first), TEC-27 (correlation id), TEC-31 (business metrics port); DEC-17, DEC-18, DEC-23.

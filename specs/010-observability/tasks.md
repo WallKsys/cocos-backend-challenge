@@ -62,6 +62,6 @@ the 010-c2 branch, unchanged unless the logs check needs it.
 
 ## Definition of done (spec 010)
 
-- [ ] Slices merged; `./mvnw verify` green.
-- [ ] `docker compose up --build` shows both dashboards with data after some traffic; a log line in Loki links to its
+- [x] Slices merged; `./mvnw verify` green.
+- [x] `docker compose up --build` shows both dashboards with data after some traffic; a log line in Loki links to its
   trace in Tempo.

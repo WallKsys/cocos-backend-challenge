@@ -56,4 +56,4 @@ half follows the test-first cycle on its own and leaves the suite green:
 
 ## Definition of done (spec 008)
 
-- [ ] Slices merged; `./mvnw verify` green; 17 scenarios passing; `CU-04` and `CU-07` in scope; M-07 (cancel) green.
+- [x] Slices merged; `./mvnw verify` green; 17 scenarios passing; `CU-04` and `CU-07` in scope; M-07 (cancel) green.

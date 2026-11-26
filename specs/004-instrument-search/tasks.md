@@ -65,6 +65,6 @@ into 004-c1 (BDD infrastructure, T008–T009) and 004-c2 (endpoint, steps, contr
 
 ## Definition of done (spec 004)
 
-- [ ] Slices merged; `./mvnw verify` green on `main`.
-- [ ] Cucumber summary includes the 17 CU-02 scenarios (21 runs counting outline examples) passing.
-- [ ] `CU-02` in the traceability scope.
+- [x] Slices merged; `./mvnw verify` green on `main`.
+- [x] Cucumber summary includes the 17 CU-02 scenarios (21 runs counting outline examples) passing.
+- [x] `CU-02` in the traceability scope.

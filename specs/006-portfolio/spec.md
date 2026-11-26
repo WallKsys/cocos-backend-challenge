@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-21
 
-**Status**: Approved for implementation
+**Status**: Implemented (2026-11-25)
 
 **Input**: Challenge requirement "Portfolio"; R-13, R-15, R-16; DEC-01, DEC-01.1, DEC-02, DEC-02.1 (moving average,
 revised 2026-11-21), DEC-10, DEC-11, DEC-17; RFC TEC-17, TEC-18; acceptance scenarios **CU-01.01 to CU-01.14**;

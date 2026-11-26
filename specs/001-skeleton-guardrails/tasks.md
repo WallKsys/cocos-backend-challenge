@@ -146,9 +146,9 @@
 
 ## Definition of done (spec 001)
 
-- [ ] Slices 001-a, 001-b, 001-c and 001-d merged into `main`.
-- [ ] `verify` (CI) is a required status check of `main`, together with `pr-size`.
-- [ ] `./mvnw verify` green on `main`; `docker compose up --build` healthy (quickstart.md).
-- [ ] Every ArchUnit rule was seen failing (evidence in PR 001-b).
-- [ ] The traceability check was seen failing on real files (evidence in PR 001-d).
-- [ ] No `TODO`, `FIXME`, `@Disabled` or temporary violating classes left.
+- [x] Slices 001-a, 001-b, 001-c and 001-d merged into `main`.
+- [x] `verify` (CI) is a required status check of `main`, together with `pr-size`.
+- [x] `./mvnw verify` green on `main`; `docker compose up --build` healthy (quickstart.md).
+- [x] Every ArchUnit rule was seen failing (evidence in PR 001-b).
+- [x] The traceability check was seen failing on real files (evidence in PR 001-d).
+- [x] No `TODO`, `FIXME`, `@Disabled` or temporary violating classes left.

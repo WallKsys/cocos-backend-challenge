@@ -101,6 +101,6 @@ T007, T007a and T007b are shared by both halves: each half does its part of them
 
 ## Definition of done (spec 009)
 
-- [ ] Slices merged; `./mvnw verify` green (including `PlanGuardIT` and `ScopeIsCompleteTest`).
-- [ ] `./mvnw verify -Pvolume` green on the reference environment; latency table in the PR.
-- [ ] 9 CU-I scenarios passing; CU-04.08 uses the real tool; the scope covers every CU group.
+- [x] Slices merged; `./mvnw verify` green (including `PlanGuardIT` and `ScopeIsCompleteTest`).
+- [x] `./mvnw verify -Pvolume` green on the reference environment; latency table in the PR.
+- [x] 9 CU-I scenarios passing; CU-04.08 uses the real tool; the scope covers every CU group.

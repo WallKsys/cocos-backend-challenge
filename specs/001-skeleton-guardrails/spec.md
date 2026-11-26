@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-21
 
-**Status**: Approved for implementation
+**Status**: Implemented (2026-11-25)
 
 **Input**: RFC decisions TEC-06, TEC-07, TEC-08, TEC-10, TEC-11, TEC-12, TEC-13, TEC-14, TEC-23, TEC-25, TEC-28, TEC-30
 and Constitution v1.2.0 (Principles III, IV, V, VI, X).

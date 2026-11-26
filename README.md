@@ -33,7 +33,8 @@ Resuelve el [challenge de backend de Cocos](docs/referencia/backend-challenge.md
 
 ## Estado
 
-La implementación avanza por funcionalidades (*specs*), cada una entregada en pull requests chicos y revisados.
+El proyecto está **completo**: las diez funcionalidades (*specs*) están implementadas en `main`, cada una
+entregada en pull requests chicos y revisados.
 
 | # | Funcionalidad | Estado |
 |---|---|---|
@@ -45,11 +46,8 @@ La implementación avanza por funcionalidades (*specs*), cada una entregada en p
 | 006 | Portfolio | ✅ Completa |
 | 007 | Depósitos y retiros | ✅ Completa |
 | 008 | Cancelación e historial | ✅ Completa |
-| 009 | Herramientas internas de demo y pruebas de volumen | ⏳ Pendiente |
-| 010 | Observabilidad (métricas, trazas, logs y tableros) | ⏳ Pendiente |
-
-Las secciones siguientes describen el servicio completo; donde una capacidad depende de una funcionalidad pendiente,
-se indica la spec.
+| 009 | Herramientas internas de demo y pruebas de volumen | ✅ Completa |
+| 010 | Observabilidad (métricas, trazas, logs y tableros) | ✅ Completa |
 
 ---
 
@@ -84,8 +82,8 @@ docker compose up --build        # PostgreSQL + API (perfil demo) con los datos 
 |---|---|
 | API | http://localhost:8080 |
 | Health | http://localhost:8080/actuator/health |
-| Swagger UI *(spec 003)* | http://localhost:8080/swagger-ui/index.html |
-| Grafana *(spec 010)* | http://localhost:3000 |
+| Swagger UI | http://localhost:8080/swagger-ui/index.html |
+| Grafana | http://localhost:3000 |
 
 Primeras llamadas (usuario de ejemplo `1`; los datos del challenge se cargan automáticamente):
 
@@ -252,6 +250,8 @@ posteriores son migraciones separadas y justificadas:
 | `V4` | Columnas normalizadas (sin acentos) e índices trigram para la búsqueda |
 | `V5` | Índices para saldos, reservas e historial con cursor |
 | `V6` | Monto pedido en órdenes por monto (para responder reintentos idénticos) |
+| `V7` | Dos motivos de rechazo nuevos: precio fuera de la banda de ±20 % y cantidad demasiado grande |
+| `V8` | Índice parcial para listar por ticker los instrumentos operables (búsqueda sin criterios) |
 
 Esquema completo: [`specs/002-database/data-model.md`](specs/002-database/data-model.md). Justificación de cada
 cambio: [análisis funcional §8](docs/analisis-funcional.md).
@@ -270,11 +270,21 @@ cambio: [análisis funcional §8](docs/analisis-funcional.md).
 |---|---|---|
 | Unitarios | JUnit + AssertJ | Reglas de dominio sin Spring ni base de datos |
 | Integración | Testcontainers (PostgreSQL 18 real) | SQL, bloqueos, idempotencia ante reintentos simultáneos, paginado |
-| Aceptación | Cucumber (BDD) | **128 escenarios** de [casos de uso](docs/casos-de-uso.md), con valores calculados sobre los datos del challenge |
+| Aceptación | Cucumber (BDD) | **120 escenarios** de [casos de uso](docs/casos-de-uso.md), con valores calculados sobre los datos del challenge |
 | Arquitectura | ArchUnit | Capas, dependencias, `@Transactional`, sin ORM, sin `double` para dinero |
 | Trazabilidad | Test propio | Cada escenario tiene su escenario Gherkin y al menos un test; si falta uno, el build falla |
 | Planes de ejecución | `EXPLAIN` en el build | Ninguna consulta crítica puede perder sus índices sin romper el build |
 | Volumen | Perfil `-Pvolume` | Metas del PRD: portfolio p95 < 200 ms, historial < 100 ms, orden < 150 ms, búsqueda < 100 ms |
+
+Última medición del perfil `-Pvolume` (10.000.011 órdenes y 100.066 instrumentos en PostgreSQL 18; 500 pedidos
+HTTP medidos por métrica, [PR #99](https://github.com/WallKsys/cocos-backend-challenge/pull/99)):
+
+| Métrica | Operación | p95 | Meta p95 | p99 | Meta p99 |
+|---|---|---|---|---|---|
+| M-08 | `GET /api/v1/portfolio` | 23,6 ms | < 200 ms | 28,4 ms | < 400 ms |
+| M-09 | `GET /api/v1/orders?limit=20` | 3,2 ms | < 100 ms | 5,0 ms | < 200 ms |
+| M-10 | `POST /api/v1/orders` (compra `MARKET`) | 8,5 ms | < 150 ms | 10,9 ms | < 300 ms |
+| M-11 | `GET /api/v1/instruments?q=...` | 24,6 ms | < 100 ms | 29,5 ms | < 200 ms |
 
 En cada pull request, GitHub Actions ejecuta:
 
@@ -286,7 +296,7 @@ En cada pull request, GitHub Actions ejecuta:
 
 ## Observabilidad
 
-*(spec 010)* El servicio exporta métricas, trazas y logs con **OpenTelemetry** a una pila Grafana local
+El servicio exporta métricas, trazas y logs con **OpenTelemetry** a una pila Grafana local
 (`grafana/otel-lgtm`) que levanta el mismo `docker compose up`:
 
 - **Cocos · Application health**: tráfico, errores 4xx/5xx, latencia p95/p99 por endpoint, JVM, conexiones, CPU.
@@ -294,6 +304,9 @@ En cada pull request, GitHub Actions ejecuta:
   conflictos y tiempo de espera del bloqueo; y totales históricos calculados desde el libro contable con un
   usuario de solo lectura.
 - Cada log lleva `requestId` y `trace_id`: desde una línea de log en Loki se llega a la traza del pedido en Tempo.
+- Cada operación con efecto (orden, cancelación, depósito, retiro) deja una línea `Operation completed` con el
+  usuario, la orden, la clave de idempotencia, el resultado y el motivo de rechazo.
+- `ObservabilityIT` levanta la pila completa en el build y verifica que métricas, trazas y logs lleguen enlazados.
 
 Los logs de consola son JSON estructurado (formato ECS).
 
@@ -312,7 +325,7 @@ Los logs de consola son JSON estructurado (formato ECS).
 |---|---|
 | 8080 | API |
 | 5432 | PostgreSQL |
-| 3000 | Grafana *(spec 010)* |
+| 3000 | Grafana |
 
 ---
 
@@ -339,8 +352,8 @@ Los logs de consola son JSON estructurado (formato ECS).
 
 El proyecto se construye con **spec-driven development** ([GitHub Spec Kit](https://github.com/github/spec-kit)):
 
-1. **Análisis funcional** del enunciado: reglas explícitas, ambigüedades y 25 decisiones de producto justificadas.
-2. **PRD** con objetivos y métricas de éxito; **RFC** con 34 decisiones técnicas y sus alternativas descartadas.
+1. **Análisis funcional** del enunciado: reglas explícitas, ambigüedades y 31 decisiones de producto justificadas.
+2. **PRD** con objetivos y métricas de éxito; **RFC** con 36 decisiones técnicas y sus alternativas descartadas.
 3. **Constitución** del proyecto: reglas no negociables (arquitectura, dinero, concurrencia, testing, tamaño de PR).
 4. **Una spec por funcionalidad**, con plan, contrato OpenAPI, escenarios Gherkin y tareas divididas en PRs
    revisables.
@@ -361,7 +374,7 @@ cada merge a `main` y se previsualiza localmente con `pip install -r requirement
 | Documento | Contenido |
 |---|---|
 | [Análisis funcional](docs/analisis-funcional.md) | Dominio, reglas del enunciado, ambigüedades y decisiones de producto (DEC-xx) |
-| [Casos de uso](docs/casos-de-uso.md) | 128 escenarios de aceptación (dado / cuando / entonces) con valores reales |
+| [Casos de uso](docs/casos-de-uso.md) | 120 escenarios de aceptación (dado / cuando / entonces) con valores reales |
 | [PRD](docs/prd.md) | Objetivos, alcance, requisitos y métricas de éxito |
 | [RFC](docs/rfc.md) | Decisiones técnicas (TEC-xx) con alternativas evaluadas |
 | [Constitución](.specify/memory/constitution.md) | Reglas de ingeniería no negociables |
@@ -379,7 +392,7 @@ cada merge a `main` y se previsualiza localmente con `pip install -r requirement
 ├── src/main/resources/                  configuración y migraciones Flyway
 ├── src/test/                            tests unitarios, de integración, BDD (features) y de arquitectura
 ├── http/                                colección de pedidos de ejemplo
-├── observability/                       tableros y aprovisionamiento de Grafana (spec 010)
+├── observability/                       tableros y aprovisionamiento de Grafana
 ├── specs/                               una carpeta por funcionalidad
 ├── docs/                                análisis, casos de uso, PRD, RFC y material del challenge
 ├── .specify/                            Spec Kit: constitución, plantillas y scripts
