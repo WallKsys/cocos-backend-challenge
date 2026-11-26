@@ -8,8 +8,8 @@ import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
-import com.cocos.challenge.application.port.out.NewOrder;
-import com.cocos.challenge.application.port.out.OrderRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository.NewOrder;
 import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
@@ -36,7 +36,7 @@ import java.util.OptionalLong;
 public class PlaceOrderService implements PlaceOrderUseCase {
 
     private final AccountRepository accountLock;
-    private final OrderRepository orders;
+    private final OrderLedgerRepository orders;
     private final IdempotencyLookup idempotencyLookup;
     private final InstrumentRepository instruments;
     private final MarketDataRepository marketData;
@@ -45,14 +45,14 @@ public class PlaceOrderService implements PlaceOrderUseCase {
     private final BusinessMetrics metrics;
     private final Clock clock;
 
-    public PlaceOrderService(AccountRepository accountLock, OrderRepository orders, InstrumentRepository instruments,
+    public PlaceOrderService(AccountRepository accountLock, OrderLedgerRepository orders, InstrumentRepository instruments,
             MarketDataRepository marketData, LedgerReader ledger, OrderEvaluator evaluator,
             BusinessMetrics metrics, Clock clock) {
         this(accountLock, orders, instruments, marketData, ledger, evaluator, metrics, clock,
                 new IdempotencyLookup(orders, metrics));
     }
 
-    public PlaceOrderService(AccountRepository accountLock, OrderRepository orders, InstrumentRepository instruments,
+    public PlaceOrderService(AccountRepository accountLock, OrderLedgerRepository orders, InstrumentRepository instruments,
             MarketDataRepository marketData, LedgerReader ledger, OrderEvaluator evaluator,
             BusinessMetrics metrics, Clock clock, IdempotencyLookup idempotencyLookup) {
         this.accountLock = accountLock;

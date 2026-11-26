@@ -85,10 +85,10 @@ T008 and T009 (market data); **011-d2** (branch `011-consolidation-d2`, after 01
 
 **Estimated size**: ~330 lines.
 
-- [ ] T012 Adjust tests (passes at once): rename `JdbcOrderRepositoryIT` → `JdbcOrderLedgerRepositoryPlacementIT`
+- [x] T012 Adjust tests (passes at once): rename `JdbcOrderRepositoryIT` → `JdbcOrderLedgerRepositoryPlacementIT`
   (g, a, b); `PlanGuardIT` (b); `PlaceOrderServiceTest` (a, e); `IdempotencyLookupTest` (a, b);
   `CashMovementServiceTest` (a, b); `JdbcSeedDataRestorerIT` (b); `JdbcAdminOrderRepositoryIT` (b).
-- [ ] T013 Implement plan.md § Persistence, rows of `orders`, the part of slice 011-e (constant renames of § Method
+- [x] T013 Implement plan.md § Persistence, rows of `orders`, the part of slice 011-e (constant renames of § Method
   and constant renames), `PlaceOrderService`, `IdempotencyLookup`, and the beans.
 
 ## Slice 011-f — `orders` rows (2/2): cash movements and admin operations (branch `011-consolidation-f`)
