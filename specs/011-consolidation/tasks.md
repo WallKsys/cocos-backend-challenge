@@ -44,12 +44,12 @@ replaces `AccountLock` and `AccountReader` (T004 and T005 for those files); **01
 `011-consolidation-b2`, after 011-b1 is merged) adds `create` and replaces `UserWriter`. T004 and T005 are checked
 off in 011-b2.
 
-- [ ] T004 Adjust tests (passes at once): rename `JdbcAccountLockIT` → `JdbcAccountRepositoryLockIT` (g, b) and
+- [x] T004 Adjust tests (passes at once): rename `JdbcAccountLockIT` → `JdbcAccountRepositoryLockIT` (g, b) and
   `JdbcUserWriterIT` → `JdbcAccountRepositoryCreateUserIT` (g); `PlanGuardIT` (b); `PlaceOrderServiceTest` (a, e);
   `CancelOrderServiceTest`, `CashMovementServiceTest`, `DeleteOrderServiceTest`, `ExecuteOrderServiceTest`,
   `GetOrderServiceTest`, `GetOrderHistoryServiceTest`, `GetPortfolioServiceTest`, `GetPortfolioServiceIT`,
   `CancelVersusExecutionIT` and `support/ForcedExecutionSimulator` (a, b).
-- [ ] T005 Implement plan.md § Persistence, `users`: `AccountRepository`, `JdbcAccountRepository`, the services that
+- [x] T005 Implement plan.md § Persistence, `users`: `AccountRepository`, `JdbcAccountRepository`, the services that
   used the three old ports, and their beans (the `accountLock` bean becomes `accountRepository`; § Configuration).
 
 ## Slice 011-c — `instruments` (branch `011-consolidation-c`)

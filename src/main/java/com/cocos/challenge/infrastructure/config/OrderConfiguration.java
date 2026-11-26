@@ -1,7 +1,7 @@
 package com.cocos.challenge.infrastructure.config;
 
 import com.cocos.challenge.application.port.in.PlaceOrderUseCase;
-import com.cocos.challenge.application.port.out.AccountLock;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
@@ -10,7 +10,7 @@ import com.cocos.challenge.application.port.out.OrderRepository;
 import com.cocos.challenge.application.service.IdempotencyLookup;
 import com.cocos.challenge.application.service.PlaceOrderService;
 import com.cocos.challenge.domain.service.OrderEvaluator;
-import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcAccountLock;
+import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcAccountRepository;
 import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcInstrumentRepository;
 import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcLedgerReader;
 import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcMarketDataRepository;
@@ -25,8 +25,8 @@ import java.time.Clock;
 public class OrderConfiguration {
 
     @Bean
-    AccountLock accountLock(JdbcClient jdbc) {
-        return new JdbcAccountLock(jdbc);
+    AccountRepository accountRepository(JdbcClient jdbc) {
+        return new JdbcAccountRepository(jdbc);
     }
 
     @Bean
@@ -55,7 +55,7 @@ public class OrderConfiguration {
     }
 
     @Bean
-    PlaceOrderUseCase placeOrderUseCase(AccountLock accountLock, OrderRepository orders,
+    PlaceOrderUseCase placeOrderUseCase(AccountRepository accountLock, OrderRepository orders,
             InstrumentRepository instruments, MarketDataRepository marketData, LedgerReader ledger,
             BusinessMetrics metrics, Clock clock, IdempotencyLookup idempotencyLookup) {
         return new PlaceOrderService(accountLock, orders, instruments, marketData, ledger,

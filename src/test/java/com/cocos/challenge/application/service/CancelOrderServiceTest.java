@@ -1,6 +1,6 @@
 package com.cocos.challenge.application.service;
 
-import com.cocos.challenge.application.port.out.AccountLock;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.domain.exception.NotFoundException;
@@ -38,7 +38,7 @@ class CancelOrderServiceTest {
 
     private static final UserId USER = new UserId(1);
     private static final long ORDER = 7;
-    private final AccountLock lock = mock(AccountLock.class);
+    private final AccountRepository lock = mock(AccountRepository.class);
     private final OrderLedgerRepository ledger = mock(OrderLedgerRepository.class);
     private final BusinessMetrics metrics = mock(BusinessMetrics.class);
 

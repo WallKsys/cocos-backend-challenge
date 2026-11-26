@@ -1,6 +1,6 @@
 package com.cocos.challenge.application.service;
 
-import com.cocos.challenge.application.port.out.AccountLock;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.AdminOrderRepository;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
@@ -23,7 +23,7 @@ class DeleteOrderServiceTest {
 
     private static final UserId USER = new UserId(1);
 
-    private final AccountLock lock = mock(AccountLock.class);
+    private final AccountRepository lock = mock(AccountRepository.class);
     private final AdminOrderRepository adminOrders = mock(AdminOrderRepository.class);
     private final DeleteOrderService service = new DeleteOrderService(lock, adminOrders);
 

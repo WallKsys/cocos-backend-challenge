@@ -1,6 +1,6 @@
 package com.cocos.challenge.application.service;
 
-import com.cocos.challenge.application.port.out.AccountReader;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class GetOrderServiceTest {
 
     private final UserId user = new UserId(2);
-    private final AccountReader accounts = mock(AccountReader.class);
+    private final AccountRepository accounts = mock(AccountRepository.class);
     private final OrderLedgerRepository ledger = mock(OrderLedgerRepository.class);
     private final GetOrderService service = new GetOrderService(accounts, ledger);
 

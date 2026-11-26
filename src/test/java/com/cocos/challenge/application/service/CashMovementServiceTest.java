@@ -1,7 +1,7 @@
 package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.in.CashMovementCommand;
-import com.cocos.challenge.application.port.out.AccountLock;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.CashMovementRepository;
 import com.cocos.challenge.application.port.out.IdempotencyRecord;
@@ -55,7 +55,7 @@ class CashMovementServiceTest {
     private static final CashMovementRequest DEPOSIT = CashMovementRequest.of(OrderSide.CASH_IN, "100.00");
     private static final CashMovementRequest WITHDRAWAL = CashMovementRequest.of(OrderSide.CASH_OUT, "100.00");
 
-    private final AccountLock lock = mock(AccountLock.class);
+    private final AccountRepository lock = mock(AccountRepository.class);
     private final OrderRepository orders = mock(OrderRepository.class);
     private final CashMovementRepository movements = mock(CashMovementRepository.class);
     private final LedgerReader ledger = mock(LedgerReader.class);

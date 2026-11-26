@@ -3,7 +3,7 @@ package com.cocos.challenge.application.service;
 import com.cocos.challenge.application.port.in.PlaceOrderCommand;
 import com.cocos.challenge.application.port.in.PlaceOrderResult;
 import com.cocos.challenge.application.port.in.PlaceOrderUseCase;
-import com.cocos.challenge.application.port.out.AccountLock;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
@@ -35,7 +35,7 @@ import java.util.OptionalLong;
 
 public class PlaceOrderService implements PlaceOrderUseCase {
 
-    private final AccountLock accountLock;
+    private final AccountRepository accountLock;
     private final OrderRepository orders;
     private final IdempotencyLookup idempotencyLookup;
     private final InstrumentRepository instruments;
@@ -45,14 +45,14 @@ public class PlaceOrderService implements PlaceOrderUseCase {
     private final BusinessMetrics metrics;
     private final Clock clock;
 
-    public PlaceOrderService(AccountLock accountLock, OrderRepository orders, InstrumentRepository instruments,
+    public PlaceOrderService(AccountRepository accountLock, OrderRepository orders, InstrumentRepository instruments,
             MarketDataRepository marketData, LedgerReader ledger, OrderEvaluator evaluator,
             BusinessMetrics metrics, Clock clock) {
         this(accountLock, orders, instruments, marketData, ledger, evaluator, metrics, clock,
                 new IdempotencyLookup(orders, metrics));
     }
 
-    public PlaceOrderService(AccountLock accountLock, OrderRepository orders, InstrumentRepository instruments,
+    public PlaceOrderService(AccountRepository accountLock, OrderRepository orders, InstrumentRepository instruments,
             MarketDataRepository marketData, LedgerReader ledger, OrderEvaluator evaluator,
             BusinessMetrics metrics, Clock clock, IdempotencyLookup idempotencyLookup) {
         this.accountLock = accountLock;

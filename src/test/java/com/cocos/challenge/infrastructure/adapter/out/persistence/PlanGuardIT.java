@@ -67,7 +67,7 @@ class PlanGuardIT {
         OffsetDateTime cursorOffset = cursorInstant.atOffset(ZoneOffset.UTC);
 
         return Stream.of(
-                new QueryCase("account lock", JdbcAccountLock.LOCK_SQL, Map.of("userId", 1L)),
+                new QueryCase("account lock", JdbcAccountRepository.LOCK_SQL, Map.of("userId", 1L)),
                 new QueryCase("cash balance", JdbcLedgerReader.CASH_BALANCE_SQL, Map.of("userId", 1L)),
                 new QueryCase("share balance", JdbcLedgerReader.SHARE_BALANCE_SQL,
                         Map.of("userId", 1L, "instrumentId", 47L)),

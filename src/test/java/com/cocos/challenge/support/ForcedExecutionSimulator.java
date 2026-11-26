@@ -1,6 +1,6 @@
 package com.cocos.challenge.support;
 
-import com.cocos.challenge.application.port.out.AccountLock;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.domain.model.UserId;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -9,10 +9,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 public final class ForcedExecutionSimulator {
 
     private final TransactionTemplate transaction;
-    private final AccountLock lock;
+    private final AccountRepository lock;
     private final JdbcClient jdbc;
 
-    public ForcedExecutionSimulator(TransactionTemplate transaction, AccountLock lock, JdbcClient jdbc) {
+    public ForcedExecutionSimulator(TransactionTemplate transaction, AccountRepository lock, JdbcClient jdbc) {
         this.transaction = transaction;
         this.lock = lock;
         this.jdbc = jdbc;

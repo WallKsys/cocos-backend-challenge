@@ -1,6 +1,6 @@
 package com.cocos.challenge.application.service;
 
-import com.cocos.challenge.application.port.out.AccountLock;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.AdminOrderRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.domain.exception.DomainException;
@@ -35,7 +35,7 @@ class ExecuteOrderServiceTest {
 
     private static final UserId USER = new UserId(1);
 
-    private final AccountLock lock = mock(AccountLock.class);
+    private final AccountRepository lock = mock(AccountRepository.class);
     private final AdminOrderRepository adminOrders = mock(AdminOrderRepository.class);
     private final OrderLedgerRepository ledger = mock(OrderLedgerRepository.class);
     private final ExecuteOrderService service = new ExecuteOrderService(lock, adminOrders, ledger);

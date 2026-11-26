@@ -1,7 +1,7 @@
 package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.in.GetPortfolioQuery;
-import com.cocos.challenge.application.port.out.AccountReader;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.application.port.out.OpenPosition;
@@ -26,12 +26,12 @@ import java.util.stream.Collectors;
 
 public class GetPortfolioService implements GetPortfolioQuery {
 
-    private final AccountReader accounts;
+    private final AccountRepository accounts;
     private final LedgerReader ledger;
     private final PortfolioReader portfolios;
     private final MarketDataRepository marketData;
 
-    public GetPortfolioService(AccountReader accounts, LedgerReader ledger, PortfolioReader portfolios,
+    public GetPortfolioService(AccountRepository accounts, LedgerReader ledger, PortfolioReader portfolios,
                                MarketDataRepository marketData) {
         this.accounts = accounts;
         this.ledger = ledger;

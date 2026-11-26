@@ -1,7 +1,7 @@
 package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.in.GetOrderQuery;
-import com.cocos.challenge.application.port.out.AccountReader;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.OrderRecord;
@@ -10,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class GetOrderService implements GetOrderQuery {
 
-    private final AccountReader accounts;
+    private final AccountRepository accounts;
     private final OrderLedgerRepository ledger;
 
-    public GetOrderService(AccountReader accounts, OrderLedgerRepository ledger) {
+    public GetOrderService(AccountRepository accounts, OrderLedgerRepository ledger) {
         this.accounts = accounts;
         this.ledger = ledger;
     }
