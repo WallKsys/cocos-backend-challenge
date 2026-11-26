@@ -69,14 +69,14 @@ off in 011-b2.
 T008 and T009 (market data); **011-d2** (branch `011-consolidation-d2`, after 011-d1 is merged) is T010 and T011
 (ledger aggregations).
 
-- [ ] T008 Adjust tests (passes at once): rename `JdbcMarketDataWriterIT` → `JdbcMarketDataRepositoryUpsertIT`
+- [x] T008 Adjust tests (passes at once): rename `JdbcMarketDataWriterIT` → `JdbcMarketDataRepositoryUpsertIT`
   (g, a, b); `UpdateMarketDataServiceTest` (a, b); `PlaceOrderServiceTest` (e).
-- [ ] T009 Implement plan.md § Persistence, `marketdata`, `UpdateMarketDataService`, and the beans.
-- [ ] T010 Adjust tests (passes at once): rename `JdbcPortfolioReaderIT` → `JdbcLedgerReaderPortfolioIT` (g, a, b);
+- [x] T009 Implement plan.md § Persistence, `marketdata`, `UpdateMarketDataService`, and the beans.
+- [x] T010 Adjust tests (passes at once): rename `JdbcPortfolioReaderIT` → `JdbcLedgerReaderPortfolioIT` (g, a, b);
   `PlanGuardIT` (b); `PlaceOrderServiceTest` (e); `GetPortfolioServiceTest` (a, b, c, f: the `PortfolioReader` mock
   is replaced by the `LedgerReader` mock); `GetPortfolioServiceIT` (a, f: the `portfolios` spy is removed and its two
   verifications use `ledger`).
-- [ ] T011 Implement plan.md § Persistence, aggregations over `orders`, `GetPortfolioService`, and the beans.
+- [x] T011 Implement plan.md § Persistence, aggregations over `orders`, `GetPortfolioService`, and the beans.
 
 ## Slice 011-e — `orders` rows (1/2): placement (branch `011-consolidation-e`)
 
