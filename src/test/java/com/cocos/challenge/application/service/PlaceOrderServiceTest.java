@@ -15,6 +15,7 @@ import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
 import com.cocos.challenge.domain.model.CashBalance;
 import com.cocos.challenge.domain.model.CreatedUser;
+import com.cocos.challenge.domain.model.Fill;
 import com.cocos.challenge.domain.model.Instrument;
 import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.InstrumentSearchCriteria;
@@ -44,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -319,6 +321,14 @@ class PlaceOrderServiceTest {
         public ShareBalance shareBalance(UserId user, InstrumentId id) {
             calls.add("shares");
             return new ShareBalance(40, 0);
+        }
+
+        public List<OpenPosition> openPositions(UserId user) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Map<InstrumentId, List<Fill>> fills(UserId user, Set<InstrumentId> instrumentIds) {
+            throw new UnsupportedOperationException();
         }
 
         public void accountLockWaited(Duration duration) {

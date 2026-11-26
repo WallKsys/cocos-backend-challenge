@@ -1,6 +1,6 @@
 package com.cocos.challenge.infrastructure.adapter.out.persistence;
 
-import com.cocos.challenge.application.port.out.OpenPosition;
+import com.cocos.challenge.application.port.out.LedgerReader.OpenPosition;
 import com.cocos.challenge.domain.model.Fill;
 import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.MarketQuote;
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
 @Tag("integration")
-class JdbcPortfolioReaderIT {
+class JdbcLedgerReaderPortfolioIT {
 
     private static final InstrumentId PAMP = new InstrumentId(47);
 
@@ -30,7 +30,7 @@ class JdbcPortfolioReaderIT {
     @Test
     @Tag("CU-01.04")
     void listsOnlyOpenPositionsInTickerOrder() {
-        assertThat(new JdbcPortfolioReader(jdbc).openPositions(new UserId(1)))
+        assertThat(new JdbcLedgerReader(jdbc).openPositions(new UserId(1)))
                 .extracting(OpenPosition::ticker).containsExactly("BMA", "METR", "PAMP");
     }
 
@@ -42,7 +42,7 @@ class JdbcPortfolioReaderIT {
                 INSERT INTO orders (instrumentid, userid, size, price, side, status, type, datetime)
                 VALUES (47, 1, 40, 925.85, 'SELL', 'FILLED', 'MARKET', CURRENT_TIMESTAMP)
                 """).update();
-        assertThat(new JdbcPortfolioReader(jdbc).openPositions(new UserId(1)))
+        assertThat(new JdbcLedgerReader(jdbc).openPositions(new UserId(1)))
                 .extracting(OpenPosition::ticker).containsExactly("BMA", "METR");
     }
 
@@ -57,7 +57,7 @@ class JdbcPortfolioReaderIT {
                        (47, 2, 10, 120, 'SELL', 'FILLED', 'MARKET', '2023-07-12T11:00:00Z')
                 """).update();
 
-        assertThat(new JdbcPortfolioReader(jdbc).fills(new UserId(2), Set.of(PAMP)).get(PAMP))
+        assertThat(new JdbcLedgerReader(jdbc).fills(new UserId(2), Set.of(PAMP)).get(PAMP))
                 .containsExactly(new Fill(OrderSide.BUY, 10, Money.of("100")),
                         new Fill(OrderSide.SELL, 10, Money.of("120")),
                         new Fill(OrderSide.BUY, 5, Money.of("200")));
