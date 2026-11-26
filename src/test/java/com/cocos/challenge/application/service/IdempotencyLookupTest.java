@@ -1,8 +1,8 @@
 package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.out.BusinessMetrics;
-import com.cocos.challenge.application.port.out.IdempotencyRecord;
-import com.cocos.challenge.application.port.out.OrderRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository.IdempotencyRecord;
 import com.cocos.challenge.domain.exception.IdempotencyConflictException;
 import com.cocos.challenge.domain.model.OrderSide;
 import com.cocos.challenge.domain.model.RequestFingerprint;
@@ -27,7 +27,7 @@ class IdempotencyLookupTest {
     private static final String KEY = "d1";
     private static final RequestFingerprint DEPOSIT = RequestFingerprint.of("CASH_IN|amount=100000.00");
 
-    private final OrderRepository orders = mock(OrderRepository.class);
+    private final OrderLedgerRepository orders = mock(OrderLedgerRepository.class);
     private final BusinessMetrics metrics = mock(BusinessMetrics.class);
     private final IdempotencyLookup lookup = new IdempotencyLookup(orders, metrics);
 

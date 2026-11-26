@@ -71,7 +71,7 @@ class PlanGuardIT {
                 new QueryCase("cash balance", JdbcLedgerReader.CASH_BALANCE_SQL, Map.of("userId", 1L)),
                 new QueryCase("share balance", JdbcLedgerReader.SHARE_BALANCE_SQL,
                         Map.of("userId", 1L, "instrumentId", 47L)),
-                new QueryCase("idempotency record lookup", JdbcOrderRepository.FIND_IDEMPOTENCY_RECORD_SQL,
+                new QueryCase("idempotency record lookup", JdbcOrderLedgerRepository.FIND_IDEMPOTENCY_RECORD_SQL,
                         Map.of("userId", 1L, "key", "plan-guard-key")),
                 new QueryCase("open positions", JdbcLedgerReader.OPEN_POSITIONS_SQL, Map.of("userId", 1L)),
                 new QueryCase("fills", JdbcLedgerReader.FILLS_SQL,

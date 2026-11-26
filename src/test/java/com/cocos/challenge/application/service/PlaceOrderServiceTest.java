@@ -3,12 +3,12 @@ package com.cocos.challenge.application.service;
 import com.cocos.challenge.application.port.in.PlaceOrderCommand;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
-import com.cocos.challenge.application.port.out.IdempotencyRecord;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
-import com.cocos.challenge.application.port.out.NewOrder;
-import com.cocos.challenge.application.port.out.OrderRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository.IdempotencyRecord;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository.NewOrder;
 import com.cocos.challenge.domain.exception.IdempotencyConflictException;
 import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
@@ -23,6 +23,8 @@ import com.cocos.challenge.domain.model.InstrumentType;
 import com.cocos.challenge.domain.model.MarketQuote;
 import com.cocos.challenge.domain.model.Money;
 import com.cocos.challenge.domain.model.Order;
+import com.cocos.challenge.domain.model.OrderHistoryCriteria;
+import com.cocos.challenge.domain.model.OrderRecord;
 import com.cocos.challenge.domain.model.OrderRequest;
 import com.cocos.challenge.domain.model.OrderSide;
 import com.cocos.challenge.domain.model.OrderStatus;
@@ -242,7 +244,7 @@ class PlaceOrderServiceTest {
 
     private record Key(UserId user, String key) {}
 
-    private static class FakePorts implements AccountRepository, OrderRepository, InstrumentRepository,
+    private static class FakePorts implements AccountRepository, OrderLedgerRepository, InstrumentRepository,
             LedgerReader, MarketDataRepository, BusinessMetrics {
         final List<String> calls = new ArrayList<>();
         final List<Order> orders = new ArrayList<>();
@@ -284,6 +286,22 @@ class PlaceOrderServiceTest {
             keys.put(new Key(order.userId(), order.idempotencyKey()),
                     new IdempotencyRecord(id, order.side(), order.fingerprint()));
             return saved;
+        }
+
+        public Optional<OrderRecord> findRecord(UserId userId, long orderId) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Optional<OrderRecord> findRecordById(long orderId) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean cancelIfNew(UserId userId, long orderId) {
+            throw new UnsupportedOperationException();
+        }
+
+        public List<OrderRecord> history(UserId userId, OrderHistoryCriteria criteria, int maxResults) {
+            throw new UnsupportedOperationException();
         }
 
         public Optional<Instrument> findById(InstrumentId id) {

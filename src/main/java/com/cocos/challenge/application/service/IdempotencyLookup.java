@@ -1,8 +1,8 @@
 package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.out.BusinessMetrics;
-import com.cocos.challenge.application.port.out.IdempotencyRecord;
-import com.cocos.challenge.application.port.out.OrderRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository.IdempotencyRecord;
 import com.cocos.challenge.domain.exception.IdempotencyConflictException;
 import com.cocos.challenge.domain.model.RequestFingerprint;
 import com.cocos.challenge.domain.model.UserId;
@@ -12,10 +12,10 @@ import java.util.OptionalLong;
 
 public final class IdempotencyLookup {
 
-    private final OrderRepository orders;
+    private final OrderLedgerRepository orders;
     private final BusinessMetrics metrics;
 
-    public IdempotencyLookup(OrderRepository orders, BusinessMetrics metrics) {
+    public IdempotencyLookup(OrderLedgerRepository orders, BusinessMetrics metrics) {
         this.orders = orders;
         this.metrics = metrics;
     }

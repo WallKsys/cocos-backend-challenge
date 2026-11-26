@@ -53,7 +53,7 @@ class JdbcSeedDataRestorerIT {
         assertThat(balance.available()).isEqualTo(Money.of("627500.00"));
         assertThat(new JdbcMarketDataRepository(jdbc).latestQuote(new InstrumentId(47)))
                 .contains(new MarketQuote(Money.of("925.85"), Money.of("921.80")));
-        assertThat(new JdbcOrderRepository(jdbc).findIdempotencyRecord(new UserId(1), "k-restore")).isEmpty();
+        assertThat(new JdbcOrderLedgerRepository(jdbc).findIdempotencyRecord(new UserId(1), "k-restore")).isEmpty();
         OffsetDateTime firstOrderTime = jdbc.sql("SELECT datetime FROM orders WHERE id = 1")
                 .query((rs, rowNum) -> rs.getObject("datetime", OffsetDateTime.class)).single();
         assertThat(firstOrderTime.toInstant()).isEqualTo(Instant.parse("2023-07-12T12:11:20Z"));

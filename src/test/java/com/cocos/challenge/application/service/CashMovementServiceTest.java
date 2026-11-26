@@ -4,11 +4,11 @@ import com.cocos.challenge.application.port.in.CashMovementCommand;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.CashMovementRepository;
-import com.cocos.challenge.application.port.out.IdempotencyRecord;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.NewCashMovement;
-import com.cocos.challenge.application.port.out.OrderRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository.IdempotencyRecord;
 import com.cocos.challenge.domain.exception.IdempotencyConflictException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
@@ -57,7 +57,7 @@ class CashMovementServiceTest {
     private static final CashMovementRequest WITHDRAWAL = CashMovementRequest.of(OrderSide.CASH_OUT, "100.00");
 
     private final AccountRepository lock = mock(AccountRepository.class);
-    private final OrderRepository orders = mock(OrderRepository.class);
+    private final OrderLedgerRepository orders = mock(OrderLedgerRepository.class);
     private final CashMovementRepository movements = mock(CashMovementRepository.class);
     private final InstrumentRepository instruments = mock(InstrumentRepository.class);
     private final LedgerReader ledger = mock(LedgerReader.class);
