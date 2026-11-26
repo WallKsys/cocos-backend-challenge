@@ -3,12 +3,11 @@ package com.cocos.challenge.application.service;
 import com.cocos.challenge.application.port.in.CashMovementCommand;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
-import com.cocos.challenge.application.port.out.CashMovementRepository;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
-import com.cocos.challenge.application.port.out.NewCashMovement;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository.IdempotencyRecord;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository.NewCashMovement;
 import com.cocos.challenge.domain.exception.IdempotencyConflictException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
@@ -58,7 +57,7 @@ class CashMovementServiceTest {
 
     private final AccountRepository lock = mock(AccountRepository.class);
     private final OrderLedgerRepository orders = mock(OrderLedgerRepository.class);
-    private final CashMovementRepository movements = mock(CashMovementRepository.class);
+    private final OrderLedgerRepository movements = mock(OrderLedgerRepository.class);
     private final InstrumentRepository instruments = mock(InstrumentRepository.class);
     private final LedgerReader ledger = mock(LedgerReader.class);
     private final BusinessMetrics metrics = mock(BusinessMetrics.class);
@@ -166,7 +165,7 @@ class CashMovementServiceTest {
         CashMovement original = movement(request, OrderStatus.FILLED, null);
         when(orders.findIdempotencyRecord(USER, KEY)).thenReturn(Optional.of(
                 new IdempotencyRecord(original.id(), original.side(), original.fingerprint())));
-        when(movements.findById(original.id())).thenReturn(original);
+        when(movements.findCashMovement(original.id())).thenReturn(original);
         return original;
     }
 
@@ -176,7 +175,7 @@ class CashMovementServiceTest {
         calls.verify(metrics).accountLockWaited(any(Duration.class));
         calls.verify(orders).findIdempotencyRecord(USER, KEY);
         calls.verify(metrics).idempotentReplay(side);
-        calls.verify(movements).findById(42L);
+        calls.verify(movements).findCashMovement(42L);
         calls.verifyNoMoreInteractions();
         verifyNoInteractions(ledger);
     }

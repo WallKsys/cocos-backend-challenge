@@ -17,20 +17,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
 @Tag("integration")
-class JdbcAdminOrderRepositoryIT {
+class JdbcOrderLedgerRepositoryAdminIT {
 
     private static final UserId USER = new UserId(1);
 
     private final JdbcClient jdbc;
-    private final JdbcAdminOrderRepository adminOrders;
+    private final JdbcOrderLedgerRepository adminOrders;
     private final JdbcOrderLedgerRepository orderLedger;
     private final JdbcLedgerReader ledger;
     private final JdbcOrderLedgerRepository orderRepository;
 
     @Autowired
-    JdbcAdminOrderRepositoryIT(JdbcClient jdbc) {
+    JdbcOrderLedgerRepositoryAdminIT(JdbcClient jdbc) {
         this.jdbc = jdbc;
-        this.adminOrders = new JdbcAdminOrderRepository(jdbc);
+        this.adminOrders = new JdbcOrderLedgerRepository(jdbc);
         this.orderLedger = new JdbcOrderLedgerRepository(jdbc);
         this.ledger = new JdbcLedgerReader(jdbc);
         this.orderRepository = new JdbcOrderLedgerRepository(jdbc);
