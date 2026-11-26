@@ -7,6 +7,7 @@ import com.cocos.challenge.application.port.in.WithdrawCashUseCase;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.CashMovementRepository;
+import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.NewCashMovement;
 import com.cocos.challenge.domain.exception.NotFoundException;
@@ -31,16 +32,19 @@ public class CashMovementService implements DepositCashUseCase, WithdrawCashUseC
 
     private final AccountRepository accountLock;
     private final CashMovementRepository movements;
+    private final InstrumentRepository instruments;
     private final LedgerReader ledger;
     private final CashMovementEvaluator evaluator;
     private final BusinessMetrics metrics;
     private final Clock clock;
     private final IdempotencyLookup idempotencyLookup;
 
-    public CashMovementService(AccountRepository accountLock, CashMovementRepository movements, LedgerReader ledger,
-            CashMovementEvaluator evaluator, BusinessMetrics metrics, Clock clock, IdempotencyLookup idempotencyLookup) {
+    public CashMovementService(AccountRepository accountLock, CashMovementRepository movements,
+            InstrumentRepository instruments, LedgerReader ledger, CashMovementEvaluator evaluator,
+            BusinessMetrics metrics, Clock clock, IdempotencyLookup idempotencyLookup) {
         this.accountLock = accountLock;
         this.movements = movements;
+        this.instruments = instruments;
         this.ledger = ledger;
         this.evaluator = evaluator;
         this.metrics = metrics;
@@ -78,7 +82,7 @@ public class CashMovementService implements DepositCashUseCase, WithdrawCashUseC
         CashBalance cash = ledger.cashBalance(userId);
         CashMovementEvaluator.Evaluation evaluation = evaluator.evaluate(request, account, cash);
         Rejection rejection = evaluation.rejection();
-        InstrumentId instrumentId = movements.findCashInstrument()
+        InstrumentId instrumentId = instruments.findCashInstrument()
                 .orElseThrow(() -> new IllegalStateException("ARS cash instrument is missing."));
         CashMovement saved = movements.save(new NewCashMovement(userId, instrumentId, request.side(),
                 evaluation.status(), request.amount(), rejection, clock.instant().truncatedTo(ChronoUnit.MICROS),

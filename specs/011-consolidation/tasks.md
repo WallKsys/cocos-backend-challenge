@@ -56,11 +56,11 @@ off in 011-b2.
 
 **Estimated size**: ~320 lines.
 
-- [ ] T006 Adjust tests (passes at once): rename `JdbcInstrumentSearchRepositoryIT` →
+- [x] T006 Adjust tests (passes at once): rename `JdbcInstrumentSearchRepositoryIT` →
   `JdbcInstrumentRepositorySearchIT` (g, a, b); `PlanGuardIT` (b); `SearchInstrumentsServiceTest` (a, e);
   `PlaceOrderServiceTest` (e); `CashMovementServiceTest` (c, d, f: `findCashInstrument` is stubbed and verified on a
   new `InstrumentRepository` mock, added to the `inOrder(...)` that verifies it); `JdbcCashMovementRepositoryIT` (d).
-- [ ] T007 Implement plan.md § Persistence, `instruments` (with `RankedInstrument`, § Domain), the new
+- [x] T007 Implement plan.md § Persistence, `instruments` (with `RankedInstrument`, § Domain), the new
   `CashMovementService` parameter, and the beans.
 
 ## Slice 011-d — `marketdata` and ledger aggregations (branch `011-consolidation-d`)

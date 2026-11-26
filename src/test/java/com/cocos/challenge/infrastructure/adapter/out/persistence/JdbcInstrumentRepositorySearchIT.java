@@ -1,8 +1,8 @@
 package com.cocos.challenge.infrastructure.adapter.out.persistence;
 
-import com.cocos.challenge.application.port.out.InstrumentSearchRepository;
+import com.cocos.challenge.application.port.out.InstrumentRepository;
+import com.cocos.challenge.application.port.out.InstrumentRepository.RankedInstrument;
 import com.cocos.challenge.domain.model.InstrumentSearchCriteria;
-import com.cocos.challenge.domain.model.RankedInstrument;
 import com.cocos.challenge.domain.model.SearchCursor;
 import com.cocos.challenge.support.IntegrationTest;
 import org.junit.jupiter.api.Tag;
@@ -18,10 +18,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
 @Tag("integration")
-class JdbcInstrumentSearchRepositoryIT {
+class JdbcInstrumentRepositorySearchIT {
 
     @Autowired
-    InstrumentSearchRepository repository;
+    InstrumentRepository repository;
 
     @Autowired
     JdbcClient jdbcClient;

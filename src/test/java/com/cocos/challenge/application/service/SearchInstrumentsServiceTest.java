@@ -1,17 +1,19 @@
 package com.cocos.challenge.application.service;
 
-import com.cocos.challenge.application.port.out.InstrumentSearchRepository;
+import com.cocos.challenge.application.port.out.InstrumentRepository;
+import com.cocos.challenge.application.port.out.InstrumentRepository.RankedInstrument;
 import com.cocos.challenge.domain.model.CursorPage;
+import com.cocos.challenge.domain.model.Instrument;
 import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.InstrumentSearchCriteria;
 import com.cocos.challenge.domain.model.InstrumentSummary;
 import com.cocos.challenge.domain.model.InstrumentType;
-import com.cocos.challenge.domain.model.RankedInstrument;
 import com.cocos.challenge.domain.model.SearchCursor;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,12 +56,22 @@ class SearchInstrumentsServiceTest {
                 new InstrumentId(1), ticker, ticker + " name", InstrumentType.ACCIONES, null));
     }
 
-    private static final class FakeInstrumentSearchRepository implements InstrumentSearchRepository {
+    private static final class FakeInstrumentSearchRepository implements InstrumentRepository {
         private final List<RankedInstrument> results;
         private int maxResults;
 
         private FakeInstrumentSearchRepository(List<RankedInstrument> results) {
             this.results = results;
+        }
+
+        @Override
+        public Optional<Instrument> findById(InstrumentId instrumentId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<InstrumentId> findCashInstrument() {
+            throw new UnsupportedOperationException();
         }
 
         @Override

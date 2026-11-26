@@ -3,7 +3,6 @@ package com.cocos.challenge.infrastructure.adapter.out.persistence;
 import com.cocos.challenge.application.port.out.CashMovementRepository;
 import com.cocos.challenge.application.port.out.NewCashMovement;
 import com.cocos.challenge.domain.model.CashMovement;
-import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.Money;
 import com.cocos.challenge.domain.model.OrderSide;
 import com.cocos.challenge.domain.model.OrderStatus;
@@ -17,13 +16,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.Optional;
 
 public class JdbcCashMovementRepository implements CashMovementRepository {
-
-    static final String FIND_CASH_INSTRUMENT_SQL = """
-            SELECT id FROM instruments WHERE ticker = 'ARS' AND type = 'MONEDA'
-            """;
 
     static final String FIND_BY_ID_SQL = """
             SELECT id, userid, side, status, size, rejection_code, rejection_message, datetime,
@@ -68,11 +62,6 @@ public class JdbcCashMovementRepository implements CashMovementRepository {
                 .param("fingerprint", movement.fingerprint().hex())
                 .query(Long.class).single();
         return findById(id);
-    }
-
-    @Override
-    public Optional<InstrumentId> findCashInstrument() {
-        return jdbc.sql(FIND_CASH_INSTRUMENT_SQL).query(Long.class).optional().map(InstrumentId::new);
     }
 
     private static CashMovement mapMovement(ResultSet rs) throws SQLException {

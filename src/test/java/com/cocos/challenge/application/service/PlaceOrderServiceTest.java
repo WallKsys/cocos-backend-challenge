@@ -17,6 +17,7 @@ import com.cocos.challenge.domain.model.CashBalance;
 import com.cocos.challenge.domain.model.CreatedUser;
 import com.cocos.challenge.domain.model.Instrument;
 import com.cocos.challenge.domain.model.InstrumentId;
+import com.cocos.challenge.domain.model.InstrumentSearchCriteria;
 import com.cocos.challenge.domain.model.InstrumentType;
 import com.cocos.challenge.domain.model.MarketQuote;
 import com.cocos.challenge.domain.model.Money;
@@ -289,6 +290,14 @@ class PlaceOrderServiceTest {
                 case 66 -> Optional.of(new Instrument(id, "ARS", InstrumentType.MONEDA));
                 default -> Optional.empty();
             };
+        }
+
+        public Optional<InstrumentId> findCashInstrument() {
+            throw new UnsupportedOperationException();
+        }
+
+        public List<RankedInstrument> search(InstrumentSearchCriteria criteria, int maxResults) {
+            throw new UnsupportedOperationException();
         }
 
         public Optional<MarketQuote> latestQuote(InstrumentId id) {

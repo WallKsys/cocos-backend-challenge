@@ -62,7 +62,7 @@ class PlanGuardIT {
 
     private static Stream<QueryCase> queries() {
         JdbcOrderLedgerRepository orderLedger = new JdbcOrderLedgerRepository(null);
-        JdbcInstrumentSearchRepository search = new JdbcInstrumentSearchRepository(null);
+        JdbcInstrumentRepository search = new JdbcInstrumentRepository(null);
         Instant cursorInstant = Instant.parse("2023-07-13T11:13:20Z");
         OffsetDateTime cursorOffset = cursorInstant.atOffset(ZoneOffset.UTC);
 

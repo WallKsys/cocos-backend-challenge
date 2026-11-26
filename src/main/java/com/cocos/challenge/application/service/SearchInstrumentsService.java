@@ -1,11 +1,11 @@
 package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.in.SearchInstrumentsQuery;
-import com.cocos.challenge.application.port.out.InstrumentSearchRepository;
+import com.cocos.challenge.application.port.out.InstrumentRepository;
+import com.cocos.challenge.application.port.out.InstrumentRepository.RankedInstrument;
 import com.cocos.challenge.domain.model.CursorPage;
 import com.cocos.challenge.domain.model.InstrumentSearchCriteria;
 import com.cocos.challenge.domain.model.InstrumentSummary;
-import com.cocos.challenge.domain.model.RankedInstrument;
 import com.cocos.challenge.domain.model.SearchCursor;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,9 +13,9 @@ import java.util.List;
 
 public class SearchInstrumentsService implements SearchInstrumentsQuery {
 
-    private final InstrumentSearchRepository repository;
+    private final InstrumentRepository repository;
 
-    public SearchInstrumentsService(InstrumentSearchRepository repository) {
+    public SearchInstrumentsService(InstrumentRepository repository) {
         this.repository = repository;
     }
 

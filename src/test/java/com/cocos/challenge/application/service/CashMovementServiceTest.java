@@ -5,6 +5,7 @@ import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.CashMovementRepository;
 import com.cocos.challenge.application.port.out.IdempotencyRecord;
+import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.NewCashMovement;
 import com.cocos.challenge.application.port.out.OrderRepository;
@@ -58,9 +59,10 @@ class CashMovementServiceTest {
     private final AccountRepository lock = mock(AccountRepository.class);
     private final OrderRepository orders = mock(OrderRepository.class);
     private final CashMovementRepository movements = mock(CashMovementRepository.class);
+    private final InstrumentRepository instruments = mock(InstrumentRepository.class);
     private final LedgerReader ledger = mock(LedgerReader.class);
     private final BusinessMetrics metrics = mock(BusinessMetrics.class);
-    private final CashMovementService service = new CashMovementService(lock, movements, ledger,
+    private final CashMovementService service = new CashMovementService(lock, movements, instruments, ledger,
             new CashMovementEvaluator(), metrics, Clock.fixed(NOW, ZoneOffset.UTC),
             new IdempotencyLookup(orders, metrics));
 
@@ -125,12 +127,12 @@ class CashMovementServiceTest {
 
         assertThat(result.movement()).isEqualTo(saved);
         assertThat(result.replayed()).isFalse();
-        var calls = inOrder(lock, metrics, orders, ledger, movements);
+        var calls = inOrder(lock, metrics, orders, ledger, instruments, movements);
         calls.verify(lock).lock(USER);
         calls.verify(metrics).accountLockWaited(any(Duration.class));
         calls.verify(orders).findIdempotencyRecord(USER, KEY);
         calls.verify(ledger).cashBalance(USER);
-        calls.verify(movements).findCashInstrument();
+        calls.verify(instruments).findCashInstrument();
         calls.verify(movements).save(newMovement(request, OrderStatus.FILLED, null));
         calls.verify(metrics).orderProcessed(OrderSide.CASH_IN, OrderType.MARKET, OrderStatus.FILLED, null);
     }
@@ -182,7 +184,7 @@ class CashMovementServiceTest {
     private CashMovement givenNewMovement(CashMovementRequest request, OrderStatus status, Rejection rejection) {
         CashMovement saved = movement(request, status, rejection);
         when(ledger.cashBalance(USER)).thenReturn(new CashBalance(Money.of("150"), Money.of("100")));
-        when(movements.findCashInstrument()).thenReturn(Optional.of(ARS));
+        when(instruments.findCashInstrument()).thenReturn(Optional.of(ARS));
         when(movements.save(newMovement(request, status, rejection))).thenReturn(saved);
         return saved;
     }
