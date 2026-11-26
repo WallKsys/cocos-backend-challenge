@@ -98,10 +98,10 @@ not change any mapped value; one bean serves both ports.
 
 **Estimated size**: ~320 lines.
 
-- [ ] T014 Adjust tests (passes at once): rename `JdbcCashMovementRepositoryIT` →
+- [x] T014 Adjust tests (passes at once): rename `JdbcCashMovementRepositoryIT` →
   `JdbcOrderLedgerRepositoryCashMovementIT` (g, a, b, d) and `JdbcAdminOrderRepositoryIT` →
   `JdbcOrderLedgerRepositoryAdminIT` (g, b); `CashMovementServiceTest` (a, b, d); `PlaceOrderServiceTest` (e).
-- [ ] T015 Implement plan.md § Persistence, rows of `orders`, the part of slice 011-f, including § Shared row helpers
+- [x] T015 Implement plan.md § Persistence, rows of `orders`, the part of slice 011-f, including § Shared row helpers
   and the bean with the concrete return type.
 
 ## Slice 011-g — Public inbound ports and the idempotent mutation guard (branch `011-consolidation-g`)

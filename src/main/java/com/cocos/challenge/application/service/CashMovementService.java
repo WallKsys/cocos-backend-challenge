@@ -6,10 +6,10 @@ import com.cocos.challenge.application.port.in.DepositCashUseCase;
 import com.cocos.challenge.application.port.in.WithdrawCashUseCase;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
-import com.cocos.challenge.application.port.out.CashMovementRepository;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
-import com.cocos.challenge.application.port.out.NewCashMovement;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository.NewCashMovement;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Account;
 import com.cocos.challenge.domain.model.CashBalance;
@@ -31,7 +31,7 @@ import java.util.OptionalLong;
 public class CashMovementService implements DepositCashUseCase, WithdrawCashUseCase {
 
     private final AccountRepository accountLock;
-    private final CashMovementRepository movements;
+    private final OrderLedgerRepository movements;
     private final InstrumentRepository instruments;
     private final LedgerReader ledger;
     private final CashMovementEvaluator evaluator;
@@ -39,7 +39,7 @@ public class CashMovementService implements DepositCashUseCase, WithdrawCashUseC
     private final Clock clock;
     private final IdempotencyLookup idempotencyLookup;
 
-    public CashMovementService(AccountRepository accountLock, CashMovementRepository movements,
+    public CashMovementService(AccountRepository accountLock, OrderLedgerRepository movements,
             InstrumentRepository instruments, LedgerReader ledger, CashMovementEvaluator evaluator,
             BusinessMetrics metrics, Clock clock, IdempotencyLookup idempotencyLookup) {
         this.accountLock = accountLock;
@@ -76,7 +76,7 @@ public class CashMovementService implements DepositCashUseCase, WithdrawCashUseC
         RequestFingerprint fingerprint = request.fingerprint();
         OptionalLong existing = idempotencyLookup.find(userId, key, fingerprint);
         if (existing.isPresent()) {
-            return new CashMovementResult(movements.findById(existing.getAsLong()), true);
+            return new CashMovementResult(movements.findCashMovement(existing.getAsLong()), true);
         }
 
         CashBalance cash = ledger.cashBalance(userId);

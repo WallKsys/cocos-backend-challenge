@@ -1,5 +1,6 @@
 package com.cocos.challenge.application.port.out;
 
+import com.cocos.challenge.domain.model.CashMovement;
 import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.Money;
 import com.cocos.challenge.domain.model.Order;
@@ -25,6 +26,10 @@ public interface OrderLedgerRepository {
 
     Order save(NewOrder order);
 
+    CashMovement findCashMovement(long id);
+
+    CashMovement save(NewCashMovement movement);
+
     Optional<OrderRecord> findRecord(UserId userId, long orderId);
 
     Optional<OrderRecord> findRecordById(long orderId);
@@ -40,5 +45,10 @@ public interface OrderLedgerRepository {
             UserId userId, InstrumentId instrumentId, String ticker, OrderSide side, OrderType type,
             OrderStatus status, long quantity, Money price, Money requestedAmount, Rejection rejection,
             Instant createdAt, String idempotencyKey, RequestFingerprint fingerprint) {
+    }
+
+    record NewCashMovement(UserId userId, InstrumentId instrumentId, OrderSide side, OrderStatus status,
+            Money amount, Rejection rejection, Instant createdAt, String idempotencyKey,
+            RequestFingerprint fingerprint) {
     }
 }
