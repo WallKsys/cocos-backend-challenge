@@ -1,15 +1,15 @@
 package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.in.CreateUserUseCase;
-import com.cocos.challenge.application.port.out.UserWriter;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.domain.model.CreatedUser;
 import org.springframework.transaction.annotation.Transactional;
 
 public class CreateUserService implements CreateUserUseCase {
 
-    private final UserWriter userWriter;
+    private final AccountRepository userWriter;
 
-    public CreateUserService(UserWriter userWriter) {
+    public CreateUserService(AccountRepository userWriter) {
         this.userWriter = userWriter;
     }
 

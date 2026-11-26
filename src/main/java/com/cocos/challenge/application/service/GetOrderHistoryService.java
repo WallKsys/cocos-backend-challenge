@@ -1,7 +1,7 @@
 package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.in.GetOrderHistoryQuery;
-import com.cocos.challenge.application.port.out.AccountReader;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.CursorPage;
@@ -15,10 +15,10 @@ import java.util.List;
 
 public class GetOrderHistoryService implements GetOrderHistoryQuery {
 
-    private final AccountReader accounts;
+    private final AccountRepository accounts;
     private final OrderLedgerRepository ledger;
 
-    public GetOrderHistoryService(AccountReader accounts, OrderLedgerRepository ledger) {
+    public GetOrderHistoryService(AccountRepository accounts, OrderLedgerRepository ledger) {
         this.accounts = accounts;
         this.ledger = ledger;
     }

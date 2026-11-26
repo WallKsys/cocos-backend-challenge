@@ -4,7 +4,7 @@ import com.cocos.challenge.application.port.in.CashMovementCommand;
 import com.cocos.challenge.application.port.in.CashMovementResult;
 import com.cocos.challenge.application.port.in.DepositCashUseCase;
 import com.cocos.challenge.application.port.in.WithdrawCashUseCase;
-import com.cocos.challenge.application.port.out.AccountLock;
+import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.BusinessMetrics;
 import com.cocos.challenge.application.port.out.CashMovementRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
@@ -29,7 +29,7 @@ import java.util.OptionalLong;
 
 public class CashMovementService implements DepositCashUseCase, WithdrawCashUseCase {
 
-    private final AccountLock accountLock;
+    private final AccountRepository accountLock;
     private final CashMovementRepository movements;
     private final LedgerReader ledger;
     private final CashMovementEvaluator evaluator;
@@ -37,7 +37,7 @@ public class CashMovementService implements DepositCashUseCase, WithdrawCashUseC
     private final Clock clock;
     private final IdempotencyLookup idempotencyLookup;
 
-    public CashMovementService(AccountLock accountLock, CashMovementRepository movements, LedgerReader ledger,
+    public CashMovementService(AccountRepository accountLock, CashMovementRepository movements, LedgerReader ledger,
             CashMovementEvaluator evaluator, BusinessMetrics metrics, Clock clock, IdempotencyLookup idempotencyLookup) {
         this.accountLock = accountLock;
         this.movements = movements;
