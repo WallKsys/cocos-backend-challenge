@@ -1,7 +1,5 @@
 package com.cocos.challenge.infrastructure.config;
 
-import com.cocos.challenge.application.port.in.DeleteOrderUseCase;
-import com.cocos.challenge.application.port.in.ExecuteOrderUseCase;
 import com.cocos.challenge.application.port.in.InternalToolsUseCase;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.AdminOrderRepository;
@@ -9,8 +7,6 @@ import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.application.port.out.SeedDataRestorer;
-import com.cocos.challenge.application.service.DeleteOrderService;
-import com.cocos.challenge.application.service.ExecuteOrderService;
 import com.cocos.challenge.application.service.InternalToolsService;
 import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcSeedDataRestorer;
 import org.springframework.context.annotation.Bean;
@@ -25,17 +21,6 @@ public class InternalToolsConfiguration {
     @Bean
     SeedDataRestorer seedDataRestorer(JdbcClient jdbc) {
         return new JdbcSeedDataRestorer(jdbc);
-    }
-
-    @Bean
-    DeleteOrderUseCase deleteOrderUseCase(AccountRepository lock, AdminOrderRepository adminOrders) {
-        return new DeleteOrderService(lock, adminOrders);
-    }
-
-    @Bean
-    ExecuteOrderUseCase executeOrderUseCase(AccountRepository lock, AdminOrderRepository adminOrders,
-            OrderLedgerRepository ledger) {
-        return new ExecuteOrderService(lock, adminOrders, ledger);
     }
 
     @Bean

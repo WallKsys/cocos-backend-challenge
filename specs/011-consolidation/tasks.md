@@ -140,10 +140,10 @@ T020 and T021 (`createUser`, `restoreSeedData`, `updateMarketData`); **011-h2** 
 - [x] T021 Implement plan.md § Inbound ports and services, `InternalToolsUseCase` and `InternalToolsService` with
   `createUser`, `restoreSeedData` and `updateMarketData` (final constructor); the internal controllers that call them,
   `MarketDataView`, and the beans.
-- [ ] T022 Adjust tests (passes at once): rename `DeleteOrderServiceTest` → `InternalToolsServiceDeleteOrderTest`
+- [x] T022 Adjust tests (passes at once): rename `DeleteOrderServiceTest` → `InternalToolsServiceDeleteOrderTest`
   (g, b, c, d) and `ExecuteOrderServiceTest` → `InternalToolsServiceExecuteOrderTest` (g, b, c, d);
   `CancelVersusExecutionIT` (a, b, d).
-- [ ] T023 Implement `deleteOrder` and `executeOrder` in `InternalToolsUseCase` and `InternalToolsService`; the
+- [x] T023 Implement `deleteOrder` and `executeOrder` in `InternalToolsUseCase` and `InternalToolsService`; the
   internal controller that calls them, and the beans.
 
 ## Slice 011-i — Internal tools controller (branch `011-consolidation-i`)

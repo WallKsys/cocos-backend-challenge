@@ -2,7 +2,10 @@ package com.cocos.challenge.application.service;
 
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.AdminOrderRepository;
+import com.cocos.challenge.application.port.out.InstrumentRepository;
+import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
+import com.cocos.challenge.application.port.out.SeedDataRestorer;
 import com.cocos.challenge.domain.exception.DomainException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.exception.OrderNotExecutableException;
@@ -20,6 +23,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -31,14 +35,16 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @Tag("unit")
-class ExecuteOrderServiceTest {
+class InternalToolsServiceExecuteOrderTest {
 
     private static final UserId USER = new UserId(1);
 
     private final AccountRepository lock = mock(AccountRepository.class);
     private final AdminOrderRepository adminOrders = mock(AdminOrderRepository.class);
     private final OrderLedgerRepository ledger = mock(OrderLedgerRepository.class);
-    private final ExecuteOrderService service = new ExecuteOrderService(lock, adminOrders, ledger);
+    private final InternalToolsService service = new InternalToolsService(lock, adminOrders, ledger,
+            mock(InstrumentRepository.class), mock(MarketDataRepository.class), mock(SeedDataRestorer.class),
+            mock(Clock.class));
 
     @Test
     @Tag("CU-I.02")
@@ -50,7 +56,7 @@ class ExecuteOrderServiceTest {
         when(adminOrders.executeIfNew(5L)).thenReturn(true);
         when(ledger.findRecordById(5L)).thenReturn(Optional.of(filled));
 
-        OrderRecord result = service.execute(5L);
+        OrderRecord result = service.executeOrder(5L);
 
         assertThat(result).isEqualTo(filled);
         var calls = inOrder(adminOrders, lock, ledger);
@@ -70,7 +76,7 @@ class ExecuteOrderServiceTest {
         when(ledger.findRecordById(5L)).thenReturn(Optional.of(record(status)));
 
         assertThat(OrderNotExecutableException.class.getSuperclass()).isEqualTo(DomainException.class);
-        assertThatThrownBy(() -> service.execute(5L))
+        assertThatThrownBy(() -> service.executeOrder(5L))
                 .isInstanceOf(OrderNotExecutableException.class)
                 .hasMessage("Order 5 cannot be executed because its status is " + status
                         + ". Only NEW orders can be executed.");
@@ -80,7 +86,7 @@ class ExecuteOrderServiceTest {
     void throwsNotFoundWhenOrderDoesNotExist() {
         when(adminOrders.findOwner(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.execute(999L))
+        assertThatThrownBy(() -> service.executeOrder(999L))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Order 999 was not found.");
         verifyNoInteractions(lock, ledger);
@@ -93,7 +99,7 @@ class ExecuteOrderServiceTest {
         when(adminOrders.executeIfNew(5L)).thenReturn(false);
         when(ledger.findRecordById(5L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.execute(5L))
+        assertThatThrownBy(() -> service.executeOrder(5L))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Order 5 was not found.");
     }

@@ -1,7 +1,7 @@
 package com.cocos.challenge.infrastructure.adapter.in.rest.order;
 
 import com.cocos.challenge.application.port.in.CancelOrderUseCase;
-import com.cocos.challenge.application.port.in.ExecuteOrderUseCase;
+import com.cocos.challenge.application.port.in.InternalToolsUseCase;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.domain.exception.OrderNotCancellableException;
@@ -34,7 +34,7 @@ class CancelVersusExecutionIT extends OrderLoadSupport {
     @Autowired
     private AccountRepository lock;
     @Autowired
-    private ExecuteOrderUseCase forcedExecution;
+    private InternalToolsUseCase forcedExecution;
 
     @RepeatedTest(20)
     @Tag("CU-04.08")
@@ -60,7 +60,7 @@ class CancelVersusExecutionIT extends OrderLoadSupport {
 
     private int forceExecute() {
         try {
-            var result = forcedExecution.execute(ORDER);
+            var result = forcedExecution.executeOrder(ORDER);
             assertThat(result.status()).isEqualTo(OrderStatus.FILLED);
             return 1;
         } catch (OrderNotExecutableException exception) {

@@ -9,11 +9,14 @@ import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.application.port.out.SeedDataRestorer;
 import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
+import com.cocos.challenge.domain.exception.OrderNotExecutableException;
 import com.cocos.challenge.domain.model.CreatedUser;
 import com.cocos.challenge.domain.model.Instrument;
 import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.InstrumentType;
 import com.cocos.challenge.domain.model.Money;
+import com.cocos.challenge.domain.model.OrderRecord;
+import com.cocos.challenge.domain.model.UserId;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
@@ -45,6 +48,34 @@ public class InternalToolsService implements InternalToolsUseCase {
     @Transactional
     public CreatedUser createUser(String email) {
         return accounts.create(email);
+    }
+
+    @Override
+    @Transactional
+    public void deleteOrder(long orderId) {
+        UserId owner = adminOrders.findOwner(orderId)
+                .orElseThrow(() -> new NotFoundException("Order " + orderId + " was not found."));
+        accounts.lock(owner)
+                .orElseThrow(() -> new NotFoundException("Order " + orderId + " was not found."));
+        if (!adminOrders.delete(orderId)) {
+            throw new NotFoundException("Order " + orderId + " was not found.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public OrderRecord executeOrder(long orderId) {
+        UserId owner = adminOrders.findOwner(orderId)
+                .orElseThrow(() -> new NotFoundException("Order " + orderId + " was not found."));
+        accounts.lock(owner)
+                .orElseThrow(() -> new NotFoundException("Order " + orderId + " was not found."));
+        if (!adminOrders.executeIfNew(orderId)) {
+            OrderRecord current = ledger.findRecordById(orderId)
+                    .orElseThrow(() -> new NotFoundException("Order " + orderId + " was not found."));
+            throw new OrderNotExecutableException(orderId, current.status());
+        }
+        return ledger.findRecordById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order " + orderId + " was not found."));
     }
 
     @Override

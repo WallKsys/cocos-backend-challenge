@@ -1,7 +1,6 @@
 package com.cocos.challenge.infrastructure.adapter.in.rest.internal;
 
-import com.cocos.challenge.application.port.in.DeleteOrderUseCase;
-import com.cocos.challenge.application.port.in.ExecuteOrderUseCase;
+import com.cocos.challenge.application.port.in.InternalToolsUseCase;
 import com.cocos.challenge.infrastructure.adapter.in.rest.order.OrderRecordResponse;
 import jakarta.validation.constraints.Positive;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,22 +15,20 @@ import org.springframework.web.bind.annotation.RestController;
 @ConditionalOnProperty(name = "cocos.internal-tools.enabled", havingValue = "true")
 public class InternalOrderToolsController {
 
-    private final DeleteOrderUseCase deleteOrder;
-    private final ExecuteOrderUseCase executeOrder;
+    private final InternalToolsUseCase internalTools;
 
-    public InternalOrderToolsController(DeleteOrderUseCase deleteOrder, ExecuteOrderUseCase executeOrder) {
-        this.deleteOrder = deleteOrder;
-        this.executeOrder = executeOrder;
+    public InternalOrderToolsController(InternalToolsUseCase internalTools) {
+        this.internalTools = internalTools;
     }
 
     @DeleteMapping("/api/internal/orders/{orderId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable @Positive long orderId) {
-        deleteOrder.delete(orderId);
+        internalTools.deleteOrder(orderId);
     }
 
     @PostMapping("/api/internal/orders/{orderId}/execute")
     public OrderRecordResponse execute(@PathVariable @Positive long orderId) {
-        return OrderRecordResponse.from(executeOrder.execute(orderId));
+        return OrderRecordResponse.from(internalTools.executeOrder(orderId));
     }
 }
