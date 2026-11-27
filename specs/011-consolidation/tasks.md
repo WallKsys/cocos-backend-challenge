@@ -157,7 +157,7 @@ T020 and T021 (`createUser`, `restoreSeedData`, `updateMarketData`); **011-h2** 
 
 **Estimated size**: ~260 lines. No test file changes.
 
-- [ ] T025 Implement plan.md § REST: `OrderController` absorbs `OrderQueryController`; the nested request bodies,
+- [x] T025 Implement plan.md § REST: `OrderController` absorbs `OrderQueryController`; the nested request bodies,
   `PortfolioResponse` and `InstrumentPageResponse` with their nested DTOs.
 
 ## Slice 011-k — Configuration (branch `011-consolidation-k`)
