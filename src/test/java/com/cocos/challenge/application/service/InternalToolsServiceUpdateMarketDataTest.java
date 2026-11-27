@@ -1,8 +1,12 @@
 package com.cocos.challenge.application.service;
 
-import com.cocos.challenge.application.port.in.UpdateMarketDataUseCase;
+import com.cocos.challenge.application.port.in.InternalToolsUseCase;
+import com.cocos.challenge.application.port.out.AccountRepository;
+import com.cocos.challenge.application.port.out.AdminOrderRepository;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
+import com.cocos.challenge.application.port.out.OrderLedgerRepository;
+import com.cocos.challenge.application.port.out.SeedDataRestorer;
 import com.cocos.challenge.domain.exception.InvalidRequestException;
 import com.cocos.challenge.domain.exception.NotFoundException;
 import com.cocos.challenge.domain.model.Instrument;
@@ -29,7 +33,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @Tag("unit")
-class UpdateMarketDataServiceTest {
+class InternalToolsServiceUpdateMarketDataTest {
 
     private static final InstrumentId PAMP_ID = new InstrumentId(47);
     private static final LocalDate TODAY = LocalDate.of(2026, 11, 25);
@@ -37,7 +41,14 @@ class UpdateMarketDataServiceTest {
 
     private final InstrumentRepository instruments = mock(InstrumentRepository.class);
     private final MarketDataRepository writer = mock(MarketDataRepository.class);
-    private final UpdateMarketDataService service = new UpdateMarketDataService(instruments, writer, CLOCK);
+    private final InternalToolsService service = new InternalToolsService(
+            mock(AccountRepository.class),
+            mock(AdminOrderRepository.class),
+            mock(OrderLedgerRepository.class),
+            instruments,
+            writer,
+            mock(SeedDataRestorer.class),
+            CLOCK);
 
     @Test
     @Tag("CU-I.06")
@@ -46,10 +57,10 @@ class UpdateMarketDataServiceTest {
         when(writer.upsert(PAMP_ID, Money.of("1000.00"), null, TODAY))
                 .thenReturn(new MarketDataRepository.StoredMarketData(TODAY, Money.of("1000.00"), Money.of("921.80")));
 
-        var result = service.update(PAMP_ID, Money.of("1000.00"), null);
+        var result = service.updateMarketData(PAMP_ID, Money.of("1000.00"), null);
 
         verify(writer).upsert(PAMP_ID, Money.of("1000.00"), null, TODAY);
-        assertThat(result).isEqualTo(new UpdateMarketDataUseCase.MarketDataResult(
+        assertThat(result).isEqualTo(new InternalToolsUseCase.MarketDataResult(
                 PAMP_ID, "PAMP", TODAY, Money.of("1000.00"), Money.of("921.80")));
     }
 
@@ -58,7 +69,7 @@ class UpdateMarketDataServiceTest {
     void rejectsUnknownInstrument() {
         when(instruments.findById(new InstrumentId(999))).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.update(new InstrumentId(999), Money.of("10.00"), null))
+        assertThatThrownBy(() -> service.updateMarketData(new InstrumentId(999), Money.of("10.00"), null))
                 .isInstanceOf(NotFoundException.class).hasMessage("Instrument 999 was not found.");
         verifyNoInteractions(writer);
     }
@@ -69,7 +80,7 @@ class UpdateMarketDataServiceTest {
         InstrumentId ars = new InstrumentId(66);
         when(instruments.findById(ars)).thenReturn(Optional.of(new Instrument(ars, "ARS", InstrumentType.MONEDA)));
 
-        assertThatThrownBy(() -> service.update(ars, Money.of("10.00"), null))
+        assertThatThrownBy(() -> service.updateMarketData(ars, Money.of("10.00"), null))
                 .isInstanceOf(InvalidRequestException.class)
                 .hasMessage("Request validation failed: 'instrumentId' must reference a tradable instrument; ARS has no market data.");
         verifyNoInteractions(writer);
@@ -80,7 +91,7 @@ class UpdateMarketDataServiceTest {
     @ValueSource(strings = {"0.00", "-1.00"})
     @Tag("CU-I.06")
     void rejectsNonPositiveClose(String close) {
-        assertThatThrownBy(() -> service.update(PAMP_ID, close == null ? null : Money.of(close), null))
+        assertThatThrownBy(() -> service.updateMarketData(PAMP_ID, close == null ? null : Money.of(close), null))
                 .isInstanceOf(InvalidRequestException.class)
                 .hasMessage("Request validation failed: 'close' must be greater than 0.");
         verifyNoInteractions(instruments, writer);
@@ -90,7 +101,7 @@ class UpdateMarketDataServiceTest {
     @ValueSource(strings = {"0.00", "-5.00"})
     @Tag("CU-I.06")
     void rejectsNonPositivePreviousClose(String previousClose) {
-        assertThatThrownBy(() -> service.update(PAMP_ID, Money.of("10.00"), Money.of(previousClose)))
+        assertThatThrownBy(() -> service.updateMarketData(PAMP_ID, Money.of("10.00"), Money.of(previousClose)))
                 .isInstanceOf(InvalidRequestException.class)
                 .hasMessage("Request validation failed: 'previousClose' must be greater than 0.");
         verifyNoInteractions(instruments, writer);
