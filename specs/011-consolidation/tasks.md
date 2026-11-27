@@ -134,10 +134,10 @@ find owner → lock → guarded update, verbatim.
 T020 and T021 (`createUser`, `restoreSeedData`, `updateMarketData`); **011-h2** (branch `011-consolidation-h2`, after
 011-h1 is merged) is T022 and T023 (`deleteOrder`, `executeOrder`).
 
-- [ ] T020 Adjust tests (passes at once): rename `UpdateMarketDataServiceTest` →
+- [x] T020 Adjust tests (passes at once): rename `UpdateMarketDataServiceTest` →
   `InternalToolsServiceUpdateMarketDataTest` (g, a, b, c, d); `JdbcAccountRepositoryCreateUserIT` (a, b, d);
   `JdbcSeedDataRestorerIT` (a, b, d).
-- [ ] T021 Implement plan.md § Inbound ports and services, `InternalToolsUseCase` and `InternalToolsService` with
+- [x] T021 Implement plan.md § Inbound ports and services, `InternalToolsUseCase` and `InternalToolsService` with
   `createUser`, `restoreSeedData` and `updateMarketData` (final constructor); the internal controllers that call them,
   `MarketDataView`, and the beans.
 - [ ] T022 Adjust tests (passes at once): rename `DeleteOrderServiceTest` → `InternalToolsServiceDeleteOrderTest`

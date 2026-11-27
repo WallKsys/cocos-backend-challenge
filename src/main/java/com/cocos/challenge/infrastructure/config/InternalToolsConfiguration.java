@@ -1,21 +1,17 @@
 package com.cocos.challenge.infrastructure.config;
 
-import com.cocos.challenge.application.port.in.CreateUserUseCase;
 import com.cocos.challenge.application.port.in.DeleteOrderUseCase;
 import com.cocos.challenge.application.port.in.ExecuteOrderUseCase;
-import com.cocos.challenge.application.port.in.RestoreSeedDataUseCase;
-import com.cocos.challenge.application.port.in.UpdateMarketDataUseCase;
+import com.cocos.challenge.application.port.in.InternalToolsUseCase;
 import com.cocos.challenge.application.port.out.AccountRepository;
 import com.cocos.challenge.application.port.out.AdminOrderRepository;
 import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
 import com.cocos.challenge.application.port.out.SeedDataRestorer;
-import com.cocos.challenge.application.service.CreateUserService;
 import com.cocos.challenge.application.service.DeleteOrderService;
 import com.cocos.challenge.application.service.ExecuteOrderService;
-import com.cocos.challenge.application.service.RestoreSeedDataService;
-import com.cocos.challenge.application.service.UpdateMarketDataService;
+import com.cocos.challenge.application.service.InternalToolsService;
 import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcSeedDataRestorer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,18 +39,10 @@ public class InternalToolsConfiguration {
     }
 
     @Bean
-    UpdateMarketDataUseCase updateMarketDataUseCase(InstrumentRepository instruments,
-            MarketDataRepository marketDataWriter, Clock clock) {
-        return new UpdateMarketDataService(instruments, marketDataWriter, clock);
-    }
-
-    @Bean
-    RestoreSeedDataUseCase restoreSeedDataUseCase(SeedDataRestorer seedDataRestorer) {
-        return new RestoreSeedDataService(seedDataRestorer);
-    }
-
-    @Bean
-    CreateUserUseCase createUserUseCase(AccountRepository userWriter) {
-        return new CreateUserService(userWriter);
+    InternalToolsUseCase internalToolsUseCase(AccountRepository accounts, AdminOrderRepository adminOrders,
+            OrderLedgerRepository ledger, InstrumentRepository instruments, MarketDataRepository marketData,
+            SeedDataRestorer seedDataRestorer, Clock clock) {
+        return new InternalToolsService(
+                accounts, adminOrders, ledger, instruments, marketData, seedDataRestorer, clock);
     }
 }
