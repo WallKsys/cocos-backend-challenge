@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Estado** | **Vigente**: reabierto el 2026-11-26 para la spec 011 (TEC-38). Las decisiones hasta TEC-37 quedaron implementadas en v1.0.0 (cierre del 2026-11-25) |
+| **Estado** | **Cerrado** (2026-11-27): el proyecto está implementado y este documento queda como registro de las decisiones. Las decisiones hasta TEC-37 se implementaron en v1.0.0 (2026-11-25); TEC-38, reabierto el 2026-11-26 para la spec 011, en v1.1.0 |
 | **Fecha** | 2026-11-21 |
 | **Documentos relacionados** | [PRD](prd.md) · [Análisis funcional](analisis-funcional.md) · [Casos de uso](casos-de-uso.md) |
 
@@ -259,7 +259,7 @@ Ejemplo: el usuario quiere 10 PAMP, se corta la red, la app reintenta → termin
 
 ### TEC-17 · Cálculo en tiempo real desde `orders`, detrás de un puerto, con rendimiento verificado
 
-**Decisión.** Efectivo, reservas, posiciones y costo promedio se **calculan en cada operación o consulta a partir de `orders`**, que sigue siendo la única fuente de verdad. El cálculo se accede a través de un puerto de salida (por ejemplo, `AccountStateReader`). Pasar a tablas precalculadas sería un cambio **solo del adaptador de persistencia**, sin tocar el dominio ni los casos de uso.
+**Decisión.** Efectivo, reservas, posiciones y costo promedio se **calculan en cada operación o consulta a partir de `orders`**, que sigue siendo la única fuente de verdad. El cálculo se accede a través de un puerto de salida (`LedgerReader`). Pasar a tablas precalculadas sería un cambio **solo del adaptador de persistencia**, sin tocar el dominio ni los casos de uso.
 
 **Medidas para que el cálculo siga siendo rápido con volumen:**
 
