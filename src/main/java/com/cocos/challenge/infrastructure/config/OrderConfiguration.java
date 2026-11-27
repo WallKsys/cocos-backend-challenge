@@ -7,7 +7,7 @@ import com.cocos.challenge.application.port.out.InstrumentRepository;
 import com.cocos.challenge.application.port.out.LedgerReader;
 import com.cocos.challenge.application.port.out.MarketDataRepository;
 import com.cocos.challenge.application.port.out.OrderLedgerRepository;
-import com.cocos.challenge.application.service.IdempotencyLookup;
+import com.cocos.challenge.application.service.IdempotentMutationGuard;
 import com.cocos.challenge.application.service.PlaceOrderService;
 import com.cocos.challenge.domain.service.OrderEvaluator;
 import com.cocos.challenge.infrastructure.adapter.out.persistence.JdbcAccountRepository;
@@ -44,15 +44,16 @@ public class OrderConfiguration {
     }
 
     @Bean
-    IdempotencyLookup idempotencyLookup(OrderLedgerRepository orders, BusinessMetrics metrics) {
-        return new IdempotencyLookup(orders, metrics);
+    IdempotentMutationGuard idempotentMutationGuard(AccountRepository accounts, OrderLedgerRepository orders,
+            BusinessMetrics metrics, Clock clock) {
+        return new IdempotentMutationGuard(accounts, orders, metrics, clock);
     }
 
     @Bean
-    PlaceOrderUseCase placeOrderUseCase(AccountRepository accountLock, OrderLedgerRepository orders,
+    PlaceOrderUseCase placeOrderUseCase(IdempotentMutationGuard guard, OrderLedgerRepository orders,
             InstrumentRepository instruments, MarketDataRepository marketData, LedgerReader ledger,
-            BusinessMetrics metrics, Clock clock, IdempotencyLookup idempotencyLookup) {
-        return new PlaceOrderService(accountLock, orders, instruments, marketData, ledger,
-                new OrderEvaluator(), metrics, clock, idempotencyLookup);
+            BusinessMetrics metrics) {
+        return new PlaceOrderService(guard, orders, instruments, marketData, ledger,
+                new OrderEvaluator(), metrics);
     }
 }

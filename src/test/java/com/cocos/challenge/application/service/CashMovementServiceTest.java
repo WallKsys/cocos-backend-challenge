@@ -61,9 +61,9 @@ class CashMovementServiceTest {
     private final InstrumentRepository instruments = mock(InstrumentRepository.class);
     private final LedgerReader ledger = mock(LedgerReader.class);
     private final BusinessMetrics metrics = mock(BusinessMetrics.class);
-    private final CashMovementService service = new CashMovementService(lock, movements, instruments, ledger,
-            new CashMovementEvaluator(), metrics, Clock.fixed(NOW, ZoneOffset.UTC),
-            new IdempotencyLookup(orders, metrics));
+    private final CashMovementService service = new CashMovementService(
+            new IdempotentMutationGuard(lock, orders, metrics, Clock.fixed(NOW, ZoneOffset.UTC)),
+            movements, instruments, ledger, new CashMovementEvaluator(), metrics);
 
     @BeforeEach
     void accountExists() {
