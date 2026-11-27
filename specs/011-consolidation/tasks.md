@@ -150,7 +150,7 @@ T020 and T021 (`createUser`, `restoreSeedData`, `updateMarketData`); **011-h2** 
 
 **Estimated size**: ~330 lines. No test file changes.
 
-- [ ] T024 Implement plan.md § REST, `InternalToolsController` and its nested DTOs. `InternalToolsArchitectureTest`,
+- [x] T024 Implement plan.md § REST, `InternalToolsController` and its nested DTOs. `InternalToolsArchitectureTest`,
   `InternalToolsDisabledIT`, `PublishedContractMatchesRoutesIT` and the internal-tool ITs pass unmodified.
 
 ## Slice 011-j — Public controllers and DTOs (branch `011-consolidation-j`)
