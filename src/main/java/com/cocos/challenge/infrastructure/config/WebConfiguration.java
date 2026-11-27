@@ -5,12 +5,16 @@ import com.cocos.challenge.infrastructure.adapter.in.rest.identity.RequesterIdAr
 import com.cocos.challenge.infrastructure.adapter.in.rest.internal.AdminRoleFilter;
 import com.cocos.challenge.infrastructure.adapter.in.rest.tracing.RequestIdFilter;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import tools.jackson.databind.cfg.CoercionAction;
+import tools.jackson.databind.cfg.CoercionInputShape;
+import tools.jackson.databind.type.LogicalType;
 
 import java.util.List;
 
@@ -36,5 +40,17 @@ public class WebConfiguration implements WebMvcConfigurer {
                 new AdminRoleFilter(handlerExceptionResolver));
         registration.addUrlPatterns("/api/internal/*");
         return registration;
+    }
+
+    @Bean
+    JsonMapperBuilderCustomizer rejectScalarCoercions() {
+        return builder -> builder
+                .withCoercionConfig(LogicalType.Textual, config -> config
+                        .setCoercion(CoercionInputShape.Integer, CoercionAction.Fail)
+                        .setCoercion(CoercionInputShape.Float, CoercionAction.Fail)
+                        .setCoercion(CoercionInputShape.Boolean, CoercionAction.Fail))
+                .withCoercionConfig(LogicalType.Integer, config -> config
+                        .setCoercion(CoercionInputShape.Float, CoercionAction.Fail)
+                        .setCoercion(CoercionInputShape.String, CoercionAction.Fail));
     }
 }
