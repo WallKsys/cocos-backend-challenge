@@ -1,6 +1,6 @@
 package com.cocos.challenge.infrastructure.adapter.out.persistence;
 
-import com.cocos.challenge.application.port.in.CreateUserUseCase;
+import com.cocos.challenge.application.port.in.InternalToolsUseCase;
 import com.cocos.challenge.domain.model.CreatedUser;
 import com.cocos.challenge.domain.model.UserId;
 import com.cocos.challenge.support.IntegrationTest;
@@ -21,7 +21,7 @@ class JdbcAccountRepositoryCreateUserIT {
     JdbcClient jdbc;
 
     @Autowired
-    CreateUserUseCase createUser;
+    InternalToolsUseCase createUser;
 
     @Test
     @Tag("CU-I.08")
@@ -29,9 +29,9 @@ class JdbcAccountRepositoryCreateUserIT {
     void createsUsersWithIncrementingAccountNumbers() {
         SeedData.reset(jdbc);
 
-        assertThat(createUser.create("demo@test.com"))
+        assertThat(createUser.createUser("demo@test.com"))
                 .isEqualTo(new CreatedUser(new UserId(5), "demo@test.com", "10005"));
-        assertThat(createUser.create("second@test.com"))
+        assertThat(createUser.createUser("second@test.com"))
                 .isEqualTo(new CreatedUser(new UserId(6), "second@test.com", "10006"));
     }
 }

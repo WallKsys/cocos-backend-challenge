@@ -1,6 +1,6 @@
 package com.cocos.challenge.infrastructure.adapter.out.persistence;
 
-import com.cocos.challenge.application.port.in.RestoreSeedDataUseCase;
+import com.cocos.challenge.application.port.in.InternalToolsUseCase;
 import com.cocos.challenge.domain.model.CashBalance;
 import com.cocos.challenge.domain.model.InstrumentId;
 import com.cocos.challenge.domain.model.MarketQuote;
@@ -27,7 +27,7 @@ class JdbcSeedDataRestorerIT {
     JdbcClient jdbc;
 
     @Autowired
-    RestoreSeedDataUseCase restoreSeedData;
+    InternalToolsUseCase restoreSeedData;
 
     @Test
     @Tag("CU-I.07")
@@ -42,7 +42,7 @@ class JdbcSeedDataRestorerIT {
                 """).param("fp", RequestFingerprint.of("k-restore").hex()).update();
         jdbc.sql("SET LOCAL TIME ZONE 'America/Argentina/Buenos_Aires'").update();
 
-        restoreSeedData.restore();
+        restoreSeedData.restoreSeedData();
 
         assertThat(jdbc.sql("SELECT COUNT(*) FROM users").query(Integer.class).single()).isEqualTo(4);
         assertThat(jdbc.sql("SELECT COUNT(*) FROM instruments").query(Integer.class).single()).isEqualTo(66);
