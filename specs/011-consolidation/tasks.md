@@ -165,13 +165,13 @@ T020 and T021 (`createUser`, `restoreSeedData`, `updateMarketData`); **011-h2** 
 **Estimated size**: ~410 lines. No test file changes. Predefined split if it exceeds 400: **011-k1** (branch
 `011-consolidation-k1`) is T026; **011-k2** (branch `011-consolidation-k2`, after 011-k1 is merged) is T027 and T028.
 
-- [ ] T026 Implement plan.md § Configuration, `ApplicationConfiguration` (it replaces `ClockConfiguration`,
+- [x] T026 Implement plan.md § Configuration, `ApplicationConfiguration` (it replaces `ClockConfiguration`,
   `OrderConfiguration`, `OrderQueryConfiguration`, `CashMovementConfiguration`, `PortfolioConfiguration` and
   `InstrumentSearchConfiguration`).
-- [ ] T027 Implement plan.md § Configuration, `WebConfiguration` (with the Jackson customizer) and
+- [x] T027 Implement plan.md § Configuration, `WebConfiguration` (with the Jackson customizer) and
   `ObservabilityConfiguration`. Count the production files: exactly the 103 of plan.md § Target structure (SC-001);
   paste `find src/main/java -name '*.java' | wc -l` in the PR.
-- [ ] T028 Run `./mvnw verify -Pvolume` and paste its latency table (SC-003).
+- [x] T028 Run `./mvnw verify -Pvolume` and paste its latency table (SC-003).
 
 ---
 
