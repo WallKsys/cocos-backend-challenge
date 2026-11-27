@@ -177,7 +177,7 @@ T020 and T021 (`createUser`, `restoreSeedData`, `updateMarketData`); **011-h2** 
 
 ## Definition of done (spec 011)
 
-- [ ] Slices merged; `./mvnw verify` green; `preservation.sh` prints `OK` on `main`.
-- [ ] `src/main/java` has the 103 files of plan.md § Target structure; the ArchUnit rules, traceability tests,
+- [x] Slices merged; `./mvnw verify` green; `preservation.sh` prints `OK` on `main`.
+- [x] `src/main/java` has the 103 files of plan.md § Target structure; the ArchUnit rules, traceability tests,
   features, contract and migrations are those of v1.0.0.
-- [ ] `./mvnw verify -Pvolume` passes.
+- [x] `./mvnw verify -Pvolume` passes.

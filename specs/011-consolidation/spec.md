@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-26
 
-**Status**: Ready for implementation
+**Status**: Implemented (2026-11-27)
 
 **Input**: RFC TEC-38 (consolidation by table and by resource). An external audit of v1.0.0 counted 165 production
 files for 4 tables and 15 endpoints, with a median of 13 lines per file. The owner accepted its points P1 to P7 with
