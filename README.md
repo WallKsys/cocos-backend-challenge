@@ -1,175 +1,176 @@
 # Cocos Broker API
 
+[Leer en español](README.es.md)
+
 [![CI](https://github.com/WallKsys/cocos-backend-challenge/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/WallKsys/cocos-backend-challenge/actions/workflows/ci.yml)
 [![PR size](https://github.com/WallKsys/cocos-backend-challenge/actions/workflows/pr-size.yml/badge.svg)](https://github.com/WallKsys/cocos-backend-challenge/actions/workflows/pr-size.yml)
 ![Java 25](https://img.shields.io/badge/Java-25-blue)
 ![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F)
 ![PostgreSQL 18](https://img.shields.io/badge/PostgreSQL-18-336791)
 
-API REST de un broker de inversiones: **portfolio** del usuario, **búsqueda de activos** y **envío de órdenes** de
-compra y venta (`MARKET` y `LIMIT`, por cantidad o por monto), más depósitos, retiros, cancelación e historial.
-Resuelve el [challenge de backend de Cocos](docs/referencia/backend-challenge.md).
+REST API for an investment broker covering the user's **portfolio**, **instrument search**, **buy and sell orders**
+(`MARKET` and `LIMIT`, by quantity or amount), deposits, withdrawals, cancellation, and history.
+It implements the [Cocos backend challenge](docs/referencia/backend-challenge.md).
 
 ---
 
-## Contenido
+## Contents
 
-- [Estado](#estado)
-- [Qué resuelve](#qué-resuelve)
-- [Inicio rápido](#inicio-rápido)
+- [Status](#status)
+- [What it solves](#what-it-solves)
+- [Quick start](#quick-start)
 - [API](#api)
-- [Convenciones de la API](#convenciones-de-la-api)
-- [Arquitectura](#arquitectura)
-- [Modelo de datos](#modelo-de-datos)
-- [Calidad y testing](#calidad-y-testing)
-- [Observabilidad](#observabilidad)
-- [Configuración](#configuración)
-- [Supuestos y limitaciones](#supuestos-y-limitaciones)
-- [Proceso de ingeniería](#proceso-de-ingeniería)
-- [Documentación](#documentación)
-- [Estructura del repositorio](#estructura-del-repositorio)
+- [API conventions](#api-conventions)
+- [Architecture](#architecture)
+- [Data model](#data-model)
+- [Quality and testing](#quality-and-testing)
+- [Observability](#observability)
+- [Configuration](#configuration)
+- [Assumptions and limitations](#assumptions-and-limitations)
+- [Engineering process](#engineering-process)
+- [Documentation](#documentation)
+- [Repository structure](#repository-structure)
 
 ---
 
-## Estado
+## Status
 
-Las diez funcionalidades (*specs*) del challenge están implementadas en `main` desde v1.0.0, cada una entregada
-en pull requests chicos y revisados. Después del cierre se agregó la spec 011, una consolidación de clases sin cambio
-de comportamiento ([TEC-38](docs/rfc.md)), publicada en v1.1.0: los archivos de producción bajaron de 165 a 103, con
-el mismo SQL y los mismos tests ejecutados que v1.0.0.
+All ten challenge features (*specs*) have been implemented on `main` since v1.0.0, each delivered through small,
+reviewed pull requests. Spec 011 followed in v1.1.0 and consolidated classes without changing behavior
+([TEC-38](docs/rfc.md)). It reduced the number of production files from 165 to 103 while retaining the same SQL and
+running the same tests as v1.0.0.
 
-| # | Funcionalidad | Estado |
+| # | Feature | Status |
 |---|---|---|
-| 001 | Esqueleto del servicio y barreras de calidad (build, CI, ArchUnit, BDD, trazabilidad) | ✅ Completa |
-| 002 | Base de datos: esquema provisto + migraciones justificadas | ✅ Completa |
-| 003 | Convenciones de la API (errores, identidad, montos, idempotencia) | ✅ Completa |
-| 004 | Búsqueda de activos | ✅ Completa |
-| 005 | Envío de órdenes | ✅ Completa |
-| 006 | Portfolio | ✅ Completa |
-| 007 | Depósitos y retiros | ✅ Completa |
-| 008 | Cancelación e historial | ✅ Completa |
-| 009 | Herramientas internas de demo y pruebas de volumen | ✅ Completa |
-| 010 | Observabilidad (métricas, trazas, logs y tableros) | ✅ Completa |
-| 011 | Consolidación: persistencia por tabla, puertos y controllers por recurso (refactor sin cambio de comportamiento) | ✅ Completa |
+| 001 | Service skeleton and quality guardrails (build, CI, ArchUnit, BDD, traceability) | ✅ Complete |
+| 002 | Database schema and seed data from the challenge, plus documented migrations | ✅ Complete |
+| 003 | API conventions (errors, identity, amounts, idempotency) | ✅ Complete |
+| 004 | Instrument search | ✅ Complete |
+| 005 | Order placement | ✅ Complete |
+| 006 | Portfolio | ✅ Complete |
+| 007 | Deposits and withdrawals | ✅ Complete |
+| 008 | Cancellation and history | ✅ Complete |
+| 009 | Internal demo tools and volume tests | ✅ Complete |
+| 010 | Observability (metrics, traces, logs, and dashboards) | ✅ Complete |
+| 011 | Consolidation of persistence by table and of ports and controllers by resource, with no behavior change | ✅ Complete |
 
 ---
 
-## Qué resuelve
+## What it solves
 
-El enunciado pide tres endpoints. El problema de fondo es **que el dinero cuadre siempre**: un broker no puede dejar
-a un usuario con saldo negativo, ejecutar dos veces una compra por un reintento de red ni mostrarle datos de otro
-usuario. El diseño se apoya en cinco garantías:
+The challenge asks for three endpoints. The underlying problem is **keeping the books accurate**. A broker must
+prevent negative balances, duplicate purchases after network retries, and exposure of another user's data.
+The design provides five guarantees.
 
-| Garantía | Cómo se logra |
+| Guarantee | How it works |
 |---|---|
-| **Una sola fuente de verdad** | La tabla `orders` es el libro contable: efectivo, posiciones y reservas se calculan siempre desde ahí |
-| **Nadie opera más de lo que tiene** | Las órdenes pendientes **reservan** el dinero o las acciones que comprometen, y toda validación usa el saldo *disponible* |
-| **Una operación se ejecuta una sola vez** | Idempotencia por clave del cliente (`Idempotency-Key`), persistida junto con la orden y protegida por una restricción única |
-| **Órdenes simultáneas nunca gastan el mismo saldo** | Bloqueo pesimista de la fila del usuario dentro de la transacción de cada operación |
-| **Aislamiento entre usuarios por construcción** | Ninguna URL pública permite nombrar a otro usuario: la identidad sale solo del header `X-User-Id` |
+| **One source of truth** | The `orders` table is the ledger. Cash, positions, and reservations are always calculated from it |
+| **Users can trade only what they have** | Pending orders **reserve** the cash or shares they commit, and validation uses the *available* balance |
+| **An operation runs only once** | The client supplies an idempotency key (`Idempotency-Key`) that is stored with the order and protected by a unique constraint |
+| **Concurrent orders cannot spend the same balance** | Each operation takes a pessimistic lock on the user's row within its transaction |
+| **User isolation by design** | Public URLs contain no user identifier. The API takes the caller's identity solely from the `X-User-Id` header |
 
 ---
 
-## Inicio rápido
+## Quick start
 
-**Requisitos:** Java 25 y Docker.
+**Requirements** — Java 25 and Docker.
 
 ```bash
 git clone https://github.com/WallKsys/cocos-backend-challenge.git
 cd cocos-backend-challenge
 
-docker compose up --build        # PostgreSQL + API (perfil demo) con los datos del challenge
+docker compose up --build        # PostgreSQL + API (demo profile) with the challenge data
 ```
 
-| Servicio | URL |
+| Service | URL |
 |---|---|
 | API | http://localhost:8080 |
 | Health | http://localhost:8080/actuator/health |
 | Swagger UI | http://localhost:8080/swagger-ui/index.html |
 | Grafana | http://localhost:3000 |
 
-Primeras llamadas (usuario de ejemplo `1`; los datos del challenge se cargan automáticamente):
+These example requests use sample user `1`. The challenge data loads automatically.
 
 ```bash
 # Portfolio
 curl -s http://localhost:8080/api/v1/portfolio -H 'X-User-Id: 1'
 
-# Buscar activos
+# Search instruments
 curl -s "http://localhost:8080/api/v1/instruments?q=banco"
 
-# Comprar PAMP por un monto en pesos (54 acciones a 925.85; el sobrante queda disponible)
+# Buy PAMP by amount in pesos (54 shares at 925.85, with the remainder still available)
 curl -s -X POST http://localhost:8080/api/v1/orders \
   -H 'Content-Type: application/json' -H 'X-User-Id: 1' -H "Idempotency-Key: $(uuidgen)" \
   -d '{"instrumentId": 47, "side": "BUY", "type": "MARKET", "amount": "50000.00"}'
 ```
 
-La carpeta [`http/`](http/) contiene una colección de pedidos de ejemplo para el cliente HTTP de IntelliJ, con las
-herramientas internas en un archivo separado.
+The [`http/`](http/) directory contains sample requests for the IntelliJ HTTP client, with internal tools in a
+separate file.
 
 ---
 
 ## API
 
-Contrato completo (OpenAPI 3.1):
-[`specs/009-internal-tools-volume/contracts/openapi.yaml`](specs/009-internal-tools-volume/contracts/openapi.yaml),
-publicado por el servicio en `/openapi/openapi.yaml` y navegable en Swagger UI.
+The service publishes the full OpenAPI 3.1 contract at `/openapi/openapi.yaml` and makes it browsable in Swagger UI.
+[OpenAPI contract](specs/009-internal-tools-volume/contracts/openapi.yaml)
 
 ### Endpoints
 
-| Método | Ruta | Descripción |
+| Method | Route | Description |
 |---|---|---|
-| `GET` | `/api/v1/portfolio` | Valor total, efectivo (total, reservado, disponible) y posiciones con valor, costo promedio, rendimiento total y variación diaria |
-| `GET` | `/api/v1/instruments` | Búsqueda por término general, ticker y/o nombre; sin distinguir mayúsculas ni acentos; paginada |
-| `POST` | `/api/v1/orders` | Envía una orden `BUY`/`SELL`, `MARKET`/`LIMIT`, por cantidad entera o por monto |
-| `GET` | `/api/v1/orders` | Historial de órdenes y movimientos de efectivo, de lo más reciente a lo más antiguo, filtrable por estado |
-| `GET` | `/api/v1/orders/{orderId}` | Una orden del usuario |
-| `POST` | `/api/v1/orders/{orderId}/cancel` | Cancela una orden `NEW` y libera su reserva |
-| `POST` | `/api/v1/cash/deposits` | Depósito de pesos |
-| `POST` | `/api/v1/cash/withdrawals` | Retiro de pesos contra el saldo disponible |
+| `GET` | `/api/v1/portfolio` | Total value, cash (total, reserved, available), and positions with value, average cost, total return, and daily change |
+| `GET` | `/api/v1/instruments` | Paginated search by general term, ticker, and/or name, ignoring case and accents |
+| `POST` | `/api/v1/orders` | Places a `BUY` or `SELL` order of type `MARKET` or `LIMIT`, by whole-share quantity or amount |
+| `GET` | `/api/v1/orders` | Order and cash movement history, newest first, with an optional status filter |
+| `GET` | `/api/v1/orders/{orderId}` | Retrieves one of the user's orders |
+| `POST` | `/api/v1/orders/{orderId}/cancel` | Cancels a `NEW` order and releases its reservation |
+| `POST` | `/api/v1/cash/deposits` | Deposits pesos |
+| `POST` | `/api/v1/cash/withdrawals` | Withdraws pesos against the available balance |
 
-### Herramientas internas (solo demo)
+### Internal tools (demo only)
 
-Fuera del alcance del challenge. Existen **solo** con el perfil `demo`, requieren `X-Role: ADMIN` y, si no se
-cumplen ambas condiciones, responden `404` igual que una ruta inexistente.
+These tools are outside the challenge scope. They require both the `demo` profile and `X-Role: ADMIN`.
+If either condition is missing, the service returns `404`, just as it does for an unknown route.
 
-| Método | Ruta | Descripción |
+| Method | Route | Description |
 |---|---|---|
-| `GET` | `/api/internal/users/{userId}/portfolio` | Portfolio de cualquier usuario |
-| `GET` | `/api/internal/users/{userId}/orders` | Historial de cualquier usuario |
-| `POST` | `/api/internal/orders/{orderId}/execute` | Fuerza la ejecución de una orden `LIMIT` pendiente a su precio límite |
-| `DELETE` | `/api/internal/orders/{orderId}` | Borra una orden |
-| `PUT` | `/api/internal/instruments/{instrumentId}/market-data` | Cambia el último precio de un instrumento |
-| `POST` | `/api/internal/reset` | Restaura los datos originales del challenge |
-| `POST` | `/api/internal/users` | Crea un usuario de prueba |
+| `GET` | `/api/internal/users/{userId}/portfolio` | Retrieves any user's portfolio |
+| `GET` | `/api/internal/users/{userId}/orders` | Retrieves any user's history |
+| `POST` | `/api/internal/orders/{orderId}/execute` | Forces a pending `LIMIT` order to execute at its limit price |
+| `DELETE` | `/api/internal/orders/{orderId}` | Deletes an order |
+| `PUT` | `/api/internal/instruments/{instrumentId}/market-data` | Changes an instrument's last price |
+| `POST` | `/api/internal/reset` | Restores the original challenge data |
+| `POST` | `/api/internal/users` | Creates a test user |
 
-### Estados de una orden
+### Order statuses
 
 ```text
-                 ┌──────────── MARKET válida ─────────────────────────────► FILLED
-  POST /orders ──┼──────────── LIMIT válida ──► NEW ──┬─ cancel ───────────► CANCELLED
-                 │                                    └─ ejecución (demo) ─► FILLED
-                 └──── sin saldo / sin precio / monto insuficiente ────────► REJECTED (con motivo)
+                 ┌─ Valid MARKET ──────────────────────────────► FILLED
+  POST /orders ──┼─ Valid LIMIT ──► NEW ──┬─ cancel ───────────► CANCELLED
+                 │                        └─ execute (demo) ───► FILLED
+                 └─ Insufficient balance or amount, no price ──► REJECTED (with reason)
 
-  Pedido inválido (formato, campos, instrumento inexistente) → 400, no se guarda nada.
+  Invalid request (format, fields, unknown instrument) → 400, nothing stored.
 ```
 
 ---
 
-## Convenciones de la API
+## API conventions
 
-| Tema | Convención |
+| Topic | Convention |
 |---|---|
-| Identidad | Header `X-User-Id` (no hay autenticación en el alcance del challenge; ver [limitaciones](#supuestos-y-limitaciones)) |
-| Idempotencia | Header `Idempotency-Key` obligatorio en órdenes, depósitos y retiros (la cancelación es idempotente por naturaleza y no lo lleva). El mismo pedido con la misma clave devuelve el resultado original (`200` + `Idempotent-Replayed: true`); la misma clave con otro contenido, `422 IDEMPOTENCY_CONFLICT` |
-| Montos y precios | Texto decimal: las respuestas llevan exactamente 2 decimales (`"925.85"`) y los pedidos aceptan hasta 2 (`"925.8"`); las cantidades de acciones son enteros. Nunca punto flotante |
-| Fechas | ISO 8601 en UTC (`2026-11-21T14:36:00Z`); la conversión a hora local es responsabilidad del consumidor |
-| Errores | [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) (Problem Details) con un `code` estable y un mensaje en inglés con valores concretos |
-| Idioma | Todo texto de la API está en inglés |
-| JSON estricto | Campos desconocidos y coerciones (`1.5` como cantidad, `10` como texto) se rechazan con `VALIDATION_ERROR` |
-| Paginado | Por cursor opaco (`cursor`, `limit`, `nextCursor`) |
-| Correlación | Header `X-Request-Id`, generado si no viene, presente en la respuesta y en cada línea de log |
+| Identity | `X-User-Id` header. Authentication is outside the challenge scope. See [limitations](#assumptions-and-limitations) |
+| Idempotency | The `Idempotency-Key` header is required for orders, deposits, and withdrawals. Cancellation is inherently idempotent and takes no key. Repeating the same request with the same key returns the original result (`200` with `Idempotent-Replayed: true`). Reusing the key with different content returns `422 IDEMPOTENCY_CONFLICT` |
+| Amounts and prices | Decimal strings with exactly 2 decimal places in responses (`"925.85"`) and up to 2 in requests (`"925.8"`). Share quantities are integers. Floating-point values are excluded |
+| Dates | ISO 8601 in UTC (`2026-11-21T14:36:00Z`). Clients handle local time conversion |
+| Errors | [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) Problem Details with a stable `code` and an English message containing the concrete values |
+| Language | All API text is in English |
+| Strict JSON | Unknown fields and type coercions (`1.5` as a quantity or `10` as a string) return `VALIDATION_ERROR` |
+| Pagination | Opaque cursors (`cursor`, `limit`, `nextCursor`) |
+| Correlation | The service generates an `X-Request-Id` header if absent and includes it in the response and each log line |
 
-Una orden rechazada **no** es un error HTTP: se guarda y se devuelve con `201` y su motivo.
+A rejected order is stored and returned with HTTP `201` and a rejection reason.
 
 ```json
 {
@@ -184,7 +185,7 @@ Una orden rechazada **no** es un error HTTP: se guarda y se devuelve con `201` y
 }
 ```
 
-Un pedido inválido sí es un error, y no deja rastro en la base:
+An invalid request returns an error and leaves no record in the database.
 
 ```json
 {
@@ -199,138 +200,141 @@ Un pedido inválido sí es un error, y no deja rastro en la base:
 
 ---
 
-## Arquitectura
+## Architecture
 
-Arquitectura **hexagonal** (puertos y adaptadores). Las dependencias apuntan siempre hacia adentro y se verifican
-con [ArchUnit](https://www.archunit.org/) en cada build.
+The service uses **hexagonal architecture** (ports and adapters). Dependencies point inward, and
+[ArchUnit](https://www.archunit.org/) verifies them on every build.
 
 ```text
               ┌─────────────────────── infrastructure ───────────────────────┐
-  HTTP ─────► │ adapter/in/rest  (controllers, DTOs, errores RFC 9457)       │
+  HTTP ─────► │ adapter/in/rest  (controllers, DTOs, RFC 9457 errors)          │
               │         │                                                    │
               │         ▼                                                    │
               │ ┌────────────────────── application ───────────────────────┐ │
-              │ │ casos de uso · puertos de entrada y de salida            │ │
+              │ │ use cases · inbound and outbound ports                  │ │
               │ │ ┌─────────────────────── domain ───────────────────────┐ │ │
-              │ │ │ reglas de negocio en Java puro                       │ │ │
+              │ │ │ business rules in plain Java                         │ │ │
               │ │ └──────────────────────────────────────────────────────┘ │ │
               │ └─────────────────────────────┬────────────────────────────┘ │
               │                               ▼                              │
-              │ adapter/out/persistence (Jdbc*, SQL explícito)               │──► PostgreSQL
+              │ adapter/out/persistence (Jdbc*, explicit SQL)                │──► PostgreSQL
               │ adapter/out/metrics (Micrometer) · config                    │
               └──────────────────────────────────────────────────────────────┘
 ```
 
-| Capa | Contiene | Puede depender de |
+| Layer | Contains | May depend on |
 |---|---|---|
-| `domain` | Modelo y reglas: disponibles y reservas, evaluación de órdenes, costo promedio | Solo el JDK |
-| `application` | Casos de uso, puertos de entrada y de salida | `domain` y `@Transactional` |
-| `infrastructure` | REST, persistencia con `JdbcClient`, métricas, configuración | Todo lo anterior y Spring |
+| `domain` | Model and rules for availability, reservations, order evaluation, and average cost | JDK only |
+| `application` | Use cases, inbound and outbound ports | `domain` and `@Transactional` |
+| `infrastructure` | REST, persistence with `JdbcClient`, metrics, and configuration | All of the above and Spring |
 
-Decisiones técnicas destacadas (detalle y alternativas evaluadas en el [RFC](docs/rfc.md)):
+The [RFC](docs/rfc.md) documents the technical decisions and alternatives considered.
 
-- **SQL explícito, sin ORM** (`JdbcClient`): el bloqueo de cuenta, la idempotencia atómica y las agregaciones del
-  libro contable se escriben y se prueban tal como se ejecutan (TEC-12).
-- **Bloqueo pesimista por usuario** (`SELECT ... FOR UPDATE`): los pedidos concurrentes del mismo usuario esperan en
-  lugar de fallar; los de distintos usuarios siguen en paralelo (TEC-16).
-- **Saldos calculados en el momento desde `orders`**, con índices cubrientes. Medido con 10 millones de órdenes:
-  el portfolio de un usuario con 10.000 órdenes se resuelve en ~15 ms de SQL (TEC-17).
-- **Contrato primero:** el OpenAPI se escribe antes que el código y un test exige que rutas y contrato coincidan
-  (TEC-22).
+- **Explicit SQL without an ORM** (`JdbcClient`). Account locking, atomic idempotency, and ledger aggregations are
+  written and tested as they run (TEC-12).
+- **Per-user pessimistic locking** (`SELECT ... FOR UPDATE`). Concurrent requests from the same user wait for
+  the lock while requests from different users proceed in parallel (TEC-16).
+- **Balances calculated on demand from `orders`**, using covering indexes. In a benchmark with 10 million orders,
+  the portfolio for a user with 10,000 orders took about 15 ms of SQL execution time (TEC-17).
+- **Contract first**. The OpenAPI contract is written before the code, and a test requires the routes to match
+  the contract (TEC-22).
 
 ---
 
-## Modelo de datos
+## Data model
 
-El esquema y los datos provistos por el challenge se cargan **sin cambios** como migración Flyway `V1`. Los cambios
-posteriores son migraciones separadas y justificadas:
+The schema and data supplied with the challenge are loaded verbatim in Flyway migration `V1`. Subsequent changes
+are recorded in separate migrations with documented rationale.
 
-| Migración | Cambios |
+| Migration | Changes |
 |---|---|
-| `V1` | `database.sql` del challenge, byte a byte |
-| `V2` | Restricciones de integridad, ticker único, fechas en `TIMESTAMPTZ` (UTC) |
-| `V3` | Motivo de rechazo, clave de idempotencia y huella del pedido, montos `NUMERIC(18,2)` |
-| `V4` | Columnas normalizadas (sin acentos) e índices trigram para la búsqueda |
-| `V5` | Índices para saldos, reservas e historial con cursor |
-| `V6` | Monto pedido en órdenes por monto (para responder reintentos idénticos) |
-| `V7` | Dos motivos de rechazo nuevos: precio fuera de la banda de ±20 % y cantidad demasiado grande |
-| `V8` | Índice parcial para listar por ticker los instrumentos operables (búsqueda sin criterios) |
+| `V1` | Byte-for-byte copy of the challenge's `database.sql` |
+| `V2` | Integrity constraints, unique ticker, and `TIMESTAMPTZ` dates (UTC) |
+| `V3` | Rejection reason, idempotency key and request fingerprint, and `NUMERIC(18,2)` amounts |
+| `V4` | Normalized, accent-free columns and trigram indexes for search |
+| `V5` | Indexes for balances, reservations, and cursor-based history |
+| `V6` | Requested amount for orders placed by amount, so identical retries can replay the original result |
+| `V7` | Two rejection reasons for prices outside the ±20% band and quantities that are too large |
+| `V8` | Partial index for listing tradable instruments by ticker when no search criteria are provided |
 
-Esquema completo: [`specs/002-database/data-model.md`](specs/002-database/data-model.md). Justificación de cada
-cambio: [análisis funcional §8](docs/analisis-funcional.md).
+See the [complete schema](specs/002-database/data-model.md) and the rationale for each change in the
+[functional analysis, §8](docs/analisis-funcional.md).
 
 ---
 
-## Calidad y testing
+## Quality and testing
 
 ```bash
-./mvnw verify                    # suite completa: unitarios, integración, BDD, ArchUnit, trazabilidad
-./mvnw test -Dgroups=unit        # solo unitarios (rápidos, sin Docker)
-./mvnw verify -Pvolume           # pruebas de volumen: 10M órdenes, p95/p99 por endpoint (spec 009)
+./mvnw verify                    # full suite: unit, integration, BDD, ArchUnit, traceability
+./mvnw test -Dgroups=unit        # unit tests only (fast, no Docker)
+./mvnw verify -Pvolume           # volume tests: 10M orders, p95/p99 by endpoint (spec 009)
 ```
 
-| Nivel | Herramienta | Qué verifica |
+| Level | Tool | What it verifies |
 |---|---|---|
-| Unitarios | JUnit + AssertJ | Reglas de dominio sin Spring ni base de datos |
-| Integración | Testcontainers (PostgreSQL 18 real) | SQL, bloqueos, idempotencia ante reintentos simultáneos, paginado |
-| Aceptación | Cucumber (BDD) | **120 escenarios** de [casos de uso](docs/casos-de-uso.md), con valores calculados sobre los datos del challenge |
-| Arquitectura | ArchUnit | Capas, dependencias, `@Transactional`, sin ORM, sin `double` para dinero |
-| Trazabilidad | Test propio | Cada escenario tiene su escenario Gherkin y al menos un test; si falta uno, el build falla |
-| Planes de ejecución | `EXPLAIN` en el build | Ninguna consulta crítica puede perder sus índices sin romper el build |
-| Volumen | Perfil `-Pvolume` | Metas del PRD: portfolio p95 < 200 ms, historial < 100 ms, orden < 150 ms, búsqueda < 100 ms |
+| Unit | JUnit + AssertJ | Domain rules without Spring or a database |
+| Integration | Testcontainers (real PostgreSQL 18) | SQL, locks, idempotency during concurrent retries, and pagination |
+| Acceptance | Cucumber (BDD) | **120 [use case scenarios](docs/casos-de-uso.md)** with values calculated from the challenge data |
+| Architecture | ArchUnit | Layers, dependencies, `@Transactional`, and bans on ORM and `double` for money |
+| Traceability | Custom test | The build fails if any scenario lacks a corresponding Gherkin scenario or at least one test |
+| Query plans | `EXPLAIN` during the build | The build fails if a critical query stops using its indexes |
+| Volume | `-Pvolume` profile | PRD p95 targets for portfolio (< 200 ms), history (< 100 ms), order placement (< 150 ms), and search (< 100 ms) |
 
-**Forma de la suite** (al cierre, v1.0.0): 275 tests unitarios, 258 de integración y 139 ejecuciones BDD de los
-120 escenarios. Hay casi tantos tests de integración como unitarios porque buena parte de la lógica vive, a
-propósito, en SQL y en la base (saldos calculados desde `orders`, búsqueda, bloqueos, idempotencia), y cada regla
-se prueba en el nivel más bajo capaz de verificarla; las reglas de dominio tienen sus tests unitarios. La suite
-completa tarda menos de 2 minutos. Justificación y alternativa descartada en el [RFC, TEC-37](docs/rfc.md).
+At the v1.0.0 release, the suite had 275 unit tests, 258 integration tests, and 139 BDD executions across 120
+scenarios. The suite has nearly as many integration tests as unit tests because much of the logic deliberately
+lives in SQL and the database, including balances calculated from `orders`, search, locking, and idempotency.
+Each rule is tested at the lowest level that can verify it, with unit tests for domain rules. The full suite
+takes less than 2 minutes. The rationale and the alternative considered are documented in the [RFC, TEC-37](docs/rfc.md).
 
-Última medición del perfil `-Pvolume` (10.000.011 órdenes y 100.066 instrumentos en PostgreSQL 18; 500 pedidos
-HTTP medidos por métrica, [PR #99](https://github.com/WallKsys/cocos-backend-challenge/pull/99)):
+The latest `-Pvolume` benchmark used 10,000,011 orders and 100,066 instruments in PostgreSQL 18, with 500 measured
+HTTP requests per metric. [PR #99](https://github.com/WallKsys/cocos-backend-challenge/pull/99)
 
-| Métrica | Operación | p95 | Meta p95 | p99 | Meta p99 |
+| Metric | Operation | p95 | p95 target | p99 | p99 target |
 |---|---|---|---|---|---|
-| M-08 | `GET /api/v1/portfolio` | 23,6 ms | < 200 ms | 28,4 ms | < 400 ms |
-| M-09 | `GET /api/v1/orders?limit=20` | 3,2 ms | < 100 ms | 5,0 ms | < 200 ms |
-| M-10 | `POST /api/v1/orders` (compra `MARKET`) | 8,5 ms | < 150 ms | 10,9 ms | < 300 ms |
-| M-11 | `GET /api/v1/instruments?q=...` | 24,6 ms | < 100 ms | 29,5 ms | < 200 ms |
+| M-08 | `GET /api/v1/portfolio` | 23.6 ms | < 200 ms | 28.4 ms | < 400 ms |
+| M-09 | `GET /api/v1/orders?limit=20` | 3.2 ms | < 100 ms | 5.0 ms | < 200 ms |
+| M-10 | `POST /api/v1/orders` (`MARKET` buy) | 8.5 ms | < 150 ms | 10.9 ms | < 300 ms |
+| M-11 | `GET /api/v1/instruments?q=...` | 24.6 ms | < 100 ms | 29.5 ms | < 200 ms |
 
-En cada pull request, GitHub Actions ejecuta:
+GitHub Actions runs the following checks on each pull request.
 
-- **`verify`**: la suite completa (obligatorio para mergear).
-- **`pr-size`**: máximo 400 líneas revisables por PR, salvo justificación (obligatorio).
-- **`review`**: revisión automática contra las specs, el plan y las reglas del proyecto.
-
----
-
-## Observabilidad
-
-El servicio exporta métricas, trazas y logs con **OpenTelemetry** a una pila Grafana local
-(`grafana/otel-lgtm`) que levanta el mismo `docker compose up`:
-
-- **Cocos · Application health**: tráfico, errores 4xx/5xx, latencia p95/p99 por endpoint, JVM, conexiones, CPU.
-- **Cocos · Business**: operaciones por minuto, órdenes por estado, rechazos por motivo, reintentos idempotentes,
-  conflictos y tiempo de espera del bloqueo; y totales históricos calculados desde el libro contable con un
-  usuario de solo lectura.
-- Cada log lleva `requestId` y `trace_id`: desde una línea de log en Loki se llega a la traza del pedido en Tempo.
-- Cada operación con efecto (orden, cancelación, depósito, retiro) deja una línea `Operation completed` con el
-  usuario, la orden, la clave de idempotencia, el resultado y el motivo de rechazo.
-- `ObservabilityIT` levanta la pila completa en el build y verifica que métricas, trazas y logs lleguen enlazados.
-
-Los logs de consola son JSON estructurado (formato ECS).
+- **`verify`** runs the full suite and is required to merge.
+- **`pr-size`** enforces a limit of 400 reviewable lines per PR unless justified and is required to merge.
+- **`review`** checks the changes against the specs, the plan, and the project rules.
 
 ---
 
-## Configuración
+## Observability
 
-| Variable | Default | Descripción |
+The service exports metrics, traces, and logs through **OpenTelemetry** to a local Grafana stack
+(`grafana/otel-lgtm`) started by `docker compose up`.
+
+- **Cocos · Application health** shows traffic, 4xx/5xx errors, p95/p99 latency by endpoint, JVM metrics,
+  connections, and CPU usage.
+- **Cocos · Business** shows operations per minute, orders by status, rejections by reason, idempotent retries,
+  conflicts, and lock wait times. It also shows historical totals calculated from the ledger with a
+  read-only database user.
+- Each log entry carries `requestId` and `trace_id`, so you can follow a log entry in Loki to the request trace
+  in Tempo.
+- Each operation that changes data (order placement, cancellation, deposit, or withdrawal) emits an
+  `Operation completed` log entry with the user, order, idempotency key, outcome, and rejection reason.
+- `ObservabilityIT` starts the entire stack during the build and verifies that metrics, traces, and logs arrive
+  and can be correlated.
+
+Console logs use structured JSON in ECS format.
+
+---
+
+## Configuration
+
+| Variable | Default | Description |
 |---|---|---|
-| `DB_URL` | `jdbc:postgresql://localhost:5432/cocos` | URL JDBC de PostgreSQL |
-| `DB_USER` / `DB_PASSWORD` | `cocos` / `cocos` | Credenciales de la base |
-| `SPRING_PROFILES_ACTIVE` | — | `demo` habilita las herramientas internas y la exportación de telemetría |
-| `OTLP_BASE_URL` | `http://localhost:4318` | Destino OTLP/HTTP de métricas, trazas y logs (perfil `demo`) |
+| `DB_URL` | `jdbc:postgresql://localhost:5432/cocos` | PostgreSQL JDBC URL |
+| `DB_USER` / `DB_PASSWORD` | `cocos` / `cocos` | Database credentials |
+| `SPRING_PROFILES_ACTIVE` | — | `demo` enables internal tools and telemetry export |
+| `OTLP_BASE_URL` | `http://localhost:4318` | OTLP/HTTP destination for metrics, traces, and logs (`demo` profile) |
 
-| Puerto | Servicio |
+| Port | Service |
 |---|---|
 | 8080 | API |
 | 5432 | PostgreSQL |
@@ -338,74 +342,72 @@ Los logs de consola son JSON estructurado (formato ECS).
 
 ---
 
-## Supuestos y limitaciones
+## Assumptions and limitations
 
-- **Sin autenticación** (fuera del alcance del challenge): la identidad del solicitante se declara con `X-User-Id` y
-  no se verifica. El aislamiento entre usuarios está implementado y probado; en producción la identidad vendría de un
-  token, sin cambiar ninguna URL.
-- **Precios estáticos:** se usan los de la tabla `marketdata` del challenge (último día: 2023-07-14). No se simula el
-  mercado, por lo que una orden `LIMIT` permanece `NEW` hasta que se cancela (o se ejecuta con la herramienta de demo).
-- **Datos provistos con una inconsistencia:** el usuario 1 tiene una posición de **−10 BMA** (vendió más de lo que
-  compró). Se respeta el dato original y el portfolio la muestra marcada como inconsistente.
-- **Sin comisiones**; los montos se redondean a 2 decimales con *half-up*.
-- **Pedidos mal formados a nivel HTTP** (por ejemplo, un carácter de control en un header): los rechaza el servidor
-  (Tomcat) con su propio 400 antes de llegar a la aplicación, así que esa respuesta no tiene el formato de error de
-  la API.
-- **Lenguaje:** el enunciado propone Node.js; esta entrega usa **Java 25 + Spring Boot 4.1**. Es una decisión
-  deliberada y documentada ([PRD §1.1](docs/prd.md), [RFC TEC-01](docs/rfc.md)); el análisis funcional y el contrato
-  de la API son independientes del lenguaje.
+- **No authentication** (outside the challenge scope). Callers declare their identity with `X-User-Id`, and the
+  service accepts it as supplied. The implementation and tests enforce user isolation. In production, identity
+  would come from a token and the URLs could stay the same.
+- **Static prices.** Prices come from the challenge's `marketdata` table (latest date 2023-07-14). A `LIMIT`
+  order stays `NEW` until it is canceled or executed with the demo tool.
+- **Inconsistent source data.** User 1 has a **−10 BMA** position because they sold more shares than they bought.
+  The portfolio preserves the original value and flags it as inconsistent.
+- **No commissions.** Amounts are rounded to 2 decimal places using *half-up* rounding.
+- **Malformed HTTP requests**, such as a control character in a header, are rejected by Tomcat before reaching the
+  application. Tomcat returns its own 400 response outside the API's error format.
+- **Language.** The challenge suggests Node.js. This implementation deliberately uses **Java 25 + Spring Boot 4.1**.
+  The functional analysis and API contract are language independent. [PRD §1.1](docs/prd.md), [RFC TEC-01](docs/rfc.md)
 
 ---
 
-## Proceso de ingeniería
+## Engineering process
 
-El proyecto se construye con **spec-driven development** ([GitHub Spec Kit](https://github.com/github/spec-kit)):
+The project follows **spec-driven development** using [GitHub Spec Kit](https://github.com/github/spec-kit).
 
-1. **Análisis funcional** del enunciado: reglas explícitas, ambigüedades y 31 decisiones de producto justificadas.
-2. **PRD** con objetivos y métricas de éxito; **RFC** con 37 decisiones técnicas y sus alternativas descartadas.
-3. **Constitución** del proyecto: reglas no negociables (arquitectura, dinero, concurrencia, testing, tamaño de PR).
-4. **Una spec por funcionalidad**, con plan, contrato OpenAPI, escenarios Gherkin y tareas divididas en PRs
-   revisables.
-5. **Implementación test-first** por un agente de desarrollo asistido por IA que sigue las specs, con revisión
-   automática y manual de cada PR. Los tests aprobados no se modifican para que pasen.
+1. **Functional analysis** of the challenge, covering explicit rules, ambiguities, and 31 product decisions with
+   their rationale.
+2. **PRD** with goals and success metrics, and **RFC** with 37 technical decisions and the alternatives considered.
+3. **Project constitution** with mandatory rules for architecture, money, concurrency, testing, and PR size.
+4. **One spec per feature**, with a plan, OpenAPI contract, Gherkin scenarios, and tasks divided into reviewable PRs.
+5. **Test-first implementation** by an AI coding agent that follows the specs, with automated and manual review
+   of each PR. Approved tests are protected against changes intended to make them pass.
 
-Todas las reglas que guían al agente, con dónde se decidió cada una, por qué y qué la hace cumplir (build, merge o
-revisión), están reunidas en [Reglas y barreras](docs/reglas-y-barreras.md).
+The rules index records each rule the agent follows, where and why it was decided, and whether it is enforced
+during the build, merge, or review. [Rules and guardrails](docs/reglas-y-barreras.md)
 
 ---
 
-## Documentación
+## Documentation
 
-La documentación de `docs/` también se publica como sitio navegable, con buscador, en
-**[wallksys.github.io/cocos-backend-challenge](https://wallksys.github.io/cocos-backend-challenge/)**. Se regenera en
-cada merge a `main` y se previsualiza localmente con `pip install -r requirements-docs.txt && zensical serve`.
+The documentation in `docs/` is also published as a searchable site. It is rebuilt on each merge to `main`.
+To preview it locally, run `pip install -r requirements-docs.txt && zensical serve`.
+[Documentation site](https://wallksys.github.io/cocos-backend-challenge/)
 
-| Documento | Contenido |
+| Document | Contents |
 |---|---|
-| [Análisis funcional](docs/analisis-funcional.md) | Dominio, reglas del enunciado, ambigüedades y decisiones de producto (DEC-xx) |
-| [Casos de uso](docs/casos-de-uso.md) | 120 escenarios de aceptación (dado / cuando / entonces) con valores reales |
-| [PRD](docs/prd.md) | Objetivos, alcance, requisitos y métricas de éxito |
-| [RFC](docs/rfc.md) | Decisiones técnicas (TEC-xx) con alternativas evaluadas |
-| [Constitución](.specify/memory/constitution.md) | Reglas de ingeniería no negociables |
-| [Reglas y barreras](docs/reglas-y-barreras.md) | Índice de todas las reglas, dónde se decidieron y qué las hace cumplir |
-| [Specs](specs/) | Spec, plan, contrato, escenarios y tareas de cada funcionalidad |
-| [Enunciado original](docs/referencia/backend-challenge.md) | Challenge y `database.sql` provistos |
+| [Functional analysis](docs/analisis-funcional.md) | Domain, challenge rules, ambiguities, and product decisions (DEC-xx) |
+| [Use cases](docs/casos-de-uso.md) | 120 acceptance scenarios (given / when / then) with real values |
+| [PRD](docs/prd.md) | Goals, scope, requirements, and success metrics |
+| [RFC](docs/rfc.md) | Technical decisions (TEC-xx) and alternatives considered |
+| [Constitution](.specify/memory/constitution.md) | Mandatory engineering rules |
+| [Rules and guardrails](docs/reglas-y-barreras.md) | Index of rules, where they were decided, and how they are enforced |
+| [Specs](specs/) | Spec, plan, contract, scenarios, and tasks for each feature |
+| [Original challenge](docs/referencia/backend-challenge.md) | Challenge brief and supplied `database.sql` |
 
 ---
 
-## Estructura del repositorio
+## Repository structure
 
 ```text
 .
-├── src/main/java/com/cocos/challenge/   código del servicio (domain · application · infrastructure)
-├── src/main/resources/                  configuración y migraciones Flyway
-├── src/test/                            tests unitarios, de integración, BDD (features) y de arquitectura
-├── http/                                colección de pedidos de ejemplo
-├── observability/                       tableros y aprovisionamiento de Grafana
-├── specs/                               una carpeta por funcionalidad
-├── docs/                                análisis, casos de uso, PRD, RFC y material del challenge
-├── .specify/                            Spec Kit: constitución, plantillas y scripts
-├── .github/                             workflows (CI, tamaño de PR, revisión) y plantilla de PR
-├── compose.yaml · Dockerfile            ejecución local
+├── src/main/java/com/cocos/challenge/    service code (domain · application · infrastructure)
+├── src/main/resources/                  configuration and Flyway migrations
+├── src/test/                            unit, integration, BDD (features), and architecture tests
+├── http/                                sample request collection
+├── observability/                       Grafana dashboards and provisioning
+├── specs/                               one directory per feature
+├── docs/                                analysis, use cases, PRD, RFC, and challenge material
+├── .specify/                            Spec Kit constitution, templates, and scripts
+├── .github/                             workflows (CI, PR size, review) and PR template
+├── compose.yaml · Dockerfile            local runtime
 └── pom.xml · mvnw                       build (Maven)
 ```
